@@ -1,19 +1,17 @@
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { useUpdateActivityCategory } from "./hooks";
 import type { Category } from "./types";
+import { useUpdateTimeEntryCategory } from "./hooks";
 
 export function CategoryCell({
 	timeEntryId,
-	activityId,
 	category,
 }: {
 	timeEntryId: Id<"time_entries">;
-	activityId: Id<"activities">;
 	category: Category | null;
 }) {
-	const updateCategory = useUpdateActivityCategory(activityId);
+	const updateCategory = useUpdateTimeEntryCategory(timeEntryId);
 
 	return (
 		<SearchableCombobox
@@ -24,7 +22,7 @@ export function CategoryCell({
 			onValueChange={(category) => {
 				updateCategory(category?._id);
 			}}
-			onCreate={(name) => {
+			onSelect={(name) => {
 				updateCategory(undefined, name);
 			}}
 		/>

@@ -15,6 +15,7 @@ import type * as functions from "../functions.js";
 import type * as projects from "../projects.js";
 import type * as time_entries from "../time_entries.js";
 import type * as types from "../types.js";
+import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   time_entries: typeof time_entries;
   types: typeof types;
+  utils: typeof utils;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

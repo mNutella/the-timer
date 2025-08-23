@@ -10,7 +10,6 @@ const schema = defineEntSchema({
 		.field("email", v.string(), { unique: true })
 		.edges("clients", { ref: true })
 		.edges("projects", { ref: true })
-		.edges("activities", { ref: true })
 		.edges("time_entries", { ref: true })
 		.edges("categories", { ref: true })
 		.edges("tags", { ref: true }),
@@ -21,7 +20,7 @@ const schema = defineEntSchema({
 	})
 		.edge("user")
 		.edges("projects", { ref: true })
-		.edges("activities", { ref: true })
+		.edges("time_entries", { ref: true })
 		.searchIndex("name", {
 			searchField: "name",
 			filterFields: ["userId"],
@@ -38,41 +37,43 @@ const schema = defineEntSchema({
 	})
 		.edge("user")
 		.edge("client", { to: "clients", field: "clientId", optional: true })
-		.edges("activities", { ref: true })
+		.edges("time_entries", { ref: true })
 		.searchIndex("name", {
 			searchField: "name",
 			filterFields: ["userId", "clientId"],
 		})
 		.index("by_user_and_client", ["userId", "clientId"]),
 
-	activities: defineEnt({
+	time_entries: defineEnt({
 		name: v.string(),
 		description: v.optional(v.string()),
-		updated_at: v.number(),
-	})
-		.edge("user")
-		.edge("client", { to: "clients", field: "clientId", optional: true })
-		.edge("project", { to: "projects", field: "projectId", optional: true })
-		.edge("category", { to: "categories", field: "categoryId", optional: true })
-		.edges("time_entries", { ref: true })
-		.edges("tags"),
-
-	time_entries: defineEnt({
-		start_time: v.number(),
+		start_time: v.optional(v.number()),
 		end_time: v.optional(v.number()),
 		duration: v.optional(v.number()),
 		notes: v.optional(v.string()),
 		updated_at: v.number(),
 	})
 		.edge("user")
-		.edge("activity", { to: "activities", field: "activityId" }),
+		.edge("client", { to: "clients", field: "clientId", optional: true })
+		.edge("project", { to: "projects", field: "projectId", optional: true })
+		.edge("category", { to: "categories", field: "categoryId", optional: true })
+		.edges("tags")
+		.index("by_user_and_client", ["userId", "clientId"])
+		.index("by_user_and_project", ["userId", "projectId"])
+		.index("by_user_and_category", ["userId", "categoryId"])
+		.index("by_user_start_time", ["userId", "start_time"])
+		.index("by_user_end_time", ["userId", "end_time"])
+		.searchIndex("name", {
+			searchField: "name",
+			filterFields: ["userId", "clientId", "projectId", "categoryId"],
+		}),
 
 	categories: defineEnt({
 		name: v.string(),
 		updated_at: v.number(),
 	})
 		.edge("user")
-		.edges("activities", { ref: true })
+		.edges("time_entries", { ref: true })
 		.searchIndex("name", {
 			searchField: "name",
 			filterFields: ["userId"],
@@ -84,7 +85,7 @@ const schema = defineEntSchema({
 		updated_at: v.number(),
 	})
 		.edge("user")
-		.edges("activities")
+		.edges("time_entries")
 		.searchIndex("name", {
 			searchField: "name",
 			filterFields: ["userId"],

@@ -3,5 +3,6 @@
 - [] Remove logic that adds current selected value to search input in the searchable-combobox
 
 ## TODO
-- [] Add filters
-- [] Add calendar
+- [] Implement filters(client, activity, project, category and date range)
+- [] Implement tags
+- [] Implement on top of dashboard movable blocks with pin project/clients/categories stats(total time)

@@ -1,17 +1,20 @@
 import { toast } from "sonner";
+import { useMutation } from "convex/react";
+import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
+import type { DateRange } from "react-day-picker";
 
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
 import { parseDurationToMilliseconds } from "@/lib/utils";
+import type { Category, Client, Project, TimeEntry } from "./types";
 
-function withToast<T extends any[], R>(
-	mutation: (...args: T) => Promise<R>,
+function withToast<TArgs extends unknown[], R>(
+	mutation: (...args: TArgs) => Promise<R>,
 	loadingMessage: string,
 	successMessage: string = "Done",
 	errorMessage: string = "Error",
 ) {
-	return (...args: T) => {
+	return (...args: TArgs) => {
 		toast.promise(mutation(...args), {
 			loading: loadingMessage,
 			success: successMessage,
@@ -20,8 +23,8 @@ function withToast<T extends any[], R>(
 	};
 }
 
-export function useUpdateActivityName(activityId: Id<"activities">) {
-	const updateNameMutation = useMutation(api.activities.updateName);
+export function useUpdateTimeEntryName(timeEntryId: Id<"time_entries">) {
+	const updateNameMutation = useMutation(api.time_entries.update);
 
 	const updateName = (name: string) => {
 		const wrappedMutation = withToast(
@@ -32,7 +35,7 @@ export function useUpdateActivityName(activityId: Id<"activities">) {
 		);
 
 		wrappedMutation({
-			activityId,
+			id: timeEntryId,
 			name,
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		});
@@ -41,10 +44,10 @@ export function useUpdateActivityName(activityId: Id<"activities">) {
 	return updateName;
 }
 
-export function useUpdateActivityClient(activityId: Id<"activities">) {
-	const updateClientMutation = useMutation(api.activities.updateClient);
+export function useUpdateTimeEntryClient(timeEntryId: Id<"time_entries">) {
+	const updateClientMutation = useMutation(api.time_entries.updateClient);
 
-	const updateClient = (clientId?: Id<"clients">, clientName?: string) => {
+	const updateClient = (clientId?: Id<"clients">, newClientName?: string) => {
 		const wrappedMutation = withToast(
 			updateClientMutation,
 			"Updating client...",
@@ -53,9 +56,9 @@ export function useUpdateActivityClient(activityId: Id<"activities">) {
 		);
 
 		wrappedMutation({
-			activityId,
+			timeEntryId,
 			clientId,
-			clientName,
+			newClientName,
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		});
 	};
@@ -63,10 +66,13 @@ export function useUpdateActivityClient(activityId: Id<"activities">) {
 	return updateClient;
 }
 
-export function useUpdateActivityProject(activityId: Id<"activities">) {
-	const updateProjectMutation = useMutation(api.activities.updateProject);
+export function useUpdateTimeEntryProject(timeEntryId: Id<"time_entries">) {
+	const updateProjectMutation = useMutation(api.time_entries.updateProject);
 
-	const updateProject = (projectId?: Id<"projects">, projectName?: string) => {
+	const updateProject = (
+		projectId?: Id<"projects">,
+		newProjectName?: string,
+	) => {
 		const wrappedMutation = withToast(
 			updateProjectMutation,
 			"Updating project...",
@@ -75,9 +81,9 @@ export function useUpdateActivityProject(activityId: Id<"activities">) {
 		);
 
 		wrappedMutation({
-			activityId,
+			timeEntryId,
 			projectId,
-			projectName,
+			newProjectName,
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		});
 	};
@@ -85,12 +91,12 @@ export function useUpdateActivityProject(activityId: Id<"activities">) {
 	return updateProject;
 }
 
-export function useUpdateActivityCategory(activityId: Id<"activities">) {
-	const updateCategoryMutation = useMutation(api.activities.updateCategory);
+export function useUpdateTimeEntryCategory(timeEntryId: Id<"time_entries">) {
+	const updateCategoryMutation = useMutation(api.time_entries.updateCategory);
 
 	const updateCategory = (
 		categoryId?: Id<"categories">,
-		categoryName?: string,
+		newCategoryName?: string,
 	) => {
 		const wrappedMutation = withToast(
 			updateCategoryMutation,
@@ -100,9 +106,9 @@ export function useUpdateActivityCategory(activityId: Id<"activities">) {
 		);
 
 		wrappedMutation({
-			activityId,
+			timeEntryId,
 			categoryId,
-			categoryName,
+			newCategoryName,
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		});
 	};
@@ -111,7 +117,7 @@ export function useUpdateActivityCategory(activityId: Id<"activities">) {
 }
 
 export function useUpdateDuration(timeEntryId: Id<"time_entries">) {
-	const updateDurationMutation = useMutation(api.time_entries.updateDuration);
+	const updateDurationMutation = useMutation(api.time_entries.update);
 
 	const updateDuration = (duration: string) => {
 		const wrappedMutation = withToast(
@@ -132,9 +138,7 @@ export function useUpdateDuration(timeEntryId: Id<"time_entries">) {
 }
 
 export function useUpdateStartEndTime(timeEntryId: Id<"time_entries">) {
-	const updateStartEndTimeMutation = useMutation(
-		api.time_entries.updateStartEndTime,
-	);
+	const updateStartEndTimeMutation = useMutation(api.time_entries.update);
 
 	const updateStartEndTime = (startDate: number, endDate: number) => {
 		const wrappedMutation = withToast(
@@ -175,10 +179,7 @@ export function useDeleteTimeEntry(timeEntryId: Id<"time_entries">) {
 	return deleteTimeEntry;
 }
 
-export function useStartStopTimeEntry(
-	activityId: Id<"activities">,
-	timeEntryId: Id<"time_entries">,
-) {
+export function useStartStopTimeEntry(timeEntryId: Id<"time_entries">) {
 	const createTimerMutation = useMutation(api.time_entries.create);
 	const stopTimerMutation = useMutation(api.time_entries.stop);
 
@@ -192,7 +193,8 @@ export function useStartStopTimeEntry(
 
 		wrappedMutation({
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
-			activityId,
+			name: "",
+			timeEntryId,
 		});
 	};
 
@@ -211,4 +213,33 @@ export function useStartStopTimeEntry(
 	};
 
 	return { startTimer, stopTimer };
+}
+
+export function useTimeEntries(
+	searchValue: string,
+	filterByClient: Client | null,
+	filterByProject: Project | null,
+	filterByCategory: Category | null,
+	filterByTimeRange: DateRange | undefined,
+) {
+	const { results, loadMore, isLoading, status } =
+		useStablePaginatedQuery<TimeEntry, typeof api.time_entries.getAllWithFilters>(
+			api.time_entries.getAllWithFilters,
+			{
+				userId: import.meta.env.VITE_USER_ID as Id<"users">,
+				filters: {
+					name: searchValue,
+					clientId: filterByClient?._id,
+					projectId: filterByProject?._id,
+					categoryId: filterByCategory?._id,
+					dateRange: {
+						startDate: filterByTimeRange?.from?.getTime(),
+						endDate: filterByTimeRange?.to?.getTime(),
+					},
+				},
+			},
+			{ initialNumItems: 10 },
+		);
+
+	return { results, loadMore, isLoading, status };
 }

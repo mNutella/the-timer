@@ -1,5 +1,4 @@
 import * as React from "react";
-import { IconChevronDown, IconLayoutColumns } from "@tabler/icons-react";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
@@ -16,17 +15,9 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { UsePaginatedQueryReturnType } from "convex/react";
+import type { DateRange } from "react-day-picker";
 
-// import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	Table,
 	TableBody,
@@ -36,21 +27,23 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { ActivityCell } from "./activity-cell";
+import { TimeEntryCell } from "./time-entry-cell";
 import { ClientCell } from "./client-cell";
 import { ProjectCell } from "./project-cell";
 import { CategoryCell } from "./category-cell";
 import { DurationCell } from "./duration-cell";
 import { StartEndTimeCell } from "./start-end-time-cell";
-import type { api } from "convex/_generated/api";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ActionsCell } from "./actions-cell";
 import { StartStopCell } from "./start-stop-cell";
-
-type TimeEntriesPaginatedResult = UsePaginatedQueryReturnType<
-	typeof api.time_entries.getAll
->;
-type TimeEntry = TimeEntriesPaginatedResult["results"][number];
+import { CustomizeTableMenu } from "./customize-table-menu";
+import type { Category, Client, Project, TimeEntry } from "./types";
+import { ClientFilter } from "./client-filter";
+import { ProjectFilter } from "./project-filter";
+import { CategoryFilter } from "./category-filter";
+import { TimerEntrySearch } from "./timer-entry-search";
+import { TimeRangeFilter } from "./time-range-filter";
+import { useTimeEntries } from "./hooks";
 
 const columns: ColumnDef<TimeEntry>[] = [
 	{
@@ -80,12 +73,12 @@ const columns: ColumnDef<TimeEntry>[] = [
 		enableHiding: false,
 	},
 	{
-		accessorKey: "activity",
-		header: "Activity",
+		accessorKey: "name",
+		header: "Name",
 		cell: ({ row }) => (
-			<ActivityCell
-				activityId={row.original.activity._id}
-				activityName={row.original.activity.name}
+			<TimeEntryCell
+				timeEntryId={row.original._id}
+				timeEntryName={row.original.name}
 			/>
 		),
 		enableHiding: false,
@@ -94,11 +87,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 		accessorKey: "client",
 		header: "Client",
 		cell: ({ row }) => (
-			<ClientCell
-				timeEntryId={row.original._id}
-				activityId={row.original.activity._id}
-				client={row.original.activity.client}
-			/>
+			<ClientCell timeEntryId={row.original._id} client={row.original.client} />
 		),
 	},
 	{
@@ -107,9 +96,8 @@ const columns: ColumnDef<TimeEntry>[] = [
 		cell: ({ row }) => (
 			<ProjectCell
 				timeEntryId={row.original._id}
-				activityId={row.original.activity._id}
-				clientId={row.original.activity.client?._id}
-				project={row.original.activity.project}
+				clientId={row.original.client?._id}
+				project={row.original.project}
 			/>
 		),
 	},
@@ -119,8 +107,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 		cell: ({ row }) => (
 			<CategoryCell
 				timeEntryId={row.original._id}
-				activityId={row.original.activity._id}
-				category={row.original.activity.category}
+				category={row.original.category}
 			/>
 		),
 	},
@@ -148,7 +135,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 			<DurationCell
 				timeEntryId={row.original._id}
 				duration={row.original.duration ?? 0}
-				startTime={row.original.start_time}
+				startTime={row.original.start_time ?? 0}
 				inProgress={!row.original.end_time}
 			/>
 		),
@@ -159,7 +146,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 		cell: ({ row }) => (
 			<StartEndTimeCell
 				timeEntryId={row.original._id}
-				startTime={row.original.start_time}
+				startTime={row.original.start_time ?? 0}
 				endTime={row.original.end_time ?? 0}
 			/>
 		),
@@ -170,7 +157,6 @@ const columns: ColumnDef<TimeEntry>[] = [
 			<div className="flex items-center justify-center w-full h-full">
 				<StartStopCell
 					timeEntryId={row.original._id}
-					activityId={row.original.activity._id}
 					inProgress={!row.original.end_time}
 				/>
 			</div>
@@ -211,17 +197,31 @@ const CustomRow = React.forwardRef<
 	);
 });
 
-export default function TimeEntriesTable({
-	data: initialData,
-	onLoadMore,
-	isLoading: _isLoading,
-	status,
-}: {
-	data: TimeEntry[];
-	onLoadMore: (numItems: number) => void;
-	isLoading: boolean;
-	status: "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted";
-}) {
+export default function TimeEntriesTable() {
+	const [searchValue, setSearchValue] = React.useState("");
+	const [filterByClient, setFilterByClient] = React.useState<Client | null>(
+		null,
+	);
+	const [filterByProject, setFilterByProject] = React.useState<Project | null>(
+		null,
+	);
+	const [filterByCategory, setFilterByCategory] =
+		React.useState<Category | null>(null);
+	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
+		DateRange | undefined
+	>(undefined);
+	const {
+		results: initialData,
+		loadMore,
+		isLoading,
+		status,
+	} = useTimeEntries(
+		searchValue,
+		filterByClient,
+		filterByProject,
+		filterByCategory,
+		filterByTimeRange,
+	);
 	const scrollAreaRef = React.useRef<HTMLDivElement>(null);
 	const loaderRef = React.useRef<HTMLTableDataCellElement>(null);
 	const [rowSelection, setRowSelection] = React.useState({});
@@ -246,7 +246,7 @@ export default function TimeEntriesTable({
 			(entries) => {
 				const [entry] = entries;
 				if (entry.isIntersecting) {
-					onLoadMore(5);
+					loadMore(5);
 				}
 			},
 			{
@@ -258,7 +258,7 @@ export default function TimeEntriesTable({
 		observer.observe(loaderRef.current);
 
 		return () => observer.disconnect();
-	}, [status, onLoadMore]);
+	}, [status, loadMore]);
 
 	const table = useReactTable({
 		data: initialData,
@@ -333,51 +333,46 @@ export default function TimeEntriesTable({
 	return (
 		<div className="w-full flex-col justify-start gap-6">
 			<div className="flex items-center justify-between px-4 lg:px-6">
-				<div className="flex items-center gap-2">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm">
-								<IconLayoutColumns />
-								<span className="hidden lg:inline">Customize Columns</span>
-								<span className="lg:hidden">Columns</span>
-								<IconChevronDown />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-56">
-							{table
-								.getAllColumns()
-								.filter(
-									(column) =>
-										typeof column.accessorFn !== "undefined" &&
-										column.getCanHide(),
-								)
-								.map((column) => {
-									return (
-										<DropdownMenuCheckboxItem
-											key={column.id}
-											className="capitalize"
-											checked={column.getIsVisible()}
-											onCheckedChange={(value) =>
-												column.toggleVisibility(!!value)
-											}
-										>
-											{(column.columnDef.header as string) || column.id}
-										</DropdownMenuCheckboxItem>
-									);
-								})}
-						</DropdownMenuContent>
-					</DropdownMenu>
-					{/* <Button variant="outline" size="sm">
+				<div className="flex items-center justify-between gap-2">
+					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
+					<ClientFilter
+						value={filterByClient}
+						onSelect={setFilterByClient}
+						placeholder="Filter by Client"
+					/>
+					<ProjectFilter
+						value={filterByProject}
+						onSelect={setFilterByProject}
+						placeholder="Filter by Project"
+					/>
+					<CategoryFilter
+						value={filterByCategory}
+						onSelect={setFilterByCategory}
+						placeholder="Filter by Category"
+					/>
+					<TimeRangeFilter
+						value={filterByTimeRange}
+						onChange={setFilterByTimeRange}
+					/>
+				</div>
+				<div className="flex items-center">
+					<CustomizeTableMenu table={table} />
+				</div>
+				{/* <Button variant="outline" size="sm">
 						<IconPlus />
 						<span className="hidden lg:inline">Add Section</span>
 					</Button> */}
-				</div>
 			</div>
 			<div className="relative flex flex-col gap-4 px-4 lg:px-6 mt-2">
 				<div className="rounded-lg border">
 					<ScrollArea
 						ref={scrollAreaRef}
-						className="relative h-[calc(100vh-400px)]"
+						className={cn(
+							"relative",
+							rowVirtualizer.getVirtualItems().length
+								? "h-[calc(100vh-400px)]"
+								: "h-full",
+						)}
 					>
 						<Table className="grid">
 							<TableHeader className="bg-muted sticky grid top-0 z-10">
@@ -414,7 +409,11 @@ export default function TimeEntriesTable({
 							</TableHeader>
 							<TableBody
 								className="w-full grid relative"
-								style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+								style={{
+									height: rowVirtualizer.getVirtualItems().length
+										? `${rowVirtualizer.getTotalSize()}px`
+										: "auto",
+								}}
 							>
 								{rowVirtualizer.getVirtualItems().length ? (
 									rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -437,7 +436,7 @@ export default function TimeEntriesTable({
 									<TableRow>
 										<TableCell
 											colSpan={columns.length}
-											className="h-24 text-center"
+											className="h-24 text-center flex items-center justify-center"
 										>
 											No results.
 										</TableCell>

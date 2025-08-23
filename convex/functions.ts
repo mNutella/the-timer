@@ -30,13 +30,23 @@ triggers.register("time_entries", async (ctx, change) => {
   if (change.operation === "insert") {
     await timeEntriesByUser.insert(ctx, change.newDoc as Doc<"time_entries">);
   } else if (change.operation === "update") {
-    await timeEntriesByUser.replace(
-      ctx,
-      change.oldDoc as Doc<"time_entries">,
-      change.newDoc as Doc<"time_entries">
-    );
+    try {
+      await timeEntriesByUser.replace(
+        ctx,
+        change.oldDoc as Doc<"time_entries">,
+        change.newDoc as Doc<"time_entries">
+      );
+    } catch (err) {
+      // If the previous aggregate key was never inserted (e.g., docs existed before triggers),
+      // fall back to inserting the new doc into the aggregate to self-heal.
+      await timeEntriesByUser.insert(ctx, change.newDoc as Doc<"time_entries">);
+    }
   } else if (change.operation === "delete") {
-    await timeEntriesByUser.delete(ctx, change.oldDoc as Doc<"time_entries">);
+    try {
+      await timeEntriesByUser.delete(ctx, change.oldDoc as Doc<"time_entries">);
+    } catch (err) {
+      // Ignore missing-key deletes: aggregate may not have contained this doc.
+    }
   }
 });
 

@@ -5,18 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useStartStopTimeEntry } from "./hooks";
 
 export function StartStopCell({
-	activityId,
 	timeEntryId,
 	inProgress,
 }: {
-	activityId: Id<"activities">;
 	timeEntryId: Id<"time_entries">;
 	inProgress: boolean;
 }) {
-	const { startTimer, stopTimer } = useStartStopTimeEntry(
-		activityId,
-		timeEntryId,
-	);
+	const { startTimer, stopTimer } = useStartStopTimeEntry(timeEntryId);
 
 	if (inProgress) {
 		return (

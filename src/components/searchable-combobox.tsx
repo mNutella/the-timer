@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { usePaginatedQuery } from "convex-helpers/react/cache";
 import { Check, PlusCircle } from "lucide-react";
 import type { Id } from "convex/_generated/dataModel";
 
@@ -17,8 +16,9 @@ import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 
-type SelectableItem = {
+export type SelectableItem = {
 	_id: string;
 	name: string;
 };
@@ -49,8 +49,34 @@ type SearchableComboboxProps<
 	placeholder?: string;
 	searchPlaceholder?: string;
 	queryArgs?: OptionalRestArgs<Q>[0];
-	onCreate?: (name: string) => void;
+	onSelect?: (name: string) => void;
+	comboboxTrigger?: React.ComponentType<{
+		id?: string;
+		className?: string;
+		value?: T;
+		placeholder?: string;
+	}>;
 };
+
+function DefaultComboboxTrigger<T extends SelectableItem>({
+	id,
+	className,
+	value,
+	placeholder,
+}: {
+	id?: string;
+	className?: string;
+	value?: T;
+	placeholder?: string;
+}) {
+	return (
+		<ComboboxTrigger id={id} className={cn("w-full", className)}>
+			{value?.name ?? placeholder ?? (
+				<span className="text-muted-foreground">Select</span>
+			)}
+		</ComboboxTrigger>
+	);
+}
 
 export function SearchableCombobox<
 	T extends SelectableItem,
@@ -64,9 +90,11 @@ export function SearchableCombobox<
 	placeholder,
 	searchPlaceholder,
 	queryArgs,
-	onCreate,
+	onSelect,
+	comboboxTrigger,
 }: SearchableComboboxProps<T, Q>) {
-	const [search, setSearch] = React.useState(value?.name ?? "");
+	const [search, setSearch] = React.useState("");
+	const Trigger = comboboxTrigger ?? DefaultComboboxTrigger;
 
 	return (
 		<Combobox
@@ -80,11 +108,12 @@ export function SearchableCombobox<
 				}
 			}}
 		>
-			<ComboboxTrigger id={id} className={cn("w-full", className)}>
-				{value?.name ?? placeholder ?? (
-					<span className="text-muted-foreground">Select</span>
-				)}
-			</ComboboxTrigger>
+			<Trigger
+				id={id}
+				className={cn("w-full", className)}
+				value={value}
+				placeholder={placeholder}
+			/>
 			<ComboboxContent>
 				<SearchableComboboxContent
 					value={value}
@@ -93,7 +122,7 @@ export function SearchableCombobox<
 					setSearch={setSearch}
 					searchPlaceholder={searchPlaceholder}
 					queryArgs={queryArgs}
-					onCreate={onCreate}
+					onSelect={onSelect}
 				/>
 			</ComboboxContent>
 		</Combobox>
@@ -110,7 +139,7 @@ type SearchableComboboxContentProps<
 	setSearch: (search: string) => void;
 	searchPlaceholder?: string;
 	queryArgs?: OptionalRestArgs<Q>[0];
-	onCreate?: (name: string) => void;
+	onSelect?: (name: string) => void;
 };
 
 function SearchableComboboxContent<
@@ -123,15 +152,28 @@ function SearchableComboboxContent<
 	setSearch,
 	searchPlaceholder,
 	queryArgs,
-	onCreate,
+	onSelect,
 }: SearchableComboboxContentProps<T, Q>) {
 	const { onValueChange, setIsOpen } = useComboboxContext<T>();
 
+	// const {
+	// 	results: items,
+	// 	status,
+	// 	loadMore,
+	// } = usePaginatedQuery(
+	// 	apiQuery,
+	// 	{
+	// 		...(queryArgs as any),
+	// 		userId: import.meta.env.VITE_USER_ID as Id<"users">,
+	// 		query: search.trim().toLowerCase(),
+	// 	},
+	// 	{ initialNumItems: 7 },
+	// );
 	const {
 		results: items,
-		status,
 		loadMore,
-	} = usePaginatedQuery(
+		status,
+	} = useStablePaginatedQuery<T, typeof apiQuery>(
 		apiQuery,
 		{
 			...(queryArgs as any),
@@ -141,14 +183,14 @@ function SearchableComboboxContent<
 		{ initialNumItems: 7 },
 	);
 
-	const handleCreate = () => {
-		if (!search || !onCreate) return;
-		onCreate(search);
+	const handleSelect = () => {
+		if (!search || !onSelect) return;
+		onSelect(search);
 		setSearch("");
 		setIsOpen(false);
 	};
 
-	const handleSelect = (item: T) => {
+	const handleSelectItem = (item: T) => {
 		onValueChange?.(item._id === value?._id ? undefined : item);
 		setSearch("");
 		setIsOpen(false);
@@ -197,7 +239,7 @@ function SearchableComboboxContent<
 							<CommandItem
 								key={item._id}
 								value={item.name}
-								onSelect={() => handleSelect(item as T)}
+								onSelect={() => handleSelectItem(item as T)}
 							>
 								{item.name}
 								<Check
@@ -213,7 +255,7 @@ function SearchableComboboxContent<
 						)}
 					</ScrollArea>
 				</CommandGroup>
-				{onCreate &&
+				{onSelect &&
 					search.length > 0 &&
 					!items.find(
 						(item) => item.name.toLowerCase() === search.toLowerCase(),
@@ -221,7 +263,7 @@ function SearchableComboboxContent<
 						<CommandGroup>
 							<CommandItem
 								value={search}
-								onSelect={handleCreate}
+								onSelect={handleSelect}
 								className="flex w-full items-center gap-2"
 							>
 								<PlusCircle className="h-4 w-4" />

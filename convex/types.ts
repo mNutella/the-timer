@@ -1,4 +1,4 @@
-import type { GenericEnt, GenericEntWriter } from "convex-ents";
+import type { GenericEnt, GenericEntWriter, PromiseOrderedQuery } from "convex-ents";
 import type { CustomCtx } from "convex-helpers/server/customFunctions";
 import type { TableNames } from "./_generated/dataModel";
 import type { mutation, query } from "./functions";
@@ -12,6 +12,12 @@ export type Ent<TableName extends TableNames> = GenericEnt<
   TableName
 >;
 export type EntWriter<TableName extends TableNames> = GenericEntWriter<
+  typeof entDefinitions,
+  TableName
+>;
+
+// Query builder type for expressions like ctx.table("...").search(...)
+export type EntQuery<TableName extends TableNames> = PromiseOrderedQuery<
   typeof entDefinitions,
   TableName
 >;

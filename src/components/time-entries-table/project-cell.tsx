@@ -1,21 +1,19 @@
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { useUpdateActivityProject } from "./hooks";
+import { useUpdateTimeEntryProject } from "./hooks";
 import type { Project } from "./types";
 
 export function ProjectCell({
 	timeEntryId,
-	activityId,
 	clientId,
 	project,
 }: {
 	timeEntryId: Id<"time_entries">;
-	activityId: Id<"activities">;
 	clientId?: Id<"clients">;
 	project?: Project;
 }) {
-	const updateProject = useUpdateActivityProject(activityId);
+	const updateProject = useUpdateTimeEntryProject(timeEntryId);
 
 	return (
 		<SearchableCombobox
@@ -35,7 +33,7 @@ export function ProjectCell({
 			onValueChange={(project) => {
 				updateProject(project?._id);
 			}}
-			onCreate={(name) => {
+			onSelect={(name) => {
 				updateProject(undefined, name);
 			}}
 		/>
