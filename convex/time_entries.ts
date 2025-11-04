@@ -36,7 +36,7 @@ export const create = mutation({
 		},
 	) => {
 		let existingTimeEntry:
-			| (Ent<"time_entries"> & {
+			| (Omit<Ent<"time_entries">, "clientId" | "projectId" | "categoryId"> & {
 					client: Ent<"clients"> | null;
 					project: Ent<"projects"> | null;
 					category: Ent<"categories"> | null;
@@ -85,9 +85,9 @@ export const create = mutation({
 			description: existingTimeEntry?.description ?? description,
 			notes: existingTimeEntry?.notes ?? notes,
 			userId: userId,
-			clientId: existingTimeEntry?.clientId ?? clientId,
-			projectId: existingTimeEntry?.projectId ?? projectId,
-			categoryId: existingTimeEntry?.categoryId ?? categoryId,
+			clientId: existingTimeEntry?.client?._id ?? clientId,
+			projectId: existingTimeEntry?.project?._id ?? projectId,
+			categoryId: existingTimeEntry?.category?._id ?? categoryId,
 			tags: existingTimeEntry?.tags?.map((tag) => tag._id) ?? tags,
 			start_time: now,
 			updated_at: now,
