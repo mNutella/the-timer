@@ -7,7 +7,7 @@ import type { Id } from "./_generated/dataModel";
 import { components } from "./_generated/api";
 import { mutation, query } from "./functions";
 import type { Ent, EntQuery } from "./types";
-import { computeNextTiming, setIfDefined } from "./utils";
+import { computeNextTiming, updateIfDefined } from "./utils";
 
 export const create = mutation({
 	args: {
@@ -164,12 +164,14 @@ export const update = mutation({
 
 		const updateTimeEntry: Partial<Ent<"time_entries">> = {};
 
-		setIfDefined(updateTimeEntry, "name", name);
-		setIfDefined(updateTimeEntry, "description", description);
-		setIfDefined(updateTimeEntry, "notes", notes);
-		setIfDefined(updateTimeEntry, "clientId", clientId);
-		setIfDefined(updateTimeEntry, "projectId", projectId);
-		setIfDefined(updateTimeEntry, "categoryId", categoryId);
+		updateIfDefined(updateTimeEntry, {
+			name,
+			description,
+			notes,
+			clientId,
+			projectId,
+			categoryId,
+		});
 
 		if (duration || startDate || endDate) {
 			const {
@@ -183,9 +185,11 @@ export const update = mutation({
 				endDate,
 				duration,
 			});
-			setIfDefined(updateTimeEntry, "start_time", start_time);
-			setIfDefined(updateTimeEntry, "end_time", end_time);
-			setIfDefined(updateTimeEntry, "duration", nextDuration);
+			updateIfDefined(updateTimeEntry, {
+				start_time,
+				end_time,
+				duration: nextDuration,
+			});
 		}
 
 		updateTimeEntry.updated_at = Date.now();

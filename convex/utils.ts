@@ -26,10 +26,8 @@ export function computeNextTiming(args: {
 	return { start_time: nextStart, end_time: nextEnd, duration: nextDuration };
 }
 
-export function setIfDefined<T, K extends keyof T>(
-	target: Partial<T>,
-	key: K,
-	value: T[K] | undefined,
-) {
-	if (value !== undefined) target[key] = value;
+export function updateIfDefined<T>(target: Partial<T>, obj: Partial<T>) {
+	for (const key in obj) {
+		if (obj[key] !== undefined) target[key] = obj[key];
+	}
 }
