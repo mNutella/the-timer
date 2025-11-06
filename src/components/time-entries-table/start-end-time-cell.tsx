@@ -16,13 +16,11 @@ export function StartEndTimeCell({
 		<TimeEntriesStartEndCalendar
 			startTime={startTime}
 			endTime={endTime}
-			onPopoverClose={(_dateRange, changed) => {
-				if (changed) {
-					updateStartEndTime(
-						_dateRange.from?.getTime() ?? 0,
-						_dateRange.to?.getTime() ?? 0,
-					);
-				}
+			onApplyClick={(_dateRange) => {
+				updateStartEndTime(
+					_dateRange.from?.getTime() ?? 0,
+					_dateRange.to?.getTime() ?? 0,
+				);
 			}}
 		/>
 	);

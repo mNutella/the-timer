@@ -1,6 +1,6 @@
 import { Clock2Icon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
 	Popover,
@@ -17,7 +17,7 @@ import { formatTimeForInput } from "@/lib/utils";
 interface TimeEntriesStartEndCalendarProps {
 	startTime: number;
 	endTime?: number;
-	onPopoverClose: (dateRange: DateRange, changed: boolean) => void;
+	onApplyClick: (dateRange: DateRange) => void;
 }
 
 function TimeInput({
@@ -64,46 +64,51 @@ function TimeInput({
 export default function TimeEntriesStartEndCalendar({
 	startTime,
 	endTime,
-	onPopoverClose,
+	onApplyClick,
 }: TimeEntriesStartEndCalendarProps) {
+	const [open, setOpen] = useState(false);
 	const [initialRange, setInitialRange] = useState<DateRange>({
 		from: new Date(startTime),
 		to: endTime ? new Date(endTime) : undefined,
 	});
+	const [currentRange, setCurrentRange] = useState<DateRange>({
+		from: new Date(startTime),
+		to: endTime ? new Date(endTime) : undefined,
+	});
+	const [isRangeChanged, setIsRangeChanged] = useState(false);
+	const [isConfirmed, setIsConfirmed] = useState(false);
 
-	const [prevStartTime, setPrevStartTime] = useState(startTime);
-	const [prevEndTime, setPrevEndTime] = useState(endTime);
-
-	if (startTime !== prevStartTime || endTime !== prevEndTime) {
+	useEffect(() => {
 		setInitialRange({
 			from: new Date(startTime),
 			to: endTime ? new Date(endTime) : undefined,
 		});
-		setPrevStartTime(startTime);
-		setPrevEndTime(endTime);
-	}
 
-	const handlePopoverOpenChange = (open: boolean) => {
-		if (!open) {
-			const initialFrom = new Date(startTime);
-			const initialTo = endTime ? new Date(endTime) : undefined;
-			const changed =
-				initialFrom.getTime() !== initialRange.from?.getTime() ||
-				initialTo?.getTime() !== initialRange.to?.getTime();
-			onPopoverClose(initialRange, changed);
+		return () => {
+			setIsRangeChanged(false);
+			setIsConfirmed(false);
+		};
+	}, [startTime, endTime]);
+
+	const handleOpenChange = (open: boolean) => {
+		if (!open && !isConfirmed) {
+			setCurrentRange(initialRange);
 		}
+
+		setOpen(open);
 	};
 
 	return (
-		<Popover onOpenChange={handlePopoverOpenChange}>
+		<Popover open={open} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<Button
 					variant="outline"
 					id="dates"
 					className="w-fit border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30 box-content"
+					onClick={() => setOpen((prev) => !prev)}
 				>
 					<div className="flex flex-col text-sm">
-						{!initialRange.from && !initialRange.to ? (
+						{!currentRange.from && !currentRange.to ? (
 							<span className="text-muted-foreground">Select Date</span>
 						) : (
 							<>
@@ -144,10 +149,11 @@ export default function TimeEntriesStartEndCalendar({
 						<Calendar
 							required
 							mode="range"
-							selected={initialRange}
+							selected={currentRange}
 							onSelect={(selected) => {
 								if (selected) {
-									setInitialRange(selected);
+									setCurrentRange(selected);
+									setIsRangeChanged(true);
 								}
 							}}
 							className="bg-transparent p-0"
@@ -158,19 +164,34 @@ export default function TimeEntriesStartEndCalendar({
 						<TimeInput
 							id="time-from"
 							label="Start Time"
-							date={initialRange.from}
-							onDateChange={(newDate) =>
-								setInitialRange((prev) => ({ ...prev, from: newDate }))
-							}
+							date={currentRange.from}
+							onDateChange={(newDate) => {
+								setCurrentRange((prev) => ({ ...prev, from: newDate }));
+								setIsRangeChanged(true);
+							}}
 						/>
 						<TimeInput
 							id="time-to"
 							label="End Time"
-							date={initialRange.to}
-							onDateChange={(newDate) =>
-								setInitialRange((prev) => ({ ...prev, to: newDate }))
-							}
+							date={currentRange.to}
+							onDateChange={(newDate) => {
+								setCurrentRange((prev) => ({ ...prev, to: newDate }));
+								setIsRangeChanged(true);
+							}}
 						/>
+					</CardFooter>
+					<CardFooter className="flex flex-col gap-2 px-4">
+						<Button
+							className="w-full"
+							disabled={!isRangeChanged}
+							onClick={() => {
+								setIsConfirmed(true);
+								setOpen(false);
+								onApplyClick(currentRange);
+							}}
+						>
+							Apply
+						</Button>
 					</CardFooter>
 				</Card>
 			</PopoverContent>
