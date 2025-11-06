@@ -31,3 +31,17 @@ export function updateIfDefined<T>(target: Partial<T>, obj: Partial<T>) {
 		if (obj[key] !== undefined) target[key] = obj[key];
 	}
 }
+
+export function getStartOfDay(startDate: number) {
+	const startOfDay = new Date(startDate);
+	startOfDay.setHours(0, 0, 0, 0);
+
+	return startOfDay.getTime();
+}
+
+export function getEndOfDay(endDate: number) {
+	const endOfDay = new Date(endDate);
+	endOfDay.setHours(23, 59, 59, 999);
+
+	return endOfDay.getTime();
+}

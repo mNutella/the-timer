@@ -7,7 +7,12 @@ import type { Id } from "./_generated/dataModel";
 import { components } from "./_generated/api";
 import { mutation, query } from "./functions";
 import type { Ent, EntQuery } from "./types";
-import { computeNextTiming, updateIfDefined } from "./utils";
+import {
+	computeNextTiming,
+	getEndOfDay,
+	getStartOfDay,
+	updateIfDefined,
+} from "./utils";
 
 export const create = mutation({
 	args: {
@@ -402,7 +407,9 @@ export const updateCategory = mutation({
 export const getAllTotalCount = query({
 	args: { userId: v.id("users") },
 	handler: async (ctx, { userId }) => {
-		const agg = new Aggregate<null, string, Id<"users">>(components.aggregate);
+		const agg = new Aggregate<null, string, Id<"users">>(
+			components.time_entries_by_user,
+		);
 		const totalCount = await agg.count(ctx, { namespace: userId });
 		return totalCount;
 	},
@@ -502,13 +509,13 @@ export const getAllWithFilters = query({
 
 		if (startDate !== undefined) {
 			timeEntries = timeEntries.filter((q) =>
-				q.gte(q.field("start_time"), startDate),
+				q.gte(q.field("start_time"), getStartOfDay(startDate)),
 			);
 		}
 
 		if (endDate !== undefined) {
 			timeEntries = timeEntries.filter((q) =>
-				q.lte(q.field("end_time"), endDate),
+				q.lte(q.field("end_time"), getEndOfDay(endDate)),
 			);
 		}
 
