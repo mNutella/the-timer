@@ -1,27 +1,11 @@
-import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import type { DateRange } from "react-day-picker";
 
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { parseDurationToMilliseconds } from "@/lib/utils";
+import { parseDurationToMilliseconds, withToast } from "@/lib/utils";
 import type { Category, Client, Project, TimeEntry } from "./types";
-
-function withToast<TArgs extends unknown[], R>(
-	mutation: (...args: TArgs) => Promise<R>,
-	loadingMessage: string,
-	successMessage: string = "Done",
-	errorMessage: string = "Error",
-) {
-	return (...args: TArgs) => {
-		toast.promise(mutation(...args), {
-			loading: loadingMessage,
-			success: successMessage,
-			error: errorMessage,
-		});
-	};
-}
 
 export function useUpdateTimeEntryName(timeEntryId: Id<"time_entries">) {
 	const updateNameMutation = useMutation(api.time_entries.update);
@@ -223,8 +207,8 @@ export function useTimeEntries(
 	filterByTimeRange: DateRange | undefined,
 ) {
 	const { results, loadMore, isLoading, status } =
-		useStablePaginatedQuery<TimeEntry, typeof api.time_entries.getAllWithFilters>(
-			api.time_entries.getAllWithFilters,
+		useStablePaginatedQuery<TimeEntry, typeof api.time_entries.searchTimeEntries>(
+			api.time_entries.searchTimeEntries,
 			{
 				userId: import.meta.env.VITE_USER_ID as Id<"users">,
 				filters: {

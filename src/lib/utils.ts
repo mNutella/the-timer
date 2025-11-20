@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -38,4 +39,19 @@ export function parseDurationToMilliseconds(durationStr: string) {
 	}
 
 	return duration;
+}
+
+export function withToast<TArgs extends unknown[], R>(
+	mutation: (...args: TArgs) => Promise<R>,
+	loadingMessage: string,
+	successMessage: string = "Done",
+	errorMessage: string = "Error",
+) {
+	return (...args: TArgs) => {
+		toast.promise(mutation(...args), {
+			loading: loadingMessage,
+			success: successMessage,
+			error: errorMessage,
+		});
+	};
 }
