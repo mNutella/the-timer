@@ -255,10 +255,6 @@ export async function deleteOne(
 		throw new Error("Activity does not belong to user");
 	}
 
-	await timeEntriesTotalDurationByDateAggregate.clear(ctx, {
-		namespace: userId,
-	});
-
 	await time_entry.delete();
 }
 
