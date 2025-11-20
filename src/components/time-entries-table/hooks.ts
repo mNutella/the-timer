@@ -201,29 +201,31 @@ export function useStartStopTimeEntry(timeEntryId: Id<"time_entries">) {
 
 export function useTimeEntries(
 	searchValue: string,
-	filterByClient: Client | null,
-	filterByProject: Project | null,
-	filterByCategory: Category | null,
-	filterByTimeRange: DateRange | undefined,
+	filterByClient?: Client,
+	filterByProject?: Project,
+	filterByCategory?: Category,
+	filterByTimeRange?: DateRange,
 ) {
-	const { results, loadMore, isLoading, status } =
-		useStablePaginatedQuery<TimeEntry, typeof api.time_entries.searchTimeEntries>(
-			api.time_entries.searchTimeEntries,
-			{
-				userId: import.meta.env.VITE_USER_ID as Id<"users">,
-				filters: {
-					name: searchValue,
-					clientId: filterByClient?._id,
-					projectId: filterByProject?._id,
-					categoryId: filterByCategory?._id,
-					dateRange: {
-						startDate: filterByTimeRange?.from?.getTime(),
-						endDate: filterByTimeRange?.to?.getTime(),
-					},
+	const { results, loadMore, isLoading, status } = useStablePaginatedQuery<
+		TimeEntry,
+		typeof api.time_entries.searchTimeEntries
+	>(
+		api.time_entries.searchTimeEntries,
+		{
+			userId: import.meta.env.VITE_USER_ID as Id<"users">,
+			filters: {
+				name: searchValue,
+				clientId: filterByClient?._id,
+				projectId: filterByProject?._id,
+				categoryId: filterByCategory?._id,
+				dateRange: {
+					startDate: filterByTimeRange?.from?.getTime(),
+					endDate: filterByTimeRange?.to?.getTime(),
 				},
 			},
-			{ initialNumItems: 10 },
-		);
+		},
+		{ initialNumItems: 10 },
+	);
 
 	return { results, loadMore, isLoading, status };
 }

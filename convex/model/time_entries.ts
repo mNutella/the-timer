@@ -8,8 +8,7 @@ import {
 	getStartOfDay,
 	updateIfDefined,
 } from "../utils";
-import type { Id } from "../_generated/dataModel";
-import { timeEntriesTotalDurationByDateAggregate } from "../aggregates";
+import type { Doc, Id } from "../_generated/dataModel";
 
 interface SearchTimeEntriesParams {
 	userId: Id<"users">;
@@ -519,11 +518,15 @@ export async function searchTimeEntries(
 				timeEntry.edge("tags"),
 			]);
 			return {
-				...omit(timeEntry, ["userId"]),
-				client: client ? omit(client, ["userId"]) : null,
-				project: project ? omit(project, ["userId", "clientId"]) : null,
-				category: category ? omit(category, ["userId"]) : null,
-				tags: tags.map((tag) => omit(tag, ["userId"])),
+				...omit(timeEntry as Doc<"time_entries">, ["userId"]),
+				client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
+				project: project
+					? omit(project as Doc<"projects">, ["userId", "clientId"])
+					: null,
+				category: category
+					? omit(category as Doc<"categories">, ["userId"])
+					: null,
+				tags: tags.map((tag) => omit(tag as Doc<"tags">, ["userId"])),
 			};
 		}),
 	);

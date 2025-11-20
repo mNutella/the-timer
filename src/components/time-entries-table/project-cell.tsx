@@ -11,7 +11,7 @@ export function ProjectCell({
 }: {
 	timeEntryId: Id<"time_entries">;
 	clientId?: Id<"clients">;
-	project?: Project;
+	project?: Project | null;
 }) {
 	const updateProject = useUpdateTimeEntryProject(timeEntryId);
 

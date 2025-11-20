@@ -44,7 +44,11 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 				{value?.name ?? placeholder ?? "Select filter by"}
 			</span>
 			{itemSelected ? (
-				<button type="button" onClick={handleClear} className="ml-2 p-1.5 hover:bg-muted-foreground/10 rounded-sm group outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]">
+				<button
+					type="button"
+					onClick={handleClear}
+					className="ml-2 p-1.5 hover:bg-muted-foreground/10 rounded-sm group outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+				>
 					<BrushCleaning className="h-4 w-4 shrink-0 group-hover:text-black" />
 				</button>
 			) : (

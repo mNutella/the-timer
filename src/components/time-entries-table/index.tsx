@@ -173,14 +173,15 @@ const CustomRow = React.forwardRef<
 
 export default function TimeEntriesTable() {
 	const [searchValue, setSearchValue] = React.useState("");
-	const [filterByClient, setFilterByClient] = React.useState<Client | null>(
-		null,
-	);
-	const [filterByProject, setFilterByProject] = React.useState<Project | null>(
-		null,
-	);
-	const [filterByCategory, setFilterByCategory] =
-		React.useState<Category | null>(null);
+	const [filterByClient, setFilterByClient] = React.useState<
+		Client | undefined
+	>(undefined);
+	const [filterByProject, setFilterByProject] = React.useState<
+		Project | undefined
+	>(undefined);
+	const [filterByCategory, setFilterByCategory] = React.useState<
+		Category | undefined
+	>(undefined);
 	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
 		DateRange | undefined
 	>(undefined);
@@ -320,7 +321,7 @@ export default function TimeEntriesTable() {
 						placeholder="Filter by Project"
 					/>
 					<CategoryFilter
-						value={filterByCategory}
+						value={filterByCategory ?? undefined}
 						onSelect={setFilterByCategory}
 						placeholder="Filter by Category"
 					/>

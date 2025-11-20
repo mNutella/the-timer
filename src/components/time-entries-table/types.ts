@@ -5,7 +5,7 @@ type TimeEntriesPaginatedResult = UsePaginatedQueryReturnType<
 	typeof api.time_entries.searchTimeEntries
 >;
 export type TimeEntry = TimeEntriesPaginatedResult["results"][number];
-export type Client = TimeEntry["client"];
-export type Project = TimeEntry["project"];
-export type Category = TimeEntry["category"];
-export type Tags = TimeEntry["tags"];
+export type Client = NonNullable<TimeEntry["client"]> | undefined;
+export type Project = NonNullable<TimeEntry["project"]> | undefined;
+export type Category = NonNullable<TimeEntry["category"]> | undefined;
+export type Tags = NonNullable<TimeEntry["tags"]> | undefined;

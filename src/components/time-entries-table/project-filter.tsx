@@ -1,17 +1,16 @@
-import { IconReportSearch, IconUserSearch } from "@tabler/icons-react";
+import { IconReportSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Client, Project } from "./types";
+import type { Project } from "./types";
 import { CustomSelectTrigger } from "./custom-select-trigger";
 
 function ProjectFilterTrigger({
 	value,
 	placeholder,
 }: {
-	value?: Client;
+	value?: Project;
 	placeholder?: string;
 }) {
 	return (
@@ -29,7 +28,7 @@ export function ProjectFilter({
 	placeholder,
 }: {
 	value?: Project;
-	onSelect: (projectId: Id<"projects">) => void;
+	onSelect: (project?: Project) => void;
 	placeholder?: string;
 }) {
 	const id = "project-filter";

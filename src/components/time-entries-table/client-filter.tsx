@@ -1,7 +1,6 @@
 import { IconUserSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import type { Client } from "./types";
 import { CustomSelectTrigger } from "./custom-select-trigger";
@@ -28,7 +27,7 @@ export function ClientFilter({
 	placeholder,
 }: {
 	value?: Client;
-	onSelect: (clientId: Id<"clients">) => void;
+	onSelect: (client?: Client) => void;
 	placeholder?: string;
 }) {
 	const id = "client-filter";
