@@ -1,4 +1,5 @@
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import { useQuery } from "convex-helpers/react/cache";
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -9,15 +10,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { formatDuration } from "@/lib/utils";
+import { getEndOfDay } from "@/../convex/utils";
 
 export function SectionCards() {
+  const totalDuration = useQuery(api.time_entries.getTotalDuration, {
+    userId: import.meta.env.VITE_USER_ID as Id<"users">,
+    filters: {
+      // clientId: "j97cj6084ftwtzrj8e6cefnywx7v1dtb" as Id<"clients">,
+      projectId: "jd7176gww9nj3kr32ph3e5hc2h7v0bb4" as Id<"projects">,
+      dateRange: {
+        startDate: new Date("2025-11-05").getTime(),
+        endDate: getEndOfDay(Date.now()),
+      },
+    },
+  });
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {/* $1,250.00 */}
+            {formatDuration(totalDuration ?? 0) ?? "00:00:00"}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
