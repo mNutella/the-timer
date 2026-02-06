@@ -36,9 +36,9 @@ function getDefaultDateRange(): { startDate: number; endDate: number } {
 }
 
 interface TimeEntriesChartBarInteractiveProps {
-	clientFilter?: Client;
-	projectFilter?: Project;
-	categoryFilter?: Category;
+	clientFilter: Client[];
+	projectFilter: Project[];
+	categoryFilter: Category[];
 	dateRange?: DateRange;
 }
 
@@ -61,9 +61,9 @@ export function TimeEntriesChartBarInteractive({
 	const rawData = useQuery(api.time_entries.getDailyDurations, {
 		userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		filters: {
-			clientId: clientFilter?._id,
-			projectId: projectFilter?._id,
-			categoryId: categoryFilter?._id,
+			clientIds: clientFilter.map((c) => c._id),
+			projectIds: projectFilter.map((p) => p._id),
+			categoryIds: categoryFilter.map((c) => c._id),
 			dateRange: range,
 		},
 	});

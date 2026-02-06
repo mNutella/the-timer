@@ -13,11 +13,10 @@ function ProjectFilterTrigger({
 	value?: Project | Project[];
 	placeholder?: string;
 }) {
-	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconReportSearch}
-			value={singleValue}
+			value={value}
 			placeholder={placeholder}
 		/>
 	);
@@ -28,18 +27,19 @@ export function ProjectFilter({
 	onSelect,
 	placeholder,
 }: {
-	value?: Project;
-	onSelect: (project?: Project) => void;
+	value: Project[];
+	onSelect: (projects: Project[]) => void;
 	placeholder?: string;
 }) {
 	const id = "project-filter";
 	return (
 		<SearchableCombobox
 			id={id}
+			type="multiple"
 			apiQuery={api.projects.searchByName}
 			comboboxTrigger={ProjectFilterTrigger}
 			value={value}
-			onValueChange={onSelect}
+			onItemSelectChange={onSelect}
 			placeholder={placeholder}
 		/>
 	);

@@ -1,9 +1,8 @@
 import { useMutation } from "convex/react";
-import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import type { DateRange } from "react-day-picker";
-
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import { parseDurationToMilliseconds, withToast } from "@/lib/utils";
 import type { Category, Client, Project, TimeEntry } from "../../lib/types";
 
@@ -201,9 +200,9 @@ export function useStartStopTimeEntry(timeEntryId: Id<"time_entries">) {
 
 export function useTimeEntries(
 	searchValue: string,
-	filterByClient?: Client,
-	filterByProject?: Project,
-	filterByCategory?: Category,
+	filterByClients: Client[],
+	filterByProjects: Project[],
+	filterByCategories: Category[],
 	filterByTimeRange?: DateRange,
 ) {
 	const { results, loadMore, isLoading, status } = useStablePaginatedQuery<
@@ -215,9 +214,9 @@ export function useTimeEntries(
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			filters: {
 				name: searchValue,
-				clientId: filterByClient?._id,
-				projectId: filterByProject?._id,
-				categoryId: filterByCategory?._id,
+				clientIds: filterByClients.map((c) => c._id),
+				projectIds: filterByProjects.map((p) => p._id),
+				categoryIds: filterByCategories.map((c) => c._id),
 				dateRange: {
 					startDate: filterByTimeRange?.from?.getTime(),
 					endDate: filterByTimeRange?.to?.getTime(),

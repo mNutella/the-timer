@@ -1,10 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { Check, PlusCircle } from "lucide-react";
 import type { Id } from "convex/_generated/dataModel";
-
 import type { FunctionReference, OptionalRestArgs } from "convex/server";
+import { Check, PlusCircle } from "lucide-react";
+import * as React from "react";
 import {
 	Combobox,
 	ComboboxContent,
@@ -12,11 +11,11 @@ import {
 	ComboboxList,
 	ComboboxTrigger,
 } from "@/components/ui/combobox-infinity";
-import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
+import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
+import { cn } from "@/lib/utils";
 
 export type SelectableItem = {
 	_id: string;
@@ -128,9 +127,11 @@ export function SearchableCombobox<
 		return new Map([[value._id, value]]);
 	}, [value]);
 
+	const isMultiple = props.type === "multiple";
+
 	const handleItemSelect = (item: T | undefined) => {
 		if (!item) {
-			if (props.type === "multiple") {
+			if (isMultiple) {
 				props.onItemSelectChange([]);
 			} else {
 				props.onValueChange(undefined);
@@ -138,7 +139,7 @@ export function SearchableCombobox<
 			return;
 		}
 
-		if (props.type === "multiple") {
+		if (isMultiple) {
 			const newValue = [...(props.value || [])];
 			const index = newValue.findIndex((i) => i._id === item._id);
 			if (index > -1) {
@@ -184,6 +185,7 @@ export function SearchableCombobox<
 					queryArgs={queryArgs}
 					onSelect={onSelect}
 					onItemSelect={handleItemSelect}
+					closeOnSelect={!isMultiple}
 				/>
 			</ComboboxContent>
 		</Combobox>
@@ -202,6 +204,7 @@ type SearchableComboboxContentProps<
 	queryArgs?: OptionalRestArgs<Q>[0];
 	onSelect?: (name: string) => void;
 	onItemSelect: (item: T) => void;
+	closeOnSelect?: boolean;
 };
 
 function SearchableComboboxContent<
@@ -216,6 +219,7 @@ function SearchableComboboxContent<
 	queryArgs,
 	onSelect,
 	onItemSelect,
+	closeOnSelect = true,
 }: SearchableComboboxContentProps<T, Q>) {
 	const { setIsOpen } = useComboboxContext<T>();
 
@@ -242,8 +246,10 @@ function SearchableComboboxContent<
 
 	const handleSelectItem = (item: T) => {
 		onItemSelect(item);
-		setSearch("");
-		setIsOpen(false);
+		if (closeOnSelect) {
+			setSearch("");
+			setIsOpen(false);
+		}
 	};
 
 	const loaderRef = React.useRef<HTMLDivElement | null>(null);

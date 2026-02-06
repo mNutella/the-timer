@@ -1,7 +1,6 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./functions";
 import * as Analytics from "./model/analytics";
 import * as TimeEntries from "./model/time_entries";
@@ -116,9 +115,9 @@ export const searchTimeEntries = query({
 		filters: v.optional(
 			v.object({
 				name: v.optional(v.string()),
-				clientId: v.optional(v.id("clients")),
-				projectId: v.optional(v.id("projects")),
-				categoryId: v.optional(v.id("categories")),
+				clientIds: v.optional(v.array(v.id("clients"))),
+				projectIds: v.optional(v.array(v.id("projects"))),
+				categoryIds: v.optional(v.array(v.id("categories"))),
 				dateRange: v.optional(
 					v.object({
 						startDate: v.optional(v.number()),
@@ -145,9 +144,9 @@ export const getDailyDurations = query({
 		userId: v.id("users"),
 		filters: v.optional(
 			v.object({
-				clientId: v.optional(v.id("clients")),
-				projectId: v.optional(v.id("projects")),
-				categoryId: v.optional(v.id("categories")),
+				clientIds: v.optional(v.array(v.id("clients"))),
+				projectIds: v.optional(v.array(v.id("projects"))),
+				categoryIds: v.optional(v.array(v.id("categories"))),
 				dateRange: v.object({
 					startDate: v.number(),
 					endDate: v.number(),
@@ -160,9 +159,9 @@ export const getDailyDurations = query({
 		return Analytics.getDailyDurationTimeSeries(ctx, {
 			userId,
 			filters: {
-				clientId: filters.clientId,
-				projectId: filters.projectId,
-				categoryId: filters.categoryId,
+				clientIds: filters.clientIds,
+				projectIds: filters.projectIds,
+				categoryIds: filters.categoryIds,
 				dateRange: {
 					startDate: getStartOfDay(filters.dateRange.startDate),
 					endDate: getEndOfDay(filters.dateRange.endDate),
@@ -175,9 +174,9 @@ export const getDailyDurations = query({
 export const getCategoryBreakdown = query({
 	args: {
 		userId: v.id("users"),
-		clientId: v.optional(v.id("clients")),
-		projectId: v.optional(v.id("projects")),
-		categoryId: v.optional(v.id("categories")),
+		clientIds: v.optional(v.array(v.id("clients"))),
+		projectIds: v.optional(v.array(v.id("projects"))),
+		categoryIds: v.optional(v.array(v.id("categories"))),
 		dateRange: v.object({
 			startDate: v.number(),
 			endDate: v.number(),
@@ -185,14 +184,14 @@ export const getCategoryBreakdown = query({
 	},
 	handler: async (
 		ctx,
-		{ userId, clientId, projectId, categoryId, dateRange },
+		{ userId, clientIds, projectIds, categoryIds, dateRange },
 	) => {
 		return Analytics.getCategoryBreakdown(ctx, {
 			userId,
 			filters: {
-				clientId,
-				projectId,
-				categoryId,
+				clientIds,
+				projectIds,
+				categoryIds,
 				dateRange: {
 					startDate: getStartOfDay(dateRange.startDate),
 					endDate: getEndOfDay(dateRange.endDate),
@@ -208,9 +207,9 @@ export const getTotalDuration = query({
 		filters: v.optional(
 			v.object({
 				name: v.optional(v.string()),
-				clientId: v.optional(v.id("clients")),
-				projectId: v.optional(v.id("projects")),
-				categoryId: v.optional(v.id("categories")),
+				clientIds: v.optional(v.array(v.id("clients"))),
+				projectIds: v.optional(v.array(v.id("projects"))),
+				categoryIds: v.optional(v.array(v.id("categories"))),
 				dateRange: v.object({
 					startDate: v.number(),
 					endDate: v.number(),
@@ -220,71 +219,51 @@ export const getTotalDuration = query({
 	},
 	handler: async (ctx, { userId, filters }) => {
 		const { startDate, endDate } = filters?.dateRange ?? {};
-		const isMoreThanOneFilter =
-			[
-				filters?.name,
-				filters?.clientId,
-				filters?.projectId,
-				filters?.categoryId,
-			].filter(Boolean).length > 1;
-		let totalDuration = 0;
+		const dateRange = {
+			startDate: getStartOfDay(startDate ?? 0),
+			endDate: getEndOfDay(endDate ?? 0),
+		};
 
-		if (isMoreThanOneFilter) {
-			// TODO: Handle multiple filters
+		const clientIds = filters?.clientIds ?? [];
+		const projectIds = filters?.projectIds ?? [];
+		const categoryIds = filters?.categoryIds ?? [];
+
+		if (clientIds.length > 0) {
+			let total = 0;
+			for (const clientId of clientIds) {
+				total += await Analytics.getTotalHoursByClientAndDate(ctx, {
+					userId,
+					filters: { clientId, dateRange },
+				});
+			}
+			return total;
 		}
 
-		if (filters?.clientId) {
-			totalDuration = await Analytics.getTotalHoursByClientAndDate(ctx, {
-				userId,
-				filters: {
-					clientId: filters?.clientId as Id<"clients">,
-					dateRange: {
-						startDate: getStartOfDay(startDate ?? 0),
-						endDate: getEndOfDay(endDate ?? 0),
-					},
-				},
-			});
-			return totalDuration;
+		if (projectIds.length > 0) {
+			let total = 0;
+			for (const projectId of projectIds) {
+				total += await Analytics.getTotalHoursByProjectAndDate(ctx, {
+					userId,
+					filters: { projectId, dateRange },
+				});
+			}
+			return total;
 		}
 
-		if (filters?.projectId) {
-			totalDuration = await Analytics.getTotalHoursByProjectAndDate(ctx, {
-				userId,
-				filters: {
-					projectId: filters?.projectId as Id<"projects">,
-					dateRange: {
-						startDate: getStartOfDay(startDate ?? 0),
-						endDate: getEndOfDay(endDate ?? 0),
-					},
-				},
-			});
-			return totalDuration;
+		if (categoryIds.length > 0) {
+			let total = 0;
+			for (const categoryId of categoryIds) {
+				total += await Analytics.getTotalHoursByCategoryAndDate(ctx, {
+					userId,
+					filters: { categoryId, dateRange },
+				});
+			}
+			return total;
 		}
 
-		if (filters?.categoryId) {
-			totalDuration = await Analytics.getTotalHoursByCategoryAndDate(ctx, {
-				userId,
-				filters: {
-					categoryId: filters?.categoryId as Id<"categories">,
-					dateRange: {
-						startDate: getStartOfDay(startDate ?? 0),
-						endDate: getEndOfDay(endDate ?? 0),
-					},
-				},
-			});
-			return totalDuration;
-		}
-
-		totalDuration = await Analytics.getTotalHoursByDate(ctx, {
+		return Analytics.getTotalHoursByDate(ctx, {
 			userId,
-			filters: {
-				dateRange: {
-					startDate: getStartOfDay(startDate ?? 0),
-					endDate: getEndOfDay(endDate ?? 0),
-				},
-			},
+			filters: { dateRange },
 		});
-
-		return totalDuration;
 	},
 });

@@ -2,8 +2,8 @@ import { IconUserSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Client } from "@/lib/types";
 import { CustomSelectTrigger } from "@/components/time-entries-table/custom-select-trigger";
+import type { Client } from "@/lib/types";
 
 function ClientFilterTrigger({
 	value,
@@ -12,11 +12,10 @@ function ClientFilterTrigger({
 	value?: Client | Client[];
 	placeholder?: string;
 }) {
-	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconUserSearch}
-			value={singleValue}
+			value={value}
 			placeholder={placeholder}
 		/>
 	);
@@ -27,18 +26,19 @@ export function ClientFilter({
 	onSelect,
 	placeholder,
 }: {
-	value?: Client;
-	onSelect: (client?: Client) => void;
+	value: Client[];
+	onSelect: (clients: Client[]) => void;
 	placeholder?: string;
 }) {
 	const id = "client-filter";
 	return (
 		<SearchableCombobox
 			id={id}
+			type="multiple"
 			apiQuery={api.clients.searchByName}
 			comboboxTrigger={ClientFilterTrigger}
 			value={value}
-			onValueChange={onSelect}
+			onItemSelectChange={onSelect}
 			placeholder={placeholder}
 		/>
 	);

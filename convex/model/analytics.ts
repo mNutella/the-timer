@@ -165,6 +165,78 @@ export async function getTotalHoursByCategoryAndDate(
 	return totalDuration;
 }
 
+async function sumDurationForDay(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+	dayStart: number,
+	dayEnd: number,
+	filters: {
+		clientIds?: string[] | null;
+		projectIds?: string[] | null;
+		categoryIds?: string[] | null;
+	},
+) {
+	const clientIds = filters.clientIds ?? [];
+	const projectIds = filters.projectIds ?? [];
+	const categoryIds = filters.categoryIds ?? [];
+
+	if (clientIds.length > 0) {
+		let total = 0;
+		for (const clientId of clientIds) {
+			total += await timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
+				namespace: userId,
+				bounds: {
+					lower: { key: [clientId, dayStart], inclusive: true },
+					upper: { key: [clientId, dayEnd], inclusive: true },
+				},
+			});
+		}
+		return total;
+	}
+
+	if (projectIds.length > 0) {
+		let total = 0;
+		for (const projectId of projectIds) {
+			total += await timeEntriesTotalDurationByProjectAndDateAggregate.sum(
+				ctx,
+				{
+					namespace: userId,
+					bounds: {
+						lower: { key: [projectId, dayStart], inclusive: true },
+						upper: { key: [projectId, dayEnd], inclusive: true },
+					},
+				},
+			);
+		}
+		return total;
+	}
+
+	if (categoryIds.length > 0) {
+		let total = 0;
+		for (const categoryId of categoryIds) {
+			total += await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(
+				ctx,
+				{
+					namespace: userId,
+					bounds: {
+						lower: { key: [categoryId, dayStart], inclusive: true },
+						upper: { key: [categoryId, dayEnd], inclusive: true },
+					},
+				},
+			);
+		}
+		return total;
+	}
+
+	return timeEntriesTotalDurationByDateAggregate.sum(ctx, {
+		namespace: userId,
+		bounds: {
+			lower: { key: [dayStart], inclusive: true },
+			upper: { key: [dayEnd], inclusive: true },
+		},
+	});
+}
+
 export async function getDailyDurationTimeSeries(
 	ctx: QueryCtx,
 	{
@@ -173,9 +245,9 @@ export async function getDailyDurationTimeSeries(
 	}: {
 		userId: Id<"users">;
 		filters: {
-			clientId?: string | null;
-			projectId?: string | null;
-			categoryId?: string | null;
+			clientIds?: string[] | null;
+			projectIds?: string[] | null;
+			categoryIds?: string[] | null;
 			dateRange: { startDate: number; endDate: number };
 		};
 	},
@@ -190,50 +262,11 @@ export async function getDailyDurationTimeSeries(
 		const dayStart = getStartOfDay(current.getTime());
 		const dayEnd = getEndOfDay(current.getTime());
 
-		let duration = 0;
-
-		if (filters.clientId) {
-			duration = await timeEntriesTotalDurationByClientAndDateAggregate.sum(
-				ctx,
-				{
-					namespace: userId,
-					bounds: {
-						lower: { key: [filters.clientId, dayStart], inclusive: true },
-						upper: { key: [filters.clientId, dayEnd], inclusive: true },
-					},
-				},
-			);
-		} else if (filters.projectId) {
-			duration = await timeEntriesTotalDurationByProjectAndDateAggregate.sum(
-				ctx,
-				{
-					namespace: userId,
-					bounds: {
-						lower: { key: [filters.projectId, dayStart], inclusive: true },
-						upper: { key: [filters.projectId, dayEnd], inclusive: true },
-					},
-				},
-			);
-		} else if (filters.categoryId) {
-			duration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(
-				ctx,
-				{
-					namespace: userId,
-					bounds: {
-						lower: { key: [filters.categoryId, dayStart], inclusive: true },
-						upper: { key: [filters.categoryId, dayEnd], inclusive: true },
-					},
-				},
-			);
-		} else {
-			duration = await timeEntriesTotalDurationByDateAggregate.sum(ctx, {
-				namespace: userId,
-				bounds: {
-					lower: { key: [dayStart], inclusive: true },
-					upper: { key: [dayEnd], inclusive: true },
-				},
-			});
-		}
+		const duration = await sumDurationForDay(ctx, userId, dayStart, dayEnd, {
+			clientIds: filters.clientIds,
+			projectIds: filters.projectIds,
+			categoryIds: filters.categoryIds,
+		});
 
 		results.push({ date: formatDate(current.getTime()), duration });
 
@@ -251,16 +284,19 @@ export async function getCategoryBreakdown(
 	}: {
 		userId: Id<"users">;
 		filters: {
-			clientId?: string | null;
-			projectId?: string | null;
-			categoryId?: string | null;
+			clientIds?: string[] | null;
+			projectIds?: string[] | null;
+			categoryIds?: string[] | null;
 			dateRange: { startDate: number; endDate: number };
 		};
 	},
 ) {
 	const { startDate, endDate } = filters.dateRange;
+	const clientIds = filters.clientIds ?? [];
+	const projectIds = filters.projectIds ?? [];
+	const categoryIds = filters.categoryIds ?? [];
 	const hasEntityFilter =
-		filters.clientId || filters.projectId || filters.categoryId;
+		clientIds.length > 0 || projectIds.length > 0 || categoryIds.length > 0;
 
 	// When filtering by client/project/category, we can't use category aggregates
 	// directly — query time entries via index and sum by category
@@ -332,9 +368,9 @@ async function getCategoryBreakdownFromEntries(
 	}: {
 		userId: Id<"users">;
 		filters: {
-			clientId?: string | null;
-			projectId?: string | null;
-			categoryId?: string | null;
+			clientIds?: string[] | null;
+			projectIds?: string[] | null;
+			categoryIds?: string[] | null;
 			dateRange: { startDate: number; endDate: number };
 		};
 	},
@@ -343,27 +379,51 @@ async function getCategoryBreakdownFromEntries(
 	const dayStart = getStartOfDay(startDate);
 	const dayEnd = getEndOfDay(endDate);
 
-	const entries = filters.clientId
-		? await ctx.table("time_entries", "by_user_and_client", (q) =>
-				q
-					.eq("userId", userId)
-					.eq("clientId", filters.clientId as Id<"clients">),
-			)
-		: filters.projectId
-			? await ctx.table("time_entries", "by_user_and_project", (q) =>
+	const clientIds = filters.clientIds ?? [];
+	const projectIds = filters.projectIds ?? [];
+	const categoryIds = filters.categoryIds ?? [];
+
+	// Collect entries from all selected IDs
+	const allEntries: Array<{
+		start_time?: number;
+		duration?: number;
+		categoryId?: Id<"categories">;
+	}> = [];
+
+	if (clientIds.length > 0) {
+		for (const clientId of clientIds) {
+			const entries = await ctx.table(
+				"time_entries",
+				"by_user_and_client",
+				(q) => q.eq("userId", userId).eq("clientId", clientId as Id<"clients">),
+			);
+			allEntries.push(...entries);
+		}
+	} else if (projectIds.length > 0) {
+		for (const projectId of projectIds) {
+			const entries = await ctx.table(
+				"time_entries",
+				"by_user_and_project",
+				(q) =>
+					q.eq("userId", userId).eq("projectId", projectId as Id<"projects">),
+			);
+			allEntries.push(...entries);
+		}
+	} else if (categoryIds.length > 0) {
+		for (const categoryId of categoryIds) {
+			const entries = await ctx.table(
+				"time_entries",
+				"by_user_and_category",
+				(q) =>
 					q
 						.eq("userId", userId)
-						.eq("projectId", filters.projectId as Id<"projects">),
-				)
-			: filters.categoryId
-				? await ctx.table("time_entries", "by_user_and_category", (q) =>
-						q
-							.eq("userId", userId)
-							.eq("categoryId", filters.categoryId as Id<"categories">),
-					)
-				: null;
-
-	if (!entries) return [];
+						.eq("categoryId", categoryId as Id<"categories">),
+			);
+			allEntries.push(...entries);
+		}
+	} else {
+		return [];
+	}
 
 	// Build category lookup
 	const categories = await ctx.table("users").getX(userId).edge("categories");
@@ -374,7 +434,7 @@ async function getCategoryBreakdownFromEntries(
 
 	// Sum durations by category, filtering by date range
 	const durationByCategory = new Map<string, number>();
-	for (const entry of entries) {
+	for (const entry of allEntries) {
 		if (!entry.start_time || !entry.duration) continue;
 		if (entry.start_time < dayStart || entry.start_time > dayEnd) continue;
 

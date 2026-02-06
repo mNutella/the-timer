@@ -1,18 +1,14 @@
 import * as React from "react";
-import type { Client, Project, Category } from "@/lib/types";
 import type { DateRange } from "react-day-picker";
+import type { Category, Client, Project } from "@/lib/types";
 
 export function useFilters() {
 	const [searchValue, setSearchValue] = React.useState("");
-	const [filterByClient, setFilterByClient] = React.useState<
-		Client | undefined
-	>(undefined);
-	const [filterByProject, setFilterByProject] = React.useState<
-		Project | undefined
-	>(undefined);
-	const [filterByCategory, setFilterByCategory] = React.useState<
-		Category | undefined
-	>(undefined);
+	const [filterByClients, setFilterByClients] = React.useState<Client[]>([]);
+	const [filterByProjects, setFilterByProjects] = React.useState<Project[]>([]);
+	const [filterByCategories, setFilterByCategories] = React.useState<
+		Category[]
+	>([]);
 	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
 		DateRange | undefined
 	>(undefined);
@@ -20,12 +16,12 @@ export function useFilters() {
 	return {
 		searchValue,
 		setSearchValue,
-		filterByClient,
-		setFilterByClient,
-		filterByProject,
-		setFilterByProject,
-		filterByCategory,
-		setFilterByCategory,
+		filterByClients,
+		setFilterByClients,
+		filterByProjects,
+		setFilterByProjects,
+		filterByCategories,
+		setFilterByCategories,
 		filterByTimeRange,
 		setFilterByTimeRange,
 	};

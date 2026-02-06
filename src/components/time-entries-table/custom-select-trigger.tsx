@@ -1,9 +1,9 @@
-import { ChevronsUpDown, BrushCleaning } from "lucide-react";
+import type { IconProps } from "@tabler/icons-react";
 
 import { IconSearch } from "@tabler/icons-react";
-import type { IconProps } from "@tabler/icons-react";
-import { ComboboxTrigger } from "@/components/ui/combobox-infinity";
+import { BrushCleaning, ChevronsUpDown } from "lucide-react";
 import type { SelectableItem } from "@/components/searchable-combobox";
+import { ComboboxTrigger } from "@/components/ui/combobox-infinity";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +16,22 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 }: {
 	id?: string;
 	className?: string;
-	value?: T;
+	value?: T | T[];
 	placeholder?: string;
 	icon?: React.ComponentType<IconProps>;
 }) {
 	const Icon = icon ?? IconSearch;
 	const { onValueChange } = useComboboxContext<T>();
 
-	const itemSelected = Boolean(value?.name);
+	const items = Array.isArray(value) ? value : value ? [value] : [];
+	const hasSelection = items.length > 0;
+
+	const displayLabel =
+		items.length === 0
+			? (placeholder ?? "Select filter by")
+			: items.length === 1
+				? items[0].name
+				: `${items[0].name} +${items.length - 1}`;
 
 	const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.stopPropagation();
@@ -36,14 +44,12 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 			className={cn(
 				className,
 				"w-fit",
-				value && "bg-primary text-primary-foreground",
+				hasSelection && "bg-primary text-primary-foreground",
 			)}
 		>
 			<Icon />
-			<span className="hidden lg:inline">
-				{value?.name ?? placeholder ?? "Select filter by"}
-			</span>
-			{itemSelected ? (
+			<span className="hidden lg:inline">{displayLabel}</span>
+			{hasSelection ? (
 				<button
 					type="button"
 					onClick={handleClear}

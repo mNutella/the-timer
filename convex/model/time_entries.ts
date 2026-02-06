@@ -1,22 +1,21 @@
 import type { PaginationOptions } from "convex/server";
 import { omit } from "convex-helpers";
-
-import type { Ent, EntQuery, QueryCtx, MutationCtx } from "../types";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { Ent, EntQuery, MutationCtx, QueryCtx } from "../types";
 import {
 	computeNextTiming,
 	getEndOfDay,
 	getStartOfDay,
 	updateIfDefined,
 } from "../utils";
-import type { Doc, Id } from "../_generated/dataModel";
 
 interface SearchTimeEntriesParams {
 	userId: Id<"users">;
 	filters?: {
 		name?: string;
-		clientId?: Id<"clients">;
-		projectId?: Id<"projects">;
-		categoryId?: Id<"categories">;
+		clientIds?: Id<"clients">[];
+		projectIds?: Id<"projects">[];
+		categoryIds?: Id<"categories">[];
 		dateRange?: {
 			startDate?: number;
 			endDate?: number;
@@ -424,13 +423,18 @@ export async function searchTimeEntries(
 	const hasName = nameQuery.length > 0;
 	const { startDate, endDate } = filters?.dateRange ?? {};
 
+	const clientIds = filters?.clientIds ?? [];
+	const projectIds = filters?.projectIds ?? [];
+	const categoryIds = filters?.categoryIds ?? [];
+
 	if (hasName) {
 		timeEntries = ctx.table("time_entries").search("name", (q) => {
 			let s = q.search("name", nameQuery).eq("userId", userId);
 
-			if (filters?.clientId) s = s.eq("clientId", filters?.clientId);
-			if (filters?.projectId) s = s.eq("projectId", filters?.projectId);
-			if (filters?.categoryId) s = s.eq("categoryId", filters?.categoryId);
+			// Search index .eq() only supports single values; use first ID for index, filter rest
+			if (clientIds.length === 1) s = s.eq("clientId", clientIds[0]);
+			if (projectIds.length === 1) s = s.eq("projectId", projectIds[0]);
+			if (categoryIds.length === 1) s = s.eq("categoryId", categoryIds[0]);
 
 			return s;
 		});
@@ -446,22 +450,22 @@ export async function searchTimeEntries(
 				q.eq("userId", userId).lte("end_time", endDate),
 			)
 			.order("desc");
-	} else if (filters?.clientId) {
+	} else if (clientIds.length === 1) {
 		timeEntries = ctx
 			.table("time_entries", "by_user_and_client", (q) =>
-				q.eq("userId", userId).eq("clientId", filters.clientId),
+				q.eq("userId", userId).eq("clientId", clientIds[0]),
 			)
 			.order("desc");
-	} else if (filters?.projectId) {
+	} else if (projectIds.length === 1) {
 		timeEntries = ctx
 			.table("time_entries", "by_user_and_project", (q) =>
-				q.eq("userId", userId).eq("projectId", filters.projectId),
+				q.eq("userId", userId).eq("projectId", projectIds[0]),
 			)
 			.order("desc");
-	} else if (filters?.categoryId) {
+	} else if (categoryIds.length === 1) {
 		timeEntries = ctx
 			.table("time_entries", "by_user_and_category", (q) =>
-				q.eq("userId", userId).eq("categoryId", filters.categoryId),
+				q.eq("userId", userId).eq("categoryId", categoryIds[0]),
 			)
 			.order("desc");
 	} else {
@@ -470,23 +474,63 @@ export async function searchTimeEntries(
 			.order("desc");
 	}
 
-	// Apply remaining filters without requiring composite indexes
+	// Apply array filters via .filter() for multi-select (OR logic)
 	if (!hasName) {
-		if (filters?.projectId) {
-			// already covered by index when chosen; if a different index used, filter here
-			timeEntries = timeEntries.filter((q) =>
-				q.eq(q.field("projectId"), filters.projectId),
-			);
+		if (clientIds.length > 0) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("clientId"), clientIds[0]);
+				for (let i = 1; i < clientIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("clientId"), clientIds[i]));
+				}
+				return expr;
+			});
 		}
-		if (filters?.clientId) {
-			timeEntries = timeEntries.filter((q) =>
-				q.eq(q.field("clientId"), filters.clientId),
-			);
+		if (projectIds.length > 0) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("projectId"), projectIds[0]);
+				for (let i = 1; i < projectIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("projectId"), projectIds[i]));
+				}
+				return expr;
+			});
 		}
-		if (filters?.categoryId) {
-			timeEntries = timeEntries.filter((q) =>
-				q.eq(q.field("categoryId"), filters.categoryId),
-			);
+		if (categoryIds.length > 0) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("categoryId"), categoryIds[0]);
+				for (let i = 1; i < categoryIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("categoryId"), categoryIds[i]));
+				}
+				return expr;
+			});
+		}
+	} else {
+		// For name search with multiple IDs, filter in-memory for the additional IDs
+		if (clientIds.length > 1) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("clientId"), clientIds[0]);
+				for (let i = 1; i < clientIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("clientId"), clientIds[i]));
+				}
+				return expr;
+			});
+		}
+		if (projectIds.length > 1) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("projectId"), projectIds[0]);
+				for (let i = 1; i < projectIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("projectId"), projectIds[i]));
+				}
+				return expr;
+			});
+		}
+		if (categoryIds.length > 1) {
+			timeEntries = timeEntries.filter((q) => {
+				let expr = q.eq(q.field("categoryId"), categoryIds[0]);
+				for (let i = 1; i < categoryIds.length; i++) {
+					expr = q.or(expr, q.eq(q.field("categoryId"), categoryIds[i]));
+				}
+				return expr;
+			});
 		}
 	}
 

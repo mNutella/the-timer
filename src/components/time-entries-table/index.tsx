@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
@@ -15,8 +14,15 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import * as React from "react";
 import type { DateRange } from "react-day-picker";
-
+import {
+	CategoryFilter,
+	ClientFilter,
+	ProjectFilter,
+	TimeRangeFilter,
+} from "@/components/time-entry-filters";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Table,
 	TableBody,
@@ -25,26 +31,19 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { TimeEntryCell } from "./time-entry-cell";
-import { ClientCell } from "./client-cell";
-import { ProjectCell } from "./project-cell";
-import { CategoryCell } from "./category-cell";
-import { DurationCell } from "./duration-cell";
-import { StartEndTimeCell } from "./start-end-time-cell";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ActionsCell } from "./actions-cell";
-import { StartStopCell } from "./start-stop-cell";
-import { CustomizeTableMenu } from "./customize-table-menu";
 import type { Category, Client, Project, TimeEntry } from "@/lib/types";
-import { TimerEntrySearch } from "./timer-entry-search";
-import {
-	ClientFilter,
-	ProjectFilter,
-	CategoryFilter,
-	TimeRangeFilter,
-} from "@/components/time-entry-filters";
+import { cn } from "@/lib/utils";
+import { ActionsCell } from "./actions-cell";
+import { CategoryCell } from "./category-cell";
+import { ClientCell } from "./client-cell";
+import { CustomizeTableMenu } from "./customize-table-menu";
+import { DurationCell } from "./duration-cell";
 import { useTimeEntries } from "./hooks";
+import { ProjectCell } from "./project-cell";
+import { StartEndTimeCell } from "./start-end-time-cell";
+import { StartStopCell } from "./start-stop-cell";
+import { TimeEntryCell } from "./time-entry-cell";
+import { TimerEntrySearch } from "./timer-entry-search";
 
 const columns: ColumnDef<TimeEntry>[] = [
 	{
@@ -174,15 +173,11 @@ const CustomRow = React.forwardRef<
 
 export default function TimeEntriesTable() {
 	const [searchValue, setSearchValue] = React.useState("");
-	const [filterByClient, setFilterByClient] = React.useState<
-		Client | undefined
-	>(undefined);
-	const [filterByProject, setFilterByProject] = React.useState<
-		Project | undefined
-	>(undefined);
-	const [filterByCategory, setFilterByCategory] = React.useState<
-		Category | undefined
-	>(undefined);
+	const [filterByClients, setFilterByClients] = React.useState<Client[]>([]);
+	const [filterByProjects, setFilterByProjects] = React.useState<Project[]>([]);
+	const [filterByCategories, setFilterByCategories] = React.useState<
+		Category[]
+	>([]);
 	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
 		DateRange | undefined
 	>(undefined);
@@ -193,9 +188,9 @@ export default function TimeEntriesTable() {
 		status,
 	} = useTimeEntries(
 		searchValue,
-		filterByClient,
-		filterByProject,
-		filterByCategory,
+		filterByClients,
+		filterByProjects,
+		filterByCategories,
 		filterByTimeRange,
 	);
 	const scrollAreaRef = React.useRef<HTMLDivElement>(null);
@@ -260,7 +255,7 @@ export default function TimeEntriesTable() {
 
 	const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
 		setSorting(updater);
-		if (!!table.getRowModel().rows.length) {
+		if (table.getRowModel().rows.length) {
 			rowVirtualizer.scrollToIndex?.(0);
 		}
 	};
@@ -312,18 +307,18 @@ export default function TimeEntriesTable() {
 				<div className="flex items-center justify-between gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
 					<ClientFilter
-						value={filterByClient}
-						onSelect={setFilterByClient}
+						value={filterByClients}
+						onSelect={setFilterByClients}
 						placeholder="Filter by Client"
 					/>
 					<ProjectFilter
-						value={filterByProject}
-						onSelect={setFilterByProject}
+						value={filterByProjects}
+						onSelect={setFilterByProjects}
 						placeholder="Filter by Project"
 					/>
 					<CategoryFilter
-						value={filterByCategory ?? undefined}
-						onSelect={setFilterByCategory}
+						value={filterByCategories}
+						onSelect={setFilterByCategories}
 						placeholder="Filter by Category"
 					/>
 					<TimeRangeFilter

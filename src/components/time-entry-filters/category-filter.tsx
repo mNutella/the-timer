@@ -2,8 +2,8 @@ import { IconFlagSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Category } from "@/lib/types";
 import { CustomSelectTrigger } from "@/components/time-entries-table/custom-select-trigger";
+import type { Category } from "@/lib/types";
 
 function CategoryFilterTrigger({
 	value,
@@ -12,11 +12,10 @@ function CategoryFilterTrigger({
 	value?: Category | Category[];
 	placeholder?: string;
 }) {
-	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconFlagSearch}
-			value={singleValue}
+			value={value}
 			placeholder={placeholder}
 		/>
 	);
@@ -27,18 +26,19 @@ export function CategoryFilter({
 	onSelect,
 	placeholder,
 }: {
-	value?: Category;
-	onSelect: (category?: Category) => void;
+	value: Category[];
+	onSelect: (categories: Category[]) => void;
 	placeholder?: string;
 }) {
 	const id = "category-filter";
 	return (
 		<SearchableCombobox
 			id={id}
+			type="multiple"
 			apiQuery={api.categories.searchByName}
 			comboboxTrigger={CategoryFilterTrigger}
 			value={value}
-			onValueChange={onSelect}
+			onItemSelectChange={onSelect}
 			placeholder={placeholder}
 		/>
 	);

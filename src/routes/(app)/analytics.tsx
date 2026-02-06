@@ -19,12 +19,12 @@ function Analytics() {
 	const {
 		searchValue,
 		setSearchValue,
-		filterByClient,
-		setFilterByClient,
-		filterByProject,
-		setFilterByProject,
-		filterByCategory,
-		setFilterByCategory,
+		filterByClients,
+		setFilterByClients,
+		filterByProjects,
+		setFilterByProjects,
+		filterByCategories,
+		setFilterByCategories,
 		filterByTimeRange,
 		setFilterByTimeRange,
 	} = useFilters();
@@ -35,18 +35,18 @@ function Analytics() {
 				<div className="flex items-center justify-start gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
 					<ClientFilter
-						value={filterByClient}
-						onSelect={setFilterByClient}
+						value={filterByClients}
+						onSelect={setFilterByClients}
 						placeholder="Filter by Client"
 					/>
 					<ProjectFilter
-						value={filterByProject}
-						onSelect={setFilterByProject}
+						value={filterByProjects}
+						onSelect={setFilterByProjects}
 						placeholder="Filter by Project"
 					/>
 					<CategoryFilter
-						value={filterByCategory ?? undefined}
-						onSelect={setFilterByCategory}
+						value={filterByCategories}
+						onSelect={setFilterByCategories}
 						placeholder="Filter by Category"
 					/>
 					<TimeRangeFilter
@@ -57,17 +57,17 @@ function Analytics() {
 				<div className="grid grid-cols-4 gap-4 mt-4">
 					<div className="col-span-3 gap-y-4 flex flex-col">
 						<TimeEntriesChartBarInteractive
-							clientFilter={filterByClient}
-							projectFilter={filterByProject}
-							categoryFilter={filterByCategory}
+							clientFilter={filterByClients}
+							projectFilter={filterByProjects}
+							categoryFilter={filterByCategories}
 							dateRange={filterByTimeRange}
 						/>
 					</div>
 					<div className="col-span-1">
 						<TimeEntriesChartRadialStacked
-							clientFilter={filterByClient}
-							projectFilter={filterByProject}
-							categoryFilter={filterByCategory}
+							clientFilter={filterByClients}
+							projectFilter={filterByProjects}
+							categoryFilter={filterByCategories}
 							dateRange={filterByTimeRange}
 						/>
 					</div>
