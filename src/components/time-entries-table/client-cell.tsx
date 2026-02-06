@@ -2,7 +2,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { useUpdateTimeEntryClient } from "./hooks";
-import type { Client } from "./types";
+import type { Client } from "../../lib/types";
 
 export function ClientCell({
 	timeEntryId,

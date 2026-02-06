@@ -2,7 +2,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { useUpdateTimeEntryProject } from "./hooks";
-import type { Project } from "./types";
+import type { Project } from "../../lib/types";
 
 export function ProjectCell({
 	timeEntryId,

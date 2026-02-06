@@ -5,7 +5,7 @@ import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { parseDurationToMilliseconds, withToast } from "@/lib/utils";
-import type { Category, Client, Project, TimeEntry } from "./types";
+import type { Category, Client, Project, TimeEntry } from "../../lib/types";
 
 export function useUpdateTimeEntryName(timeEntryId: Id<"time_entries">) {
 	const updateNameMutation = useMutation(api.time_entries.update);

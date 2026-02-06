@@ -1,22 +1,22 @@
 import { IconFlagSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
-
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Category } from "./types";
-import { CustomSelectTrigger } from "./custom-select-trigger";
+import type { Category } from "@/lib/types";
+import { CustomSelectTrigger } from "@/components/time-entries-table/custom-select-trigger";
 
 function CategoryFilterTrigger({
 	value,
 	placeholder,
 }: {
-	value?: Category;
+	value?: Category | Category[];
 	placeholder?: string;
 }) {
+	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconFlagSearch}
-			value={value}
+			value={singleValue}
 			placeholder={placeholder}
 		/>
 	);

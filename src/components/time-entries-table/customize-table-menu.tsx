@@ -1,8 +1,13 @@
 import { IconChevronDown, IconLayoutColumns } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Table } from "@tanstack/react-table";
-import type { TimeEntry } from "./types";
+import type { TimeEntry } from "../../lib/types";
 
 export function CustomizeTableMenu({ table }: { table: Table<TimeEntry> }) {
 	return (

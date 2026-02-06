@@ -3,20 +3,21 @@ import { IconReportSearch } from "@tabler/icons-react";
 import { api } from "@/../convex/_generated/api";
 
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Project } from "./types";
-import { CustomSelectTrigger } from "./custom-select-trigger";
+import type { Project } from "../../lib/types";
+import { CustomSelectTrigger } from "../time-entries-table/custom-select-trigger";
 
 function ProjectFilterTrigger({
 	value,
 	placeholder,
 }: {
-	value?: Project;
+	value?: Project | Project[];
 	placeholder?: string;
 }) {
+	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconReportSearch}
-			value={value}
+			value={singleValue}
 			placeholder={placeholder}
 		/>
 	);

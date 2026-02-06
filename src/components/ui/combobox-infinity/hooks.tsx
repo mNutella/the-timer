@@ -5,10 +5,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ComboboxState<T> {
 	isOpen: boolean;
-	value?: T;
+	selectedItems?: Map<string, T>;
 	isMobile: boolean;
 	setIsOpen: (isOpen: boolean) => void;
-	onValueChange?: (value?: T) => void;
+	onValueChange: (newSelectedItem: T | undefined) => void;
 	onPopoverOpenChange?: (open: boolean) => void;
 }
 
@@ -28,13 +28,13 @@ export function useComboboxContext<T>() {
 
 export function ComboboxProvider<T>({
 	children,
-	value,
+	selectedItems,
 	onValueChange,
 	onPopoverOpenChange,
 }: {
 	children: React.ReactNode;
-	value?: T;
-	onValueChange?: (value?: T) => void;
+	selectedItems?: Map<string, T>;
+	onValueChange?: (newSelectedItem: T | undefined) => void;
 	onPopoverOpenChange?: (open: boolean) => void;
 }) {
 	const [isOpen, setIsOpen] = React.useState(false);
@@ -43,7 +43,7 @@ export function ComboboxProvider<T>({
 		isMobile,
 		isOpen,
 		setIsOpen,
-		value,
+		selectedItems,
 		onValueChange,
 		onPopoverOpenChange,
 	};

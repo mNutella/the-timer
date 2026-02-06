@@ -20,17 +20,20 @@ import { ComboboxProvider, useComboboxContext } from "./hooks";
 
 function Combobox<T>({
 	children,
-	value,
+	selectedItems,
 	onValueChange,
 	onPopoverOpenChange,
 }: {
 	children: React.ReactNode;
-	value?: T;
-	onValueChange?: (value?: T) => void;
+	selectedItems?: Map<string, T>;
+	onValueChange?: (value: T | undefined) => void;
 	onPopoverOpenChange?: (open: boolean) => void;
 }) {
 	return (
-		<ComboboxProvider value={value} onValueChange={onValueChange}>
+		<ComboboxProvider
+			selectedItems={selectedItems}
+			onValueChange={onValueChange}
+		>
 			<ComboboxView onPopoverOpenChange={onPopoverOpenChange}>
 				{children}
 			</ComboboxView>

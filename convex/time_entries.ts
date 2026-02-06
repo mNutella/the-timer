@@ -3,9 +3,9 @@ import { v } from "convex/values";
 
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./functions";
-import { getEndOfDay, getStartOfDay } from "./utils";
 import * as Analytics from "./model/analytics";
 import * as TimeEntries from "./model/time_entries";
+import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
 	args: {
@@ -137,6 +137,68 @@ export const searchTimeEntries = query({
 		});
 
 		return timeEntries;
+	},
+});
+
+export const getDailyDurations = query({
+	args: {
+		userId: v.id("users"),
+		filters: v.optional(
+			v.object({
+				clientId: v.optional(v.id("clients")),
+				projectId: v.optional(v.id("projects")),
+				categoryId: v.optional(v.id("categories")),
+				dateRange: v.object({
+					startDate: v.number(),
+					endDate: v.number(),
+				}),
+			}),
+		),
+	},
+	handler: async (ctx, { userId, filters }) => {
+		if (!filters?.dateRange) return [];
+		return Analytics.getDailyDurationTimeSeries(ctx, {
+			userId,
+			filters: {
+				clientId: filters.clientId,
+				projectId: filters.projectId,
+				categoryId: filters.categoryId,
+				dateRange: {
+					startDate: getStartOfDay(filters.dateRange.startDate),
+					endDate: getEndOfDay(filters.dateRange.endDate),
+				},
+			},
+		});
+	},
+});
+
+export const getCategoryBreakdown = query({
+	args: {
+		userId: v.id("users"),
+		clientId: v.optional(v.id("clients")),
+		projectId: v.optional(v.id("projects")),
+		categoryId: v.optional(v.id("categories")),
+		dateRange: v.object({
+			startDate: v.number(),
+			endDate: v.number(),
+		}),
+	},
+	handler: async (
+		ctx,
+		{ userId, clientId, projectId, categoryId, dateRange },
+	) => {
+		return Analytics.getCategoryBreakdown(ctx, {
+			userId,
+			filters: {
+				clientId,
+				projectId,
+				categoryId,
+				dateRange: {
+					startDate: getStartOfDay(dateRange.startDate),
+					endDate: getEndOfDay(dateRange.endDate),
+				},
+			},
+		});
 	},
 });
 

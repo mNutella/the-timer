@@ -17,7 +17,6 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { DateRange } from "react-day-picker";
 
-import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Table,
 	TableBody,
@@ -37,12 +36,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ActionsCell } from "./actions-cell";
 import { StartStopCell } from "./start-stop-cell";
 import { CustomizeTableMenu } from "./customize-table-menu";
-import type { Category, Client, Project, TimeEntry } from "./types";
-import { ClientFilter } from "./client-filter";
-import { ProjectFilter } from "./project-filter";
-import { CategoryFilter } from "./category-filter";
+import type { Category, Client, Project, TimeEntry } from "@/lib/types";
 import { TimerEntrySearch } from "./timer-entry-search";
-import { TimeRangeFilter } from "./time-range-filter";
+import {
+	ClientFilter,
+	ProjectFilter,
+	CategoryFilter,
+	TimeRangeFilter,
+} from "@/components/time-entry-filters";
 import { useTimeEntries } from "./hooks";
 
 const columns: ColumnDef<TimeEntry>[] = [

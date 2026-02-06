@@ -1,7 +1,7 @@
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Category } from "./types";
+import type { Category } from "../../lib/types";
 import { useUpdateTimeEntryCategory } from "./hooks";
 
 export function CategoryCell({

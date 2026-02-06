@@ -2,20 +2,21 @@ import { IconUserSearch } from "@tabler/icons-react";
 
 import { api } from "@/../convex/_generated/api";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import type { Client } from "./types";
-import { CustomSelectTrigger } from "./custom-select-trigger";
+import type { Client } from "@/lib/types";
+import { CustomSelectTrigger } from "@/components/time-entries-table/custom-select-trigger";
 
 function ClientFilterTrigger({
 	value,
 	placeholder,
 }: {
-	value?: Client;
+	value?: Client | Client[];
 	placeholder?: string;
 }) {
+	const singleValue = Array.isArray(value) ? value[0] : value;
 	return (
 		<CustomSelectTrigger
 			icon={IconUserSearch}
-			value={value}
+			value={singleValue}
 			placeholder={placeholder}
 		/>
 	);
