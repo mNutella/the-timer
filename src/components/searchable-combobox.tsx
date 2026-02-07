@@ -12,7 +12,11 @@ import {
 	ComboboxTrigger,
 } from "@/components/ui/combobox-infinity";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
-import { CommandGroup, CommandItem } from "@/components/ui/command";
+import {
+	CommandGroup,
+	CommandItem,
+	CommandSeparator,
+} from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import { cn } from "@/lib/utils";
@@ -238,6 +242,40 @@ function SearchableComboboxContent<
 		search.length > 0 &&
 		!items.some((item) => item.name.toLowerCase() === search.toLowerCase());
 
+	const searchLower = search.trim().toLowerCase();
+
+	const selectedItemsList = React.useMemo(() => {
+		if (!selectedItems || selectedItems.size === 0) return [];
+		return Array.from(selectedItems.values()).filter(
+			(item) => !searchLower || item.name.toLowerCase().includes(searchLower),
+		);
+	}, [selectedItems, searchLower]);
+
+	const unselectedItems = React.useMemo(() => {
+		if (!selectedItems || selectedItems.size === 0) return items;
+		return items.filter((item) => !selectedItems.has(item._id));
+	}, [items, selectedItems]);
+
+	const hasSelectedItems = selectedItemsList.length > 0;
+	const hasUnselectedItems = unselectedItems.length > 0;
+	const hasNoItems = !hasSelectedItems && !hasUnselectedItems && status !== "LoadingFirstPage";
+
+	const renderItem = (item: { _id: string; name: string }) => (
+		<CommandItem
+			key={item._id}
+			value={item._id}
+			onSelect={() => handleSelectItem(item as T)}
+		>
+			{item.name}
+			<Check
+				className={cn(
+					"ml-auto",
+					selectedItems?.has(item._id) ? "opacity-100" : "opacity-0",
+				)}
+			/>
+		</CommandItem>
+	);
+
 	return (
 		<>
 			<ComboboxInput
@@ -246,28 +284,27 @@ function SearchableComboboxContent<
 				onValueChange={setSearch}
 			/>
 			<ComboboxList>
-				<CommandGroup>
-					<ScrollArea ref={scrollAreaRef} className="h-[200px]">
-						{items?.map((item) => (
-							<CommandItem
-								key={item._id}
-								value={item.name}
-								onSelect={() => handleSelectItem(item as T)}
-							>
-								{item.name}
-								<Check
-									className={cn(
-										"ml-auto",
-										selectedItems?.has(item._id) ? "opacity-100" : "opacity-0",
-									)}
-								/>
-							</CommandItem>
-						))}
-						{status === "CanLoadMore" && (
-							<div ref={loaderRef} className="h-4 w-full" />
-						)}
-					</ScrollArea>
-				</CommandGroup>
+				<ScrollArea ref={scrollAreaRef} className="h-[200px]">
+					{hasSelectedItems && (
+						<CommandGroup>
+							{selectedItemsList.map(renderItem)}
+						</CommandGroup>
+					)}
+					{hasSelectedItems && hasUnselectedItems && <CommandSeparator />}
+					{hasUnselectedItems && (
+						<CommandGroup>
+							{unselectedItems.map(renderItem)}
+						</CommandGroup>
+					)}
+					{hasNoItems && (
+						<p className="py-6 text-center text-sm text-muted-foreground">
+							No item found.
+						</p>
+					)}
+					{status === "CanLoadMore" && (
+						<div ref={loaderRef} className="h-4 w-full" />
+					)}
+				</ScrollArea>
 				{showCreateOption && (
 					<CommandGroup>
 						<CommandItem

@@ -6,7 +6,6 @@ import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
-	CommandEmpty,
 	CommandInput,
 	CommandList,
 } from "@/components/ui/command";
@@ -129,9 +128,8 @@ function ComboboxContent({ children }: { children: React.ReactNode }) {
 	const Content = isMobile ? DrawerContent : PopoverContent;
 
 	const content = (
-		<Command>
+		<Command shouldFilter={false}>
 			{children}
-			<CommandEmpty>No item found.</CommandEmpty>
 		</Command>
 	);
 

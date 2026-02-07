@@ -43,12 +43,12 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 			id={id}
 			className={cn(
 				className,
-				"w-fit",
+				"w-fit lg:w-[200px]",
 				hasSelection && "bg-primary text-primary-foreground",
 			)}
 		>
 			<Icon />
-			<span className="hidden lg:inline">{displayLabel}</span>
+			<span className="hidden lg:inline truncate">{displayLabel}</span>
 			{hasSelection ? (
 				<button
 					type="button"
