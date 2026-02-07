@@ -27,14 +27,18 @@ type PaginatedQuery = FunctionReference<
 	"public",
 	{ paginationOpts: { numItems: number; cursor: string | null } },
 	{
-		page: {
-			_id: string;
-			name: string;
-		}[];
+		page: { _id: string; name: string }[];
 		isDone: boolean;
 		continueCursor: string;
 	}
 >;
+
+type TriggerProps<T extends SelectableItem> = {
+	id?: string;
+	className?: string;
+	value?: T | T[];
+	placeholder?: string;
+};
 
 type BaseSearchableComboboxProps<
 	T extends SelectableItem,
@@ -47,48 +51,30 @@ type BaseSearchableComboboxProps<
 	searchPlaceholder?: string;
 	queryArgs?: OptionalRestArgs<Q>[0];
 	onSelect?: (name: string) => void;
-	comboboxTrigger?: React.ComponentType<{
-		id?: string;
-		className?: string;
-		value?: T | T[];
-		placeholder?: string;
-	}>;
-};
-
-type SingleSearchableComboboxProps<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
-> = BaseSearchableComboboxProps<T, Q> & {
-	type?: "single";
-	value?: T | null;
-	onValueChange: (item?: T) => void;
-};
-
-type MultipleSearchableComboboxProps<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
-> = BaseSearchableComboboxProps<T, Q> & {
-	type: "multiple";
-	value?: T[];
-	onItemSelectChange: (items: T[]) => void;
+	comboboxTrigger?: React.ComponentType<TriggerProps<T>>;
 };
 
 type SearchableComboboxProps<
 	T extends SelectableItem,
 	Q extends PaginatedQuery,
-> = SingleSearchableComboboxProps<T, Q> | MultipleSearchableComboboxProps<T, Q>;
+> =
+	| (BaseSearchableComboboxProps<T, Q> & {
+			type?: "single";
+			value?: T | null;
+			onValueChange: (item?: T) => void;
+	  })
+	| (BaseSearchableComboboxProps<T, Q> & {
+			type: "multiple";
+			value?: T[];
+			onItemSelectChange: (items: T[]) => void;
+	  });
 
 function DefaultComboboxTrigger<T extends SelectableItem>({
 	id,
 	className,
 	value,
 	placeholder,
-}: {
-	id?: string;
-	className?: string;
-	value?: T | T[];
-	placeholder?: string;
-}) {
+}: TriggerProps<T>) {
 	const displayValue = Array.isArray(value)
 		? value.map((item) => item.name).join(", ")
 		: value?.name;
@@ -118,42 +104,28 @@ export function SearchableCombobox<
 
 	const [search, setSearch] = React.useState("");
 	const Trigger = comboboxTrigger ?? DefaultComboboxTrigger;
+	const isMultiple = props.type === "multiple";
 
 	const selectedItemsMap = React.useMemo(() => {
-		if (!value) return new Map<string, T>();
-		if (Array.isArray(value)) {
-			return new Map(value.map((item) => [item._id, item]));
-		}
-		return new Map([[value._id, value]]);
+		const items = !value ? [] : Array.isArray(value) ? value : [value];
+		return new Map(items.map((item) => [item._id, item]));
 	}, [value]);
-
-	const isMultiple = props.type === "multiple";
 
 	const handleItemSelect = (item: T | undefined) => {
 		if (!item) {
-			if (isMultiple) {
-				props.onItemSelectChange([]);
-			} else {
-				props.onValueChange(undefined);
-			}
+			if (isMultiple) props.onItemSelectChange([]);
+			else props.onValueChange(undefined);
 			return;
 		}
 
 		if (isMultiple) {
-			const newValue = [...(props.value || [])];
-			const index = newValue.findIndex((i) => i._id === item._id);
-			if (index > -1) {
-				newValue.splice(index, 1);
-			} else {
-				newValue.push(item);
-			}
-			props.onItemSelectChange(newValue);
+			const current = props.value || [];
+			const exists = current.some((i) => i._id === item._id);
+			props.onItemSelectChange(
+				exists ? current.filter((i) => i._id !== item._id) : [...current, item],
+			);
 		} else {
-			if (props.value?._id === item._id) {
-				props.onValueChange(undefined);
-			} else {
-				props.onValueChange(item);
-			}
+			props.onValueChange(props.value?._id === item._id ? undefined : item);
 		}
 	};
 
@@ -163,9 +135,7 @@ export function SearchableCombobox<
 			onValueChange={handleItemSelect}
 			onPopoverOpenChange={(open) => {
 				if (!open) {
-					setTimeout(() => {
-						setSearch("");
-					}, 100);
+					setTimeout(() => setSearch(""), 100);
 				}
 			}}
 		>
@@ -176,15 +146,13 @@ export function SearchableCombobox<
 				placeholder={placeholder}
 			/>
 			<ComboboxContent>
-				<SearchableComboboxContent
-					selectedItems={selectedItemsMap}
+				<SearchableComboboxContent<T, Q>
 					apiQuery={apiQuery}
 					search={search}
 					setSearch={setSearch}
 					searchPlaceholder={searchPlaceholder}
 					queryArgs={queryArgs}
 					onSelect={onSelect}
-					onItemSelect={handleItemSelect}
 					closeOnSelect={!isMultiple}
 				/>
 			</ComboboxContent>
@@ -192,36 +160,27 @@ export function SearchableCombobox<
 	);
 }
 
-type SearchableComboboxContentProps<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
-> = {
-	selectedItems: Map<string, T>;
-	apiQuery: Q;
-	search: string;
-	setSearch: (search: string) => void;
-	searchPlaceholder?: string;
-	queryArgs?: OptionalRestArgs<Q>[0];
-	onSelect?: (name: string) => void;
-	onItemSelect: (item: T) => void;
-	closeOnSelect?: boolean;
-};
-
 function SearchableComboboxContent<
 	T extends SelectableItem,
 	Q extends PaginatedQuery,
 >({
-	selectedItems,
 	apiQuery,
 	search,
 	setSearch,
 	searchPlaceholder,
 	queryArgs,
 	onSelect,
-	onItemSelect,
 	closeOnSelect = true,
-}: SearchableComboboxContentProps<T, Q>) {
-	const { setIsOpen } = useComboboxContext<T>();
+}: {
+	apiQuery: Q;
+	search: string;
+	setSearch: (search: string) => void;
+	searchPlaceholder?: string;
+	queryArgs?: OptionalRestArgs<Q>[0];
+	onSelect?: (name: string) => void;
+	closeOnSelect?: boolean;
+}) {
+	const { selectedItems, onValueChange, setIsOpen } = useComboboxContext<T>();
 
 	const {
 		results: items,
@@ -245,7 +204,7 @@ function SearchableComboboxContent<
 	};
 
 	const handleSelectItem = (item: T) => {
-		onItemSelect(item);
+		onValueChange(item);
 		if (closeOnSelect) {
 			setSearch("");
 			setIsOpen(false);
@@ -265,21 +224,19 @@ function SearchableComboboxContent<
 
 		const observer = new IntersectionObserver(
 			(entries) => {
-				const [entry] = entries;
-				if (entry.isIntersecting) {
-					loadMore(2);
-				}
+				if (entries[0].isIntersecting) loadMore(2);
 			},
-			{
-				root: scrollAreaRef.current,
-				threshold: 0.1,
-			},
+			{ root: scrollAreaRef.current, threshold: 0.1 },
 		);
 
 		observer.observe(loaderRef.current);
-
 		return () => observer.disconnect();
 	}, [status, loadMore]);
+
+	const showCreateOption =
+		onSelect &&
+		search.length > 0 &&
+		!items.some((item) => item.name.toLowerCase() === search.toLowerCase());
 
 	return (
 		<>
@@ -301,7 +258,7 @@ function SearchableComboboxContent<
 								<Check
 									className={cn(
 										"ml-auto",
-										selectedItems.has(item._id) ? "opacity-100" : "opacity-0",
+										selectedItems?.has(item._id) ? "opacity-100" : "opacity-0",
 									)}
 								/>
 							</CommandItem>
@@ -311,23 +268,18 @@ function SearchableComboboxContent<
 						)}
 					</ScrollArea>
 				</CommandGroup>
-				{/* TODO: I think this should be based on backend results, if it is empty, show this option */}
-				{onSelect &&
-					search.length > 0 &&
-					!items.find(
-						(item) => item.name.toLowerCase() === search.toLowerCase(),
-					) && (
-						<CommandGroup>
-							<CommandItem
-								value={search}
-								onSelect={handleSelect}
-								className="flex w-full items-center gap-2"
-							>
-								<PlusCircle className="h-4 w-4" />
-								<span>Create "{search}"</span>
-							</CommandItem>
-						</CommandGroup>
-					)}
+				{showCreateOption && (
+					<CommandGroup>
+						<CommandItem
+							value={search}
+							onSelect={handleSelect}
+							className="flex w-full items-center gap-2"
+						>
+							<PlusCircle className="h-4 w-4" />
+							<span>Create "{search}"</span>
+						</CommandItem>
+					</CommandGroup>
+				)}
 			</ComboboxList>
 		</>
 	);
