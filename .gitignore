@@ -16,7 +16,11 @@ node_modules
 dist
 dist-ssr
 build
+target
 *.local
+
+# Convex generated
+_generated
 
 # Environment variables
 .env
@@ -30,7 +34,6 @@ build
 
 # Tauri specific
 src-tauri/target
-src-tauri/Cargo.lock
 
 # Testing
 coverage
@@ -60,7 +63,6 @@ coverage
 *.sw?
 
 # macOS
-.DS_Store
 .AppleDouble
 .LSOverride
 
