@@ -2,6 +2,13 @@ import { type ClassValue, clsx } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
+export function getFilterDescription(
+	...filters: { name: string }[][]
+): string | undefined {
+	const names = filters.flatMap((f) => f.map((item) => item.name));
+	return names.length > 0 ? names.join(" · ") : undefined;
+}
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
@@ -40,6 +47,14 @@ export function parseDurationToMilliseconds(durationStr: string) {
 
 	return duration;
 }
+
+export const CHART_COLORS = [
+	"var(--chart-1)",
+	"var(--chart-2)",
+	"var(--chart-3)",
+	"var(--chart-4)",
+	"var(--chart-5)",
+];
 
 export function withToast<TArgs extends unknown[], R>(
 	mutation: (...args: TArgs) => Promise<R>,

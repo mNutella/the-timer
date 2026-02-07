@@ -16,23 +16,70 @@ import {
 import {
 	type ChartConfig,
 	ChartContainer,
+	ChartLegend,
+	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { Category, Client, Project } from "@/lib/types";
-
-const chartConfig = {
-	hours: {
-		label: "Hours",
-		color: "var(--chart-1)",
-	},
-} satisfies ChartConfig;
+import { CHART_COLORS, getFilterDescription } from "@/lib/utils";
 
 function getDefaultDateRange(): { startDate: number; endDate: number } {
 	const end = new Date();
 	const start = new Date();
 	start.setMonth(start.getMonth() - 3);
 	return { startDate: start.getTime(), endDate: end.getTime() };
+}
+
+function slugify(name: string): string {
+	return name.replace(/\s+/g, "_").toLowerCase();
+}
+
+type StackDimension = "client" | "project" | "category";
+
+function getStackDimension(
+	clientFilter: Client[],
+	projectFilter: Project[],
+	categoryFilter: Category[],
+): StackDimension | null {
+	if (clientFilter.length > 0) return "client";
+	if (projectFilter.length > 0) return "project";
+	if (categoryFilter.length > 0) return "category";
+	return null;
+}
+
+function getEntityIds(
+	dimension: StackDimension,
+	clientFilter: Client[],
+	projectFilter: Project[],
+	categoryFilter: Category[],
+): string[] {
+	if (dimension === "client") return clientFilter.map((c) => c._id);
+	if (dimension === "project") return projectFilter.map((p) => p._id);
+	return categoryFilter.map((c) => c._id);
+}
+
+function getConstraintFilters(
+	dimension: StackDimension,
+	clientFilter: Client[],
+	projectFilter: Project[],
+	categoryFilter: Category[],
+) {
+	const constraints: {
+		clientIds?: Id<"clients">[];
+		projectIds?: Id<"projects">[];
+		categoryIds?: Id<"categories">[];
+	} = {};
+	if (dimension !== "client" && clientFilter.length > 0) {
+		constraints.clientIds = clientFilter.map((c) => c._id);
+	}
+	if (dimension !== "project" && projectFilter.length > 0) {
+		constraints.projectIds = projectFilter.map((p) => p._id);
+	}
+	if (dimension !== "category" && categoryFilter.length > 0) {
+		constraints.categoryIds = categoryFilter.map((c) => c._id);
+	}
+	return Object.keys(constraints).length > 0 ? constraints : undefined;
 }
 
 interface TimeEntriesChartBarInteractiveProps {
@@ -58,22 +105,148 @@ export function TimeEntriesChartBarInteractive({
 		return getDefaultDateRange();
 	}, [dateRange?.from, dateRange?.to]);
 
-	const rawData = useQuery(api.time_entries.getDailyDurations, {
-		userId: import.meta.env.VITE_USER_ID as Id<"users">,
-		filters: {
-			clientIds: clientFilter.map((c) => c._id),
-			projectIds: projectFilter.map((p) => p._id),
-			categoryIds: categoryFilter.map((c) => c._id),
-			dateRange: range,
-		},
-	});
+	const stackDimension = useMemo(
+		() => getStackDimension(clientFilter, projectFilter, categoryFilter),
+		[clientFilter, projectFilter, categoryFilter],
+	);
 
-	const chartData = (rawData ?? []).map((d) => ({
-		date: d.date,
-		hours: Math.round((d.duration / 3_600_000) * 100) / 100,
-	}));
+	const entityIds = useMemo(
+		() =>
+			stackDimension
+				? getEntityIds(
+						stackDimension,
+						clientFilter,
+						projectFilter,
+						categoryFilter,
+					)
+				: [],
+		[stackDimension, clientFilter, projectFilter, categoryFilter],
+	);
 
-	const totalHours = chartData.reduce((acc, curr) => acc + curr.hours, 0);
+	const constraintFilters = useMemo(
+		() =>
+			stackDimension
+				? getConstraintFilters(
+						stackDimension,
+						clientFilter,
+						projectFilter,
+						categoryFilter,
+					)
+				: undefined,
+		[stackDimension, clientFilter, projectFilter, categoryFilter],
+	);
+
+	// Non-stacked: use existing getDailyDurations
+	const flatData = useQuery(
+		api.time_entries.getDailyDurations,
+		stackDimension === null
+			? {
+					userId: import.meta.env.VITE_USER_ID as Id<"users">,
+					filters: {
+						dateRange: range,
+					},
+				}
+			: "skip",
+	);
+
+	// Stacked: use new getDailyDurationBreakdown
+	const breakdownData = useQuery(
+		api.time_entries.getDailyDurationBreakdown,
+		stackDimension !== null
+			? {
+					userId: import.meta.env.VITE_USER_ID as Id<"users">,
+					groupBy: stackDimension,
+					entityIds,
+					constraintFilters,
+					dateRange: range,
+				}
+			: "skip",
+	);
+
+	// Build entity name map for stacked mode
+	const entityNameMap = useMemo(() => {
+		const map = new Map<string, string>();
+		if (stackDimension === "client") {
+			for (const c of clientFilter) map.set(c._id, c.name);
+		} else if (stackDimension === "project") {
+			for (const p of projectFilter) map.set(p._id, p.name);
+		} else if (stackDimension === "category") {
+			for (const c of categoryFilter) map.set(c._id, c.name);
+		}
+		return map;
+	}, [stackDimension, clientFilter, projectFilter, categoryFilter]);
+
+	// Build chart data and config for stacked mode
+	const { chartData, chartConfig, entityKeys, totalHours } = useMemo((): {
+		chartData: Record<string, unknown>[];
+		chartConfig: ChartConfig;
+		entityKeys: string[] | null;
+		totalHours: number;
+	} => {
+		if (stackDimension === null || !breakdownData) {
+			// Non-stacked mode
+			const data = (flatData ?? []).map((d) => ({
+				date: d.date,
+				hours: Math.round((d.duration / 3_600_000) * 100) / 100,
+			}));
+			const total = data.reduce((acc, curr) => acc + (curr.hours as number), 0);
+			return {
+				chartData: data,
+				chartConfig: {
+					hours: {
+						label: "Hours",
+						color: "var(--chart-1)",
+					},
+				},
+				entityKeys: null,
+				totalHours: total,
+			};
+		}
+
+		// Stacked mode: transform breakdown data
+		const keys: string[] = [];
+		const config: ChartConfig = {};
+		const seenKeys = new Set<string>();
+
+		for (const entityId of entityIds) {
+			const name = entityNameMap.get(entityId) ?? "Unknown";
+			let key = slugify(name);
+			// Ensure unique keys
+			if (seenKeys.has(key)) {
+				key = `${key}_${entityId.slice(-4)}`;
+			}
+			seenKeys.add(key);
+			keys.push(key);
+			config[key] = {
+				label: name,
+				color: CHART_COLORS[(keys.length - 1) % CHART_COLORS.length],
+			};
+		}
+
+		let total = 0;
+		const data = breakdownData.map((day) => {
+			const row: Record<string, unknown> = { date: day.date };
+			for (let i = 0; i < day.breakdown.length; i++) {
+				const hours =
+					Math.round((day.breakdown[i].duration / 3_600_000) * 100) / 100;
+				row[keys[i]] = hours;
+				total += hours;
+			}
+			return row;
+		});
+
+		return {
+			chartData: data,
+			chartConfig: config,
+			entityKeys: keys,
+			totalHours: total,
+		};
+	}, [stackDimension, flatData, breakdownData, entityIds, entityNameMap]);
+
+	const filterDescription = useMemo(
+		() => getFilterDescription(clientFilter, projectFilter, categoryFilter),
+		[clientFilter, projectFilter, categoryFilter],
+	);
 
 	const dateLabel =
 		dateRange?.from && dateRange?.to
@@ -127,8 +300,8 @@ export function TimeEntriesChartBarInteractive({
 						<ChartTooltip
 							content={
 								<ChartTooltipContent
-									className="w-[150px]"
-									nameKey="hours"
+									className="w-[180px]"
+									description={filterDescription}
 									labelFormatter={(value) => {
 										return new Date(value).toLocaleDateString("en-US", {
 											month: "short",
@@ -136,14 +309,35 @@ export function TimeEntriesChartBarInteractive({
 											year: "numeric",
 										});
 									}}
-									formatter={(value) => [
-										`${Number(value).toFixed(1)}h`,
-										"Hours",
+									formatter={(value, name) => [
+										<span key="value" className="font-mono font-medium">
+											{Number(value).toFixed(1)}h
+										</span>,
+										<span key="name" className="text-muted-foreground">
+											{chartConfig[name as string]?.label ?? name}
+										</span>,
 									]}
 								/>
 							}
 						/>
-						<Bar dataKey="hours" fill="var(--color-hours)" />
+						{entityKeys ? (
+							<>
+								{entityKeys.map((key, i) => (
+									<Bar
+										key={key}
+										dataKey={key}
+										stackId="a"
+										fill={CHART_COLORS[i % CHART_COLORS.length]}
+										radius={
+											i === entityKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
+										}
+									/>
+								))}
+								<ChartLegend content={<ChartLegendContent />} />
+							</>
+						) : (
+							<Bar dataKey="hours" fill="var(--color-hours)" />
+						)}
 					</BarChart>
 				</ChartContainer>
 			</CardContent>

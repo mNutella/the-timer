@@ -20,14 +20,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { Category, Client, Project } from "@/lib/types";
-
-const CHART_COLORS = [
-	"var(--chart-1)",
-	"var(--chart-2)",
-	"var(--chart-3)",
-	"var(--chart-4)",
-	"var(--chart-5)",
-];
+import { CHART_COLORS, getFilterDescription } from "@/lib/utils";
 
 function getDefaultDateRange(): { startDate: number; endDate: number } {
 	const end = new Date();
@@ -95,6 +88,11 @@ export function TimeEntriesChartRadialStacked({
 		};
 	}, [rawData]);
 
+	const filterDescription = useMemo(
+		() => getFilterDescription(clientFilter, projectFilter, categoryFilter),
+		[clientFilter, projectFilter, categoryFilter],
+	);
+
 	const dateLabel =
 		dateRange?.from && dateRange?.to
 			? `${dateRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${dateRange.to.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
@@ -122,7 +120,15 @@ export function TimeEntriesChartRadialStacked({
 							content={
 								<ChartTooltipContent
 									hideLabel
-									formatter={(value) => [`${Number(value).toFixed(1)}h`]}
+									description={filterDescription}
+									formatter={(value, name) => [
+										<span key="value" className="font-mono font-medium">
+											{Number(value).toFixed(1)}h
+										</span>,
+										<span key="name" className="text-muted-foreground">
+											{chartConfig[name as string]?.label ?? name}
+										</span>,
+									]}
 								/>
 							}
 						/>

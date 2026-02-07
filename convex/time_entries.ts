@@ -171,6 +171,51 @@ export const getDailyDurations = query({
 	},
 });
 
+export const getDailyDurationBreakdown = query({
+	args: {
+		userId: v.id("users"),
+		groupBy: v.union(
+			v.literal("client"),
+			v.literal("project"),
+			v.literal("category"),
+		),
+		entityIds: v.array(v.string()),
+		constraintFilters: v.optional(
+			v.object({
+				clientIds: v.optional(v.array(v.id("clients"))),
+				projectIds: v.optional(v.array(v.id("projects"))),
+				categoryIds: v.optional(v.array(v.id("categories"))),
+			}),
+		),
+		dateRange: v.object({
+			startDate: v.number(),
+			endDate: v.number(),
+		}),
+	},
+	handler: async (
+		ctx,
+		{ userId, groupBy, entityIds, constraintFilters, dateRange },
+	) => {
+		if (entityIds.length === 0) return [];
+		return Analytics.getDailyDurationBreakdownTimeSeries(ctx, {
+			userId,
+			groupBy,
+			entityIds,
+			constraintFilters: constraintFilters
+				? {
+						clientIds: constraintFilters.clientIds,
+						projectIds: constraintFilters.projectIds,
+						categoryIds: constraintFilters.categoryIds,
+					}
+				: undefined,
+			dateRange: {
+				startDate: getStartOfDay(dateRange.startDate),
+				endDate: getEndOfDay(dateRange.endDate),
+			},
+		});
+	},
+});
+
 export const getCategoryBreakdown = query({
 	args: {
 		userId: v.id("users"),
