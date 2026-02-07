@@ -4,7 +4,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatDuration, parseDurationToMilliseconds } from "@/lib/utils";
-import { CELL_INPUT_CLASS, useUpdateDuration } from "./hooks";
+import { CELL_INPUT_CLASS, SaveHint, useUpdateDuration } from "./hooks";
 
 export function DurationCell({
 	timeEntryId,
@@ -68,6 +68,8 @@ export function DurationCell({
 		};
 	}, [inProgress, isEditing, startTime]);
 
+	const isDirty = isEditing && value !== formatDuration(duration);
+
 	return (
 		<form
 			onSubmit={(e) => {
@@ -75,6 +77,7 @@ export function DurationCell({
 				isSubmittingRef.current = true;
 				if (value === formatDuration(duration)) {
 					setIsEditing(false);
+					inputRef.current?.blur();
 					return;
 				}
 				pendingDurationMsRef.current = parseDurationToMilliseconds(value);
@@ -82,6 +85,7 @@ export function DurationCell({
 				setIsEditing(false);
 				inputRef.current?.blur();
 			}}
+			className="relative"
 		>
 			<Label htmlFor={`${timeEntryId}-duration`} className="sr-only">
 				Duration
@@ -103,7 +107,15 @@ export function DurationCell({
 					setIsEditing(false);
 					isSubmittingRef.current = false;
 				}}
+				onKeyDown={(e) => {
+					if (e.key === "Escape") {
+						setValue(computeNowValue());
+						setIsEditing(false);
+						inputRef.current?.blur();
+					}
+				}}
 			/>
+			<SaveHint visible={isDirty} />
 		</form>
 	);
 }

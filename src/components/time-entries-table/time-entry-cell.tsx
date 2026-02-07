@@ -3,7 +3,7 @@ import * as React from "react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CELL_INPUT_CLASS, useUpdateTimeEntryName } from "./hooks";
+import { CELL_INPUT_CLASS, SaveHint, useUpdateTimeEntryName } from "./hooks";
 
 export function TimeEntryCell({
 	timeEntryId,
@@ -13,6 +13,7 @@ export function TimeEntryCell({
 	timeEntryName: string;
 }) {
 	const [value, setValue] = React.useState(timeEntryName);
+	const [isFocused, setIsFocused] = React.useState(false);
 	const updateName = useUpdateTimeEntryName(timeEntryId);
 	const isSubmittingRef = React.useRef(false);
 	const inputRef = React.useRef<HTMLInputElement>(null);
@@ -22,15 +23,21 @@ export function TimeEntryCell({
 		isSubmittingRef.current = false;
 	}, [timeEntryName]);
 
+	const isDirty = isFocused && value !== timeEntryName;
+
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
 				isSubmittingRef.current = true;
-				if (value === timeEntryName) return;
+				if (value === timeEntryName) {
+					inputRef.current?.blur();
+					return;
+				}
 				updateName(value);
 				inputRef.current?.blur();
 			}}
+			className="relative"
 		>
 			<Label htmlFor={`${timeEntryId}-name`} className="sr-only">
 				Name
@@ -41,12 +48,21 @@ export function TimeEntryCell({
 				id={`${timeEntryId}-name`}
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
+				onFocus={() => setIsFocused(true)}
 				onBlur={() => {
+					setIsFocused(false);
 					if (isSubmittingRef.current) return;
 					setValue(timeEntryName);
 					isSubmittingRef.current = false;
 				}}
+				onKeyDown={(e) => {
+					if (e.key === "Escape") {
+						setValue(timeEntryName);
+						inputRef.current?.blur();
+					}
+				}}
 			/>
+			<SaveHint visible={isDirty} />
 		</form>
 	);
 }

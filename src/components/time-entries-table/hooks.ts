@@ -1,4 +1,5 @@
 import { useMutation } from "convex/react";
+import { createElement } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -10,6 +11,26 @@ const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 export const CELL_INPUT_CLASS =
 	"w-fit border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30";
+
+export function SaveHint({ visible }: { visible: boolean }) {
+	if (!visible) return null;
+	return createElement(
+		"span",
+		{
+			className:
+				"absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-muted-foreground animate-in fade-in duration-150 pointer-events-none",
+		},
+		createElement(
+			"kbd",
+			{
+				className:
+					"px-1 py-0.5 rounded bg-muted border border-border text-[10px] font-mono",
+			},
+			"\u21B5",
+		),
+		"save",
+	);
+}
 
 export function useUpdateTimeEntryName(timeEntryId: Id<"time_entries">) {
 	const update = withToast(
