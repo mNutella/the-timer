@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/(app)")({
 	component: RouteComponent,

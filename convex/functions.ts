@@ -1,28 +1,28 @@
 /* eslint-disable no-restricted-imports */
-import {
-	mutation as rawMutation,
-	internalMutation as rawInternalMutation,
-	query as rawQuery,
-	internalQuery as rawInternalQuery,
-} from "./_generated/server";
+
+import { entsTableFactory } from "convex-ents";
 /* eslint-enable no-restricted-imports */
 import {
 	customCtx,
 	customMutation,
 	customQuery,
 } from "convex-helpers/server/customFunctions";
-import { entsTableFactory } from "convex-ents";
 import { Triggers } from "convex-helpers/server/triggers";
-
-import { entDefinitions } from "./schema";
 import type { DataModel } from "./_generated/dataModel";
 import {
-  timeEntriesTotalDurationByCategoryAndDateAggregate,
-  timeEntriesTotalDurationByClientAndDateAggregate,
+	internalMutation as rawInternalMutation,
+	internalQuery as rawInternalQuery,
+	mutation as rawMutation,
+	query as rawQuery,
+} from "./_generated/server";
+import {
+	timeEntriesTotalDurationByCategoryAndDateAggregate,
+	timeEntriesTotalDurationByClientAndDateAggregate,
 	// timeEntriesByUserAggregate,
 	timeEntriesTotalDurationByDateAggregate,
-  timeEntriesTotalDurationByProjectAndDateAggregate,
+	timeEntriesTotalDurationByProjectAndDateAggregate,
 } from "./aggregates";
+import { entDefinitions } from "./schema";
 
 const triggers = new Triggers<DataModel>();
 

@@ -1,6 +1,6 @@
-import * as React from "react";
-import { usePaginatedQuery } from "convex-helpers/react/cache";
 import type { FunctionArgs, FunctionReference } from "convex/server";
+import { usePaginatedQuery } from "convex-helpers/react/cache";
+import * as React from "react";
 
 type PaginatedQueryRef = FunctionReference<
 	"query",
@@ -18,12 +18,16 @@ type PaginatedQueryRef = FunctionReference<
 
 export function useStablePaginatedQuery<
 	TItem,
-	TQuery extends PaginatedQueryRef = PaginatedQueryRef
->(apiQuery: TQuery, queryArgs: Omit<FunctionArgs<TQuery>, "paginationOpts">, options?: { initialNumItems?: number }) {
+	TQuery extends PaginatedQueryRef = PaginatedQueryRef,
+>(
+	apiQuery: TQuery,
+	queryArgs: Omit<FunctionArgs<TQuery>, "paginationOpts">,
+	options?: { initialNumItems?: number },
+) {
 	const { results, loadMore, isLoading, status } = usePaginatedQuery(
 		apiQuery,
 		// biome-ignore lint/suspicious/noExplicitAny: convex-helpers expects a widened arg type
-		(queryArgs as any),
+		queryArgs as any,
 		{ initialNumItems: options?.initialNumItems ?? 10 },
 	);
 
@@ -40,5 +44,3 @@ export function useStablePaginatedQuery<
 		status,
 	};
 }
-
-

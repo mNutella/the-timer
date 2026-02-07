@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-
-import TimeEntriesTable from "@/components/time-entries-table";
 import { SectionCards } from "@/components/section-cards";
+import TimeEntriesTable from "@/components/time-entries-table";
 
 export const Route = createFileRoute("/(app)/")({
 	component: Index,

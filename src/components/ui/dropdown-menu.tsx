@@ -1,6 +1,6 @@
-import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -19,8 +19,8 @@ function DropdownMenuPortal({
 }
 
 const DropdownMenuTrigger = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
-  React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>
+	React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
+	React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>
 >((props, ref) => {
 	return (
 		<DropdownMenuPrimitive.Trigger
@@ -38,7 +38,7 @@ const DropdownMenuContent = React.forwardRef<
 >(({ className, sideOffset = 4, ...props }, ref) => (
 	<DropdownMenuPrimitive.Portal>
 		<DropdownMenuPrimitive.Content
-      ref={ref}
+			ref={ref}
 			data-slot="dropdown-menu-content"
 			sideOffset={sideOffset}
 			className={cn(

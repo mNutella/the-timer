@@ -16,7 +16,7 @@ export function computeNextTiming(args: {
 		}
 	}
 
-	let nextDuration: number | undefined = undefined;
+	let nextDuration: number | undefined;
 	if (nextStart !== undefined && nextEnd !== undefined) {
 		if (nextEnd < nextStart)
 			throw new Error("end_time cannot be before start_time");

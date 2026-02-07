@@ -1,8 +1,8 @@
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import { useUpdateTimeEntryProject } from "./hooks";
 import type { Project } from "../../lib/types";
+import { useUpdateTimeEntryProject } from "./hooks";
 
 export function ProjectCell({
 	timeEntryId,

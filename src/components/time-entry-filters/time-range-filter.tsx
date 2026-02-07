@@ -1,15 +1,14 @@
-import * as React from "react";
-import { BrushCleaning, ChevronsUpDown } from "lucide-react";
 import { IconCalendar } from "@tabler/icons-react";
+import { BrushCleaning, ChevronsUpDown } from "lucide-react";
+import * as React from "react";
 import type { DateRange } from "react-day-picker";
-
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
 	Popover,
-	PopoverTrigger,
 	PopoverContent,
+	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 

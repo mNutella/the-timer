@@ -1,7 +1,6 @@
 import { TableAggregate } from "@convex-dev/aggregate";
-
-import type { DataModel, Id } from "./_generated/dataModel";
 import { components } from "./_generated/api";
+import type { DataModel, Id } from "./_generated/dataModel";
 import { getStartOfDay } from "./utils";
 
 // export const timeEntriesByUserAggregate = new TableAggregate<{

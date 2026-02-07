@@ -1,10 +1,8 @@
-import type { ConvexReactClient } from "convex/react";
-import { createRootRouteWithContext } from "@tanstack/react-router";
-import { Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-
-import { Toaster } from "@/components/ui/sonner";
+import type { ConvexReactClient } from "convex/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createRootRouteWithContext<{
 	convexQueryClient: ConvexReactClient;

@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
 	IconChartBar,
 	IconDashboard,
@@ -8,6 +7,7 @@ import {
 	IconSettings,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import type * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";

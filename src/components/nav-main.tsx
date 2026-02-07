@@ -1,6 +1,6 @@
-import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react";
+import { type Icon, IconCirclePlusFilled } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import {
@@ -10,7 +10,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "@tanstack/react-router";
 import { withToast } from "@/lib/utils";
 
 export function NavMain({

@@ -18,9 +18,9 @@ interface ComboBoxContextType<T> {
 	setSelectedItems: (items: T | null) => void;
 }
 
-const ComboBoxContext = React.createContext<ComboBoxContextType<any> | undefined>(
-	undefined,
-);
+const ComboBoxContext = React.createContext<
+	ComboBoxContextType<any> | undefined
+>(undefined);
 
 export function useComboBox() {
 	const context = React.useContext(ComboBoxContext);
@@ -37,9 +37,7 @@ export function ComboBoxResponsive({
 }) {
 	const [open, setOpen] = React.useState(false);
 	const isMobile = useIsMobile();
-	const [selectedItems, setSelectedItems] = React.useState<any | null>(
-		null,
-	);
+	const [selectedItems, setSelectedItems] = React.useState<any | null>(null);
 
 	const contextValue = React.useMemo(
 		() => ({
@@ -61,9 +59,7 @@ export function ComboBoxResponsive({
 						</Button>
 					</DrawerTrigger>
 					<DrawerContent>
-						<div className="mt-4 border-t">
-							{children}
-						</div>
+						<div className="mt-4 border-t">{children}</div>
 					</DrawerContent>
 				</Drawer>
 			</ComboBoxContext.Provider>
