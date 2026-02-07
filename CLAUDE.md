@@ -77,6 +77,10 @@ import { query, mutation } from "./functions";  // NOT from "./_generated/server
 - **Timer:** A running timer = time entry with `start_time` set, `end_time` undefined. Starting a new timer auto-stops any running one. Resume creates a new entry copying metadata from the original.
 - **Client→Project cascading:** When a time entry's client changes, the project is cleared if it belonged to a different client.
 
+## Workflow
+
+- **Before committing:** Check `docs/TODO.md` and mark any items completed by the changes being committed. Move completed items to the "Completed Features" section.
+
 ## Environment Variables
 
 ```

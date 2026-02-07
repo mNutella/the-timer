@@ -8,9 +8,9 @@ Prioritized task list based on current project state. Focused on reaching a full
 
 These items fix existing broken/incomplete features that block a usable app.
 
-- [ ] **Fix SectionCards** - Replace 3 hardcoded placeholder cards with real data (total entries, active projects, avg daily hours)
-- [ ] **Connect analytics charts to real data** - Bar chart and radial chart currently use partial/placeholder data; wire them to the aggregate queries with active filters
-- [ ] **Fix searchable combobox bug** - Selected value should not populate the search input
+- [ ] **Fix SectionCards** - Replace 3 hardcoded placeholder cards with real data (1 of 4 cards uses real data; remaining 3 still hardcoded)
+- [x] **Connect analytics charts to real data** - Bar chart and radial chart wired to aggregate queries with active filters
+- [x] **Fix searchable combobox bug** - Selected value no longer populates the search input
 - [ ] **Fix rapid client/project change inconsistency** - Add debounce or queue mechanism for quick successive changes
 - [ ] **Add quick date range presets** - Today, This Week, This Month, Last Month buttons alongside custom range picker
 
@@ -129,3 +129,7 @@ For reference, these are already implemented and working:
 - [x] Dark mode
 - [x] Toast notifications
 - [x] Prevention of updates to deleted entries
+- [x] Multiselect entity filters (client, project, category)
+- [x] Selected items shown first in filter dropdowns
+- [x] Analytics charts connected to real filtered data (bar + radial)
+- [x] Combobox search input cleared on selection
