@@ -2,7 +2,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import type { Client } from "../../lib/types";
-import { useUpdateTimeEntryClient } from "./hooks";
+import { CELL_INPUT_CLASS, useUpdateTimeEntryClient } from "./hooks";
 
 export function ClientCell({
 	timeEntryId,
@@ -17,14 +17,10 @@ export function ClientCell({
 		<SearchableCombobox
 			id={`${timeEntryId}-client`}
 			value={client ?? undefined}
-			className="w-fit border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
+			className={CELL_INPUT_CLASS}
 			apiQuery={api.clients.searchByName}
-			onValueChange={(client) => {
-				updateClient(client?._id);
-			}}
-			onSelect={(name) => {
-				updateClient(undefined, name);
-			}}
+			onValueChange={(client) => updateClient(client?._id)}
+			onSelect={(name) => updateClient(undefined, name)}
 		/>
 	);
 }

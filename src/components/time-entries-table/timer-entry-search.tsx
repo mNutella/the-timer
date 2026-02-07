@@ -12,7 +12,7 @@ export function TimerEntrySearch({
 	return (
 		<div>
 			<Label htmlFor="time-entry-search" className="sr-only">
-				Duration
+				Search
 			</Label>
 			<div className="flex items-center gap-2 rounded-md border border-input bg-background px-4 h-9">
 				<IconSearch size={24} />

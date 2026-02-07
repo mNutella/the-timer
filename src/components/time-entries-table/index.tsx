@@ -85,23 +85,6 @@ const columns: ColumnDef<TimeEntry>[] = [
 			/>
 		),
 	},
-	// {
-	// 	accessorKey: "tags",
-	// 	header: "Tags",
-	// 	cell: ({ row }) => (
-	// 		<div className="flex items-center gap-1">
-	// 			{row.original.activity.tags?.map((tag) => (
-	// 				<Badge
-	// 					key={tag._id}
-	// 					variant="outline"
-	// 					className="text-muted-foreground px-1.5"
-	// 				>
-	// 					{tag.name}
-	// 				</Badge>
-	// 			)) || "No tags"}
-	// 		</div>
-	// 	),
-	// },
 	{
 		accessorKey: "duration",
 		header: "Duration",
@@ -184,7 +167,6 @@ export default function TimeEntriesTable() {
 	const {
 		results: initialData,
 		loadMore,
-		isLoading,
 		status,
 	} = useTimeEntries(
 		searchValue,
@@ -194,7 +176,7 @@ export default function TimeEntriesTable() {
 		filterByTimeRange,
 	);
 	const scrollAreaRef = React.useRef<HTMLDivElement>(null);
-	const loaderRef = React.useRef<HTMLTableDataCellElement>(null);
+	const loaderRef = React.useRef<HTMLTableCellElement>(null);
 	const [rowSelection, setRowSelection] = React.useState({});
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
@@ -210,8 +192,6 @@ export default function TimeEntriesTable() {
 			!scrollAreaRef.current
 		)
 			return;
-
-		if (!scrollAreaRef.current) return;
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -329,10 +309,6 @@ export default function TimeEntriesTable() {
 				<div className="flex items-center">
 					<CustomizeTableMenu table={table} />
 				</div>
-				{/* <Button variant="outline" size="sm">
-						<IconPlus />
-						<span className="hidden lg:inline">Add Section</span>
-					</Button> */}
 			</div>
 			<div className="relative flex flex-col gap-4 px-4 lg:px-6 mt-2">
 				<div className="rounded-lg border">
@@ -427,16 +403,6 @@ export default function TimeEntriesTable() {
 										/>
 									</TableRow>
 								)}
-								{/* {isLoading && (
-									<TableRow>
-										<TableCell
-											colSpan={columns.length}
-											className="h-4 w-full text-center"
-										>
-											Loading more...
-										</TableCell>
-									</TableRow>
-								)} */}
 							</TableBody>
 						</Table>
 					</ScrollArea>

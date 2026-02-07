@@ -12,30 +12,17 @@ export function StartStopCell({
 	inProgress: boolean;
 }) {
 	const { startTimer, stopTimer } = useStartStopTimeEntry(timeEntryId);
-
-	if (inProgress) {
-		return (
-			<Button
-				variant="ghost"
-				className="data-[state=open]:bg-muted text-muted-foreground flex h-10 w-10"
-				size="icon"
-				onClick={stopTimer}
-			>
-				<Pause className="size-6" />
-				<span className="sr-only">Stop</span>
-			</Button>
-		);
-	}
+	const Icon = inProgress ? Pause : Play;
 
 	return (
 		<Button
 			variant="ghost"
 			className="data-[state=open]:bg-muted text-muted-foreground flex h-10 w-10"
 			size="icon"
-			onClick={startTimer}
+			onClick={inProgress ? stopTimer : startTimer}
 		>
-			<Play className="size-6" />
-			<span className="sr-only">Start</span>
+			<Icon className="size-6" />
+			<span className="sr-only">{inProgress ? "Stop" : "Start"}</span>
 		</Button>
 	);
 }

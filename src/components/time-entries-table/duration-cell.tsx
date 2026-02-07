@@ -4,7 +4,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatDuration, parseDurationToMilliseconds } from "@/lib/utils";
-import { useUpdateDuration } from "./hooks";
+import { CELL_INPUT_CLASS, useUpdateDuration } from "./hooks";
 
 export function DurationCell({
 	timeEntryId,
@@ -34,21 +34,15 @@ export function DurationCell({
 
 	React.useEffect(() => {
 		if (isEditing) return;
-		// If we have a pending duration that hasn't reflected in props yet, avoid overriding local value
 		if (
 			pendingDurationMsRef.current !== null &&
 			pendingDurationMsRef.current !== duration
-		) {
+		)
 			return;
-		}
 
 		setValue(computeNowValue());
 
-		// Clear pending when server data matches the expected duration
-		if (
-			pendingDurationMsRef.current !== null &&
-			pendingDurationMsRef.current === duration
-		) {
+		if (pendingDurationMsRef.current === duration) {
 			pendingDurationMsRef.current = null;
 		}
 	}, [computeNowValue, isEditing, duration]);
@@ -74,18 +68,15 @@ export function DurationCell({
 		};
 	}, [inProgress, isEditing, startTime]);
 
-	const hasValueChanged = (val: string) => val !== formatDuration(duration);
-
 	return (
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
 				isSubmittingRef.current = true;
-				if (!hasValueChanged(value)) {
+				if (value === formatDuration(duration)) {
 					setIsEditing(false);
 					return;
 				}
-
 				pendingDurationMsRef.current = parseDurationToMilliseconds(value);
 				updateDuration(value);
 				setIsEditing(false);
@@ -97,26 +88,18 @@ export function DurationCell({
 			</Label>
 			<Input
 				ref={inputRef}
-				className="w-fit border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
+				className={CELL_INPUT_CLASS}
 				value={value}
-				onFocus={() => {
-					setIsEditing(true);
-				}}
+				onFocus={() => setIsEditing(true)}
 				onChange={(e) => {
 					const cursorPosition = e.target.selectionStart;
 					setValue(e.target.value);
-
 					setTimeout(() => {
-						if (e.target) {
-							e.target.setSelectionRange(cursorPosition, cursorPosition);
-						}
+						e.target?.setSelectionRange(cursorPosition, cursorPosition);
 					}, 0);
 				}}
 				onBlur={() => {
-					if (inProgress) {
-						setValue(computeNowValue());
-					}
-
+					if (inProgress) setValue(computeNowValue());
 					setIsEditing(false);
 					isSubmittingRef.current = false;
 				}}

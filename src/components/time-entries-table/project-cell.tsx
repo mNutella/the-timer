@@ -2,7 +2,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import type { Project } from "../../lib/types";
-import { useUpdateTimeEntryProject } from "./hooks";
+import { CELL_INPUT_CLASS, useUpdateTimeEntryProject } from "./hooks";
 
 export function ProjectCell({
 	timeEntryId,
@@ -19,23 +19,16 @@ export function ProjectCell({
 		<SearchableCombobox
 			id={`${timeEntryId}-project`}
 			value={project ?? undefined}
-			className="w-fit border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
+			className={CELL_INPUT_CLASS}
 			apiQuery={api.projects.searchByName}
 			queryArgs={{
 				userId: import.meta.env.VITE_USER_ID as Id<"users">,
 				clientId,
 				query: "",
-				paginationOpts: {
-					numItems: 10,
-					cursor: null,
-				},
+				paginationOpts: { numItems: 10, cursor: null },
 			}}
-			onValueChange={(project) => {
-				updateProject(project?._id);
-			}}
-			onSelect={(name) => {
-				updateProject(undefined, name);
-			}}
+			onValueChange={(project) => updateProject(project?._id)}
+			onSelect={(name) => updateProject(undefined, name)}
 		/>
 	);
 }
