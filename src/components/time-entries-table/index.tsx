@@ -16,12 +16,6 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
-import {
-	CategoryFilter,
-	ClientFilter,
-	ProjectFilter,
-	TimeRangeFilter,
-} from "@/components/time-entry-filters";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Table,
@@ -43,7 +37,6 @@ import { ProjectCell } from "./project-cell";
 import { StartEndTimeCell } from "./start-end-time-cell";
 import { StartStopCell } from "./start-stop-cell";
 import { TimeEntryCell } from "./time-entry-cell";
-import { TimerEntrySearch } from "./timer-entry-search";
 
 const columns: ColumnDef<TimeEntry>[] = [
 	{
@@ -154,16 +147,21 @@ const CustomRow = React.forwardRef<
 	);
 });
 
-export default function TimeEntriesTable() {
-	const [searchValue, setSearchValue] = React.useState("");
-	const [filterByClients, setFilterByClients] = React.useState<Client[]>([]);
-	const [filterByProjects, setFilterByProjects] = React.useState<Project[]>([]);
-	const [filterByCategories, setFilterByCategories] = React.useState<
-		Category[]
-	>([]);
-	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
-		DateRange | undefined
-	>(undefined);
+interface TimeEntriesTableProps {
+	searchValue: string;
+	filterByClients: Client[];
+	filterByProjects: Project[];
+	filterByCategories: Category[];
+	filterByTimeRange?: DateRange;
+}
+
+export default function TimeEntriesTable({
+	searchValue,
+	filterByClients,
+	filterByProjects,
+	filterByCategories,
+	filterByTimeRange,
+}: TimeEntriesTableProps) {
 	const {
 		results: initialData,
 		loadMore,
@@ -283,32 +281,8 @@ export default function TimeEntriesTable() {
 
 	return (
 		<div className="w-full flex-col justify-start gap-6">
-			<div className="flex items-center justify-between px-4 lg:px-6">
-				<div className="flex items-center justify-between gap-2">
-					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
-					<ClientFilter
-						value={filterByClients}
-						onSelect={setFilterByClients}
-						placeholder="Filter by Client"
-					/>
-					<ProjectFilter
-						value={filterByProjects}
-						onSelect={setFilterByProjects}
-						placeholder="Filter by Project"
-					/>
-					<CategoryFilter
-						value={filterByCategories}
-						onSelect={setFilterByCategories}
-						placeholder="Filter by Category"
-					/>
-					<TimeRangeFilter
-						value={filterByTimeRange}
-						onChange={setFilterByTimeRange}
-					/>
-				</div>
-				<div className="flex items-center">
-					<CustomizeTableMenu table={table} />
-				</div>
+			<div className="flex items-center justify-end px-4 lg:px-6">
+				<CustomizeTableMenu table={table} />
 			</div>
 			<div className="relative flex flex-col gap-4 px-4 lg:px-6 mt-2">
 				<div className="rounded-lg border">

@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { TimeEntriesChartBarInteractive } from "@/components/time-entries-chart-bar";
-import { TimerEntrySearch } from "@/components/time-entries-table/timer-entry-search";
+import TimeEntriesTable from "@/components/time-entries-table";
 import {
 	CategoryFilter,
 	ClientFilter,
 	ProjectFilter,
 	TimeRangeFilter,
+	TimerEntrySearch,
 } from "@/components/time-entry-filters";
 import { TimeEntriesChartRadialStacked } from "@/components/timer-entries-chart-radial-stacked";
 import { useFilters } from "@/hooks/use-filters";
@@ -74,6 +75,13 @@ function Analytics() {
 					{/* <ChartAreaInteractive /> */}
 				</div>
 			</div>
+			<TimeEntriesTable
+				searchValue={searchValue}
+				filterByClients={filterByClients}
+				filterByProjects={filterByProjects}
+				filterByCategories={filterByCategories}
+				filterByTimeRange={filterByTimeRange}
+			/>
 		</div>
 	);
 }
