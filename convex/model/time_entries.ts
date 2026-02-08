@@ -413,6 +413,68 @@ export async function updateCategory(
 	return timeEntry;
 }
 
+export async function getRunningTimer(
+	ctx: QueryCtx,
+	{ userId }: { userId: Id<"users"> },
+) {
+	const entry = await ctx
+		.table("time_entries", "by_user_end_time", (q) =>
+			q.eq("userId", userId).eq("end_time", undefined),
+		)
+		.first();
+	if (!entry) return null;
+
+	const [client, project, category, tags] = await Promise.all([
+		entry.edge("client"),
+		entry.edge("project"),
+		entry.edge("category"),
+		entry.edge("tags"),
+	]);
+	return {
+		...omit(entry as Doc<"time_entries">, ["userId"]),
+		client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
+		project: project
+			? omit(project as Doc<"projects">, ["userId", "clientId"])
+			: null,
+		category: category ? omit(category as Doc<"categories">, ["userId"]) : null,
+		tags: tags.map((tag) => omit(tag as Doc<"tags">, ["userId"])),
+	};
+}
+
+export async function getRecentProjects(
+	ctx: QueryCtx,
+	{ userId, limit }: { userId: Id<"users">; limit: number },
+) {
+	const recentEntries = await ctx
+		.table("time_entries", "userId", (q) => q.eq("userId", userId))
+		.order("desc")
+		.take(50);
+
+	const seen = new Set<string>();
+	const results = [];
+	for (const entry of recentEntries) {
+		if (results.length >= limit || !entry.projectId) continue;
+		if (seen.has(entry.projectId)) continue;
+		seen.add(entry.projectId);
+		const [project, client, category] = await Promise.all([
+			entry.edge("project"),
+			entry.edge("client"),
+			entry.edge("category"),
+		]);
+		if (!project) continue;
+		results.push({
+			projectId: project._id,
+			projectName: project.name,
+			clientId: client?._id,
+			clientName: client?.name,
+			categoryId: category?._id,
+			categoryName: category?.name,
+			lastEntryName: entry.name,
+		});
+	}
+	return results;
+}
+
 export async function searchTimeEntries(
 	ctx: QueryCtx,
 	{ userId, filters, paginationOpts }: SearchTimeEntriesParams,

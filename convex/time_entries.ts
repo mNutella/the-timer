@@ -312,3 +312,22 @@ export const getTotalDuration = query({
 		});
 	},
 });
+
+export const getRunningTimer = query({
+	args: {
+		userId: v.id("users"),
+	},
+	handler: async (ctx, { userId }) => {
+		return TimeEntries.getRunningTimer(ctx, { userId });
+	},
+});
+
+export const getRecentProjects = query({
+	args: {
+		userId: v.id("users"),
+		limit: v.optional(v.number()),
+	},
+	handler: async (ctx, { userId, limit }) => {
+		return TimeEntries.getRecentProjects(ctx, { userId, limit: limit ?? 5 });
+	},
+});
