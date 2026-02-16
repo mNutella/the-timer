@@ -51,7 +51,7 @@ export function ActiveTimerWidget() {
 				<CardHeader className="flex flex-row items-center justify-between">
 					<div>
 						<CardDescription>Active Timer</CardDescription>
-						<CardTitle className="text-2xl font-semibold tabular-nums">
+						<CardTitle className="text-2xl font-sans font-semibold tabular-nums">
 							--:--:--
 						</CardTitle>
 					</div>
@@ -66,7 +66,7 @@ export function ActiveTimerWidget() {
 				<CardHeader className="flex flex-row items-center justify-between">
 					<div>
 						<CardDescription>Active Timer</CardDescription>
-						<CardTitle className="text-lg text-muted-foreground">
+						<CardTitle className="text-lg font-sans text-muted-foreground">
 							No active timer
 						</CardTitle>
 					</div>
@@ -84,7 +84,7 @@ export function ActiveTimerWidget() {
 			<CardHeader className="flex flex-row items-center justify-between">
 				<div className="flex flex-col gap-1">
 					<CardDescription>Active Timer</CardDescription>
-					<CardTitle className="text-3xl font-semibold tabular-nums">
+					<CardTitle className="text-3xl font-sans font-semibold tabular-nums">
 						{elapsed}
 					</CardTitle>
 					<div className="flex items-center gap-2">

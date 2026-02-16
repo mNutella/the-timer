@@ -39,7 +39,7 @@ export function TodaySummaryCards({
 			<Card className="@container/card">
 				<CardHeader>
 					<CardDescription>Total Time Today</CardDescription>
-					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
 						{totalDuration !== undefined
 							? formatDuration(totalDuration)
 							: "--:--:--"}
@@ -49,7 +49,7 @@ export function TodaySummaryCards({
 			<Card className="@container/card">
 				<CardHeader>
 					<CardDescription>Entries Today</CardDescription>
-					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
 						{entryCount !== undefined ? count : "--"}
 					</CardTitle>
 				</CardHeader>
@@ -57,7 +57,7 @@ export function TodaySummaryCards({
 			<Card className="@container/card">
 				<CardHeader>
 					<CardDescription>Average Duration</CardDescription>
-					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
 						{totalDuration !== undefined && entryCount !== undefined
 							? formatDuration(avg)
 							: "--:--:--"}
