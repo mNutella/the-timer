@@ -119,8 +119,13 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
-	body {
+	body:has(#root) {
 		@apply bg-background text-foreground font-sans antialiased;
+	}
+	body:has(#island-root) {
+		background: transparent !important;
+		font-family: "Inter", system-ui, sans-serif;
+		-webkit-font-smoothing: antialiased;
 	}
 	h1,
 	h2,
@@ -131,8 +136,8 @@
 	}
 }
 
-html,
-body {
+html:has(#root),
+body:has(#root) {
 	@apply overflow-hidden rounded-lg;
 }
 
@@ -140,8 +145,8 @@ body {
 	@apply bg-transparent overflow-hidden rounded-lg relative;
 }
 
-/* Paper grain texture overlay */
-body::before {
+/* Paper grain texture overlay — only on main app window */
+body:has(#root)::before {
 	content: "";
 	position: fixed;
 	inset: 0;

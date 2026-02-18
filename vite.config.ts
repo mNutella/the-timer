@@ -1,7 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 // @ts-expect-error process is a nodejs global
@@ -20,7 +20,16 @@ export default defineConfig(async () => ({
 
 	resolve: {
 		alias: {
-			"@": path.resolve(__dirname, "./src"),
+			"@": resolve(__dirname, "./src"),
+		},
+	},
+
+	build: {
+		rollupOptions: {
+			input: {
+				main: resolve(__dirname, "index.html"),
+				overlay: resolve(__dirname, "overlay.html"),
+			},
 		},
 	},
 

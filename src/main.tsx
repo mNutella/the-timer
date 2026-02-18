@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -16,3 +17,6 @@ if (!rootElement.innerHTML) {
 		</StrictMode>,
 	);
 }
+
+// Create the Dynamic Island overlay after the main window is ready
+invoke("create_island").catch(console.error);
