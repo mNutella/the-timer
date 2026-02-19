@@ -133,3 +133,6 @@ For reference, these are already implemented and working:
 - [x] Selected items shown first in filter dropdowns
 - [x] Analytics charts connected to real filtered data (bar + radial)
 - [x] Combobox search input cleared on selection
+- [x] Dynamic Island overlay with NSPanel, JS-driven state animations
+- [x] Native CALayer corner masking to prevent border-radius flash during resize
+- [x] NSPanel focus swizzling for inline editing in overlay
