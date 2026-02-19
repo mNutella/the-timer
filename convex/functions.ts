@@ -10,7 +10,6 @@ import {
 import { Triggers } from "convex-helpers/server/triggers";
 import type { DataModel } from "./_generated/dataModel";
 import {
-	internalMutation as rawInternalMutation,
 	internalQuery as rawInternalQuery,
 	mutation as rawMutation,
 	query as rawQuery,

@@ -198,7 +198,7 @@ export async function update(
 		categoryId,
 		projectId,
 		clientId,
-		tagIds,
+		tagIds: _tagIds,
 		startDate,
 		endDate,
 		duration,

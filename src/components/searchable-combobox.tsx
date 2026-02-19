@@ -208,7 +208,7 @@ function SearchableComboboxContent<
 	};
 
 	const handleSelectItem = (item: T) => {
-		onValueChange(item);
+		onValueChange?.(item);
 		if (closeOnSelect) {
 			setSearch("");
 			setIsOpen(false);

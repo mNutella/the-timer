@@ -8,7 +8,7 @@ interface ComboboxState<T> {
 	selectedItems?: Map<string, T>;
 	isMobile: boolean;
 	setIsOpen: (isOpen: boolean) => void;
-	onValueChange: (newSelectedItem: T | undefined) => void;
+	onValueChange?: (newSelectedItem: T | undefined) => void;
 	onPopoverOpenChange?: (open: boolean) => void;
 }
 
