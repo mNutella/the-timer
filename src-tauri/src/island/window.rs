@@ -28,6 +28,44 @@ tauri_nspanel::tauri_panel! {
     panel_event!(IslandEventHandler {})
 }
 
+/* ─── Helpers ────────────────────────────────────────────────── */
+
+macro_rules! get_panel {
+    ($app:expr) => {
+        tauri_nspanel::ManagerExt::get_webview_panel($app, ISLAND_LABEL)
+            .map_err(|_| "Island panel not found".to_string())
+    };
+}
+
+/// Swap `canBecomeKeyWindow` on an ObjC panel's class to return YES or NO.
+unsafe fn set_can_become_key(obj: *const objc2::runtime::AnyObject, can_become: bool) {
+    use objc2::ffi::{class_replaceMethod, object_getClass};
+    use objc2::runtime::{Bool, Imp, Sel};
+
+    extern "C-unwind" fn yes(_: *const objc2::runtime::AnyObject, _: Sel) -> Bool {
+        Bool::YES
+    }
+    extern "C-unwind" fn no(_: *const objc2::runtime::AnyObject, _: Sel) -> Bool {
+        Bool::NO
+    }
+
+    let cls = object_getClass(obj);
+
+    type CanBecomeKeyFn =
+        extern "C-unwind" fn(*const objc2::runtime::AnyObject, Sel) -> Bool;
+    let func: CanBecomeKeyFn = if can_become { yes } else { no };
+    let imp: Imp = core::mem::transmute(func);
+
+    class_replaceMethod(
+        cls as *mut _,
+        Sel::register(c"canBecomeKeyWindow"),
+        imp,
+        c"B@:".as_ptr(),
+    );
+}
+
+/* ─── Panel lifecycle ────────────────────────────────────────── */
+
 /// Create and show the island panel at the top-center of the screen.
 fn do_create_island(app: &AppHandle) -> Result<(), String> {
     // Don't create if it already exists
@@ -85,6 +123,42 @@ fn do_create_island(app: &AppHandle) -> Result<(), String> {
     panel.set_hides_on_deactivate(false);
     panel.set_accepts_mouse_moved_events(true);
 
+    // Ensure panel is fully transparent after to_panel() conversion.
+    // Without this, AppKit may draw the window background (rectangular)
+    // one frame before the webview repaints, flashing sharp corners during resize.
+    unsafe {
+        use objc2::runtime::AnyClass;
+        let ns_panel = panel.as_panel();
+        let _: () = objc2::msg_send![ns_panel, setOpaque: false];
+        let clear: *const objc2::runtime::AnyObject =
+            objc2::msg_send![AnyClass::get(c"NSColor").unwrap(), clearColor];
+        let _: () = objc2::msg_send![ns_panel, setBackgroundColor: clear];
+
+        // Apply native CALayer corner mask on the content view.
+        // During resize the webview may repaint at the new frame size before the
+        // CSS clip-path compositing pass, briefly showing the raw rectangular
+        // black background. The native mask clips at the Core Animation compositing
+        // level — after the WebKit render but before the frame hits the screen —
+        // so corners stay rounded regardless of WebKit paint timing.
+        let content_view: *const objc2::runtime::AnyObject =
+            objc2::msg_send![ns_panel, contentView];
+        let _: () = objc2::msg_send![content_view, setWantsLayer: true];
+        let layer: *const objc2::runtime::AnyObject =
+            objc2::msg_send![content_view, layer];
+        let _: () = objc2::msg_send![layer, setMasksToBounds: true];
+
+        if layout.has_notch {
+            let _: () = objc2::msg_send![layer, setCornerRadius: 14.0_f64];
+            // Only bottom corners (screen coords) = MinY corners in CA coords
+            // kCALayerMinXMinYCorner (1) | kCALayerMaxXMinYCorner (2)
+            let masked: usize = (1 << 0) | (1 << 1);
+            let _: () = objc2::msg_send![layer, setMaskedCorners: masked];
+        } else {
+            let _: () = objc2::msg_send![layer, setCornerRadius: 16.0_f64];
+            // All four corners masked (default)
+        }
+    }
+
     // Set up native mouse tracking → Tauri event bridge.
     // NSPanel with canBecomeKeyWindow:false won't fire DOM pointer events,
     // so we use NSTrackingArea callbacks to emit Tauri events instead.
@@ -115,24 +189,21 @@ pub fn create_island(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub fn show_island(app: AppHandle) -> Result<(), String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
     panel.show();
     Ok(())
 }
 
 #[tauri::command]
 pub fn hide_island(app: AppHandle) -> Result<(), String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
     panel.hide();
     Ok(())
 }
 
 #[tauri::command]
 pub fn toggle_island(app: AppHandle) -> Result<(), String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
     if panel.is_visible() {
         panel.hide();
     } else {
@@ -143,8 +214,7 @@ pub fn toggle_island(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub fn resize_island(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
 
     let layout = calculate_island_layout(&app, width);
     let x = layout.x;
@@ -182,8 +252,7 @@ pub fn resize_island(app: AppHandle, width: f64, height: f64) -> Result<(), Stri
 /// (the tracking area rebuild during resize can fire spurious exits).
 #[tauri::command]
 pub fn check_island_mouse(app: AppHandle) -> Result<bool, String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
 
     unsafe {
         use objc2::runtime::AnyClass;
@@ -206,11 +275,36 @@ pub fn check_island_mouse(app: AppHandle) -> Result<bool, String> {
     }
 }
 
+/// Enable keyboard focus on the island panel (for inline editing).
+#[tauri::command]
+pub fn focus_island(app: AppHandle) -> Result<(), String> {
+    let panel = get_panel!(&app)?;
+    unsafe {
+        let ns_panel = panel.as_panel();
+        set_can_become_key(ns_panel as *const _ as *const _, true);
+        let _: () = objc2::msg_send![ns_panel, makeKeyWindow];
+    }
+    Ok(())
+}
+
+/// Disable keyboard focus on the island panel (after editing).
+#[tauri::command]
+pub fn unfocus_island(app: AppHandle) -> Result<(), String> {
+    let panel = get_panel!(&app)?;
+    unsafe {
+        let ns_panel = panel.as_panel();
+        set_can_become_key(ns_panel as *const _ as *const _, false);
+        let _: () = objc2::msg_send![ns_panel, resignKeyWindow];
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn destroy_island(app: AppHandle) -> Result<(), String> {
-    let panel = tauri_nspanel::ManagerExt::get_webview_panel(&app, ISLAND_LABEL)
-        .map_err(|_| "Island panel not found".to_string())?;
+    let panel = get_panel!(&app)?;
     panel.set_released_when_closed(true);
-    panel.hide();
+    unsafe {
+        let _: () = objc2::msg_send![panel.as_panel(), close];
+    }
     Ok(())
 }

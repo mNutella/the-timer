@@ -12,7 +12,6 @@ const convexClient = new ConvexReactClient(CONVEX_URL);
 const params = new URLSearchParams(window.location.search);
 const hasNotch = params.get("notch") === "true";
 const notchWidth = Number(params.get("notchWidth") || "0");
-const windowWidth = Number(params.get("windowWidth") || "620");
 
 const rootElement = document.getElementById("island-root")!;
 if (!rootElement.innerHTML) {
@@ -20,11 +19,7 @@ if (!rootElement.innerHTML) {
 	root.render(
 		<StrictMode>
 			<ConvexProvider client={convexClient}>
-				<IslandApp
-					hasNotch={hasNotch}
-					notchWidth={notchWidth}
-					windowWidth={windowWidth}
-				/>
+				<IslandApp hasNotch={hasNotch} notchWidth={notchWidth} />
 			</ConvexProvider>
 		</StrictMode>,
 	);

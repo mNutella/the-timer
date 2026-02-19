@@ -19,6 +19,8 @@ pub fn run() {
             island::window::toggle_island,
             island::window::resize_island,
             island::window::check_island_mouse,
+            island::window::focus_island,
+            island::window::unfocus_island,
             island::window::destroy_island,
         ])
         .run(tauri::generate_context!())

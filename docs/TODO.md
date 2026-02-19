@@ -88,7 +88,7 @@ Leverage Tauri for native desktop experience.
 - [ ] **Tray menu** - Quick start/stop, recent entries
 - [ ] **Global hotkey** - Start/stop timer from anywhere (e.g., Cmd+Shift+T)
 - [ ] **Native notifications** - Alert when timer runs > configurable threshold
-- [ ] **Mini timer window** - Always-on-top compact timer display
+- [x] **Mini timer window** - Always-on-top Dynamic Island overlay near MacBook notch
 - [ ] **Auto-start** - Optional launch on system boot
 
 ---
