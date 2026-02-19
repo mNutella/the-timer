@@ -1,4 +1,11 @@
 import { IconCalendar } from "@tabler/icons-react";
+import {
+	endOfMonth,
+	endOfWeek,
+	startOfMonth,
+	startOfWeek,
+	subMonths,
+} from "date-fns";
 import { BrushCleaning, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
@@ -11,6 +18,40 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+const DATE_PRESETS: { label: string; getRange: () => DateRange }[] = [
+	{
+		label: "Today",
+		getRange: () => {
+			const today = new Date();
+			return { from: today, to: today };
+		},
+	},
+	{
+		label: "This Week",
+		getRange: () => {
+			const today = new Date();
+			return {
+				from: startOfWeek(today, { weekStartsOn: 1 }),
+				to: endOfWeek(today, { weekStartsOn: 1 }),
+			};
+		},
+	},
+	{
+		label: "This Month",
+		getRange: () => {
+			const today = new Date();
+			return { from: startOfMonth(today), to: endOfMonth(today) };
+		},
+	},
+	{
+		label: "Last Month",
+		getRange: () => {
+			const lastMonth = subMonths(new Date(), 1);
+			return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+		},
+	},
+];
 
 export function TimeRangeFilter({
 	value,
@@ -83,12 +124,30 @@ export function TimeRangeFilter({
 			<PopoverContent className="w-auto overflow-hidden p-0" align="start">
 				<Card className="w-fit rounded-none border-none bg-transparent py-4">
 					<CardContent className="px-4">
+						<div className="mb-3 flex justify-center gap-1.5">
+							{DATE_PRESETS.map((preset) => (
+								<Button
+									key={preset.label}
+									variant="outline"
+									size="sm"
+									className="h-7 text-xs"
+									onClick={() => {
+										const range = preset.getRange();
+										setTimeRange(range);
+										onChange(range);
+										setOpen(false);
+									}}
+								>
+									{preset.label}
+								</Button>
+							))}
+						</div>
 						<Calendar
 							required
 							mode="range"
 							selected={timeRange}
 							onSelect={setTimeRange}
-							className="bg-transparent p-0"
+							className="mx-auto bg-transparent p-0"
 							captionLayout="dropdown"
 						/>
 					</CardContent>

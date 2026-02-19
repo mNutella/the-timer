@@ -11,8 +11,7 @@ These items fix existing broken/incomplete features that block a usable app.
 - [x] **Fix SectionCards** - Replaced with timer-focused daily dashboard (active timer widget, today summary cards, quick start, activity feed)
 - [x] **Connect analytics charts to real data** - Bar chart and radial chart wired to aggregate queries with active filters
 - [x] **Fix searchable combobox bug** - Selected value no longer populates the search input
-- [ ] **Fix rapid client/project change inconsistency** - Add debounce or queue mechanism for quick successive changes
-- [ ] **Add quick date range presets** - Today, This Week, This Month, Last Month buttons alongside custom range picker
+- [x] **Add quick date range presets** - Today, This Week, This Month, Last Month buttons alongside custom range picker
 
 ---
 
