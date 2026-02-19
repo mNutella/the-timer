@@ -41,7 +41,7 @@ export function ActivityFeed({
 			userId,
 			filters: { dateRange: todayRange },
 		},
-		{ initialNumItems: 50 },
+		{ initialNumItems: 10 },
 	);
 
 	// Report entry count to parent for summary cards

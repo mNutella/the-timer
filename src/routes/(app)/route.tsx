@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useIslandDataBridge } from "@/hooks/use-island-data-bridge";
 
 export const Route = createFileRoute("/(app)")({
 	component: RouteComponent,
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/(app)")({
 
 function RouteComponent() {
 	const location = useLocation();
+	useIslandDataBridge();
 
 	return (
 		<SidebarProvider

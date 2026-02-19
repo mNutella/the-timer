@@ -442,13 +442,13 @@ async function getDailyBreakdownFromEntries(
 	const dayEnd = getEndOfDay(endDate);
 	const entityIdSet = new Set(entityIds);
 
-	// Query entries using the groupBy dimension index
+	// Query entries using composite indexes with date bounds
 	const indexName =
 		groupBy === "client"
-			? ("by_user_and_client" as const)
+			? ("by_user_client_start" as const)
 			: groupBy === "project"
-				? ("by_user_and_project" as const)
-				: ("by_user_and_category" as const);
+				? ("by_user_project_start" as const)
+				: ("by_user_category_start" as const);
 
 	const fieldName =
 		groupBy === "client"
@@ -469,21 +469,29 @@ async function getDailyBreakdownFromEntries(
 	for (const entityId of entityIds) {
 		const entries = await ctx.table("time_entries", indexName, (q) => {
 			if (groupBy === "client") {
-				return q.eq("userId", userId).eq("clientId", entityId as Id<"clients">);
+				return q
+					.eq("userId", userId)
+					.eq("clientId", entityId as Id<"clients">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd);
 			}
 			if (groupBy === "project") {
 				return q
 					.eq("userId", userId)
-					.eq("projectId", entityId as Id<"projects">);
+					.eq("projectId", entityId as Id<"projects">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd);
 			}
 			return q
 				.eq("userId", userId)
-				.eq("categoryId", entityId as Id<"categories">);
+				.eq("categoryId", entityId as Id<"categories">)
+				.gte("start_time", dayStart)
+				.lte("start_time", dayEnd);
 		});
 		allEntries.push(...entries);
 	}
 
-	// Apply cross-dimensional constraint filters and date range
+	// Apply cross-dimensional constraint filters
 	const clientSet = new Set(constraintFilters.clientIds);
 	const projectSet = new Set(constraintFilters.projectIds);
 	const categorySet = new Set(constraintFilters.categoryIds);
@@ -493,7 +501,6 @@ async function getDailyBreakdownFromEntries(
 
 	for (const entry of allEntries) {
 		if (!entry.start_time || !entry.duration) continue;
-		if (entry.start_time < dayStart || entry.start_time > dayEnd) continue;
 
 		// Apply constraint filters
 		if (clientSet.size > 0 && !clientSet.has(entry.clientId ?? "")) continue;
@@ -654,8 +661,13 @@ async function getCategoryBreakdownFromEntries(
 		for (const clientId of clientIds) {
 			const entries = await ctx.table(
 				"time_entries",
-				"by_user_and_client",
-				(q) => q.eq("userId", userId).eq("clientId", clientId as Id<"clients">),
+				"by_user_client_start",
+				(q) =>
+					q
+						.eq("userId", userId)
+						.eq("clientId", clientId as Id<"clients">)
+						.gte("start_time", dayStart)
+						.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
@@ -663,9 +675,13 @@ async function getCategoryBreakdownFromEntries(
 		for (const projectId of projectIds) {
 			const entries = await ctx.table(
 				"time_entries",
-				"by_user_and_project",
+				"by_user_project_start",
 				(q) =>
-					q.eq("userId", userId).eq("projectId", projectId as Id<"projects">),
+					q
+						.eq("userId", userId)
+						.eq("projectId", projectId as Id<"projects">)
+						.gte("start_time", dayStart)
+						.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
@@ -673,11 +689,13 @@ async function getCategoryBreakdownFromEntries(
 		for (const categoryId of categoryIds) {
 			const entries = await ctx.table(
 				"time_entries",
-				"by_user_and_category",
+				"by_user_category_start",
 				(q) =>
 					q
 						.eq("userId", userId)
-						.eq("categoryId", categoryId as Id<"categories">),
+						.eq("categoryId", categoryId as Id<"categories">)
+						.gte("start_time", dayStart)
+						.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
@@ -692,11 +710,10 @@ async function getCategoryBreakdownFromEntries(
 		categoryMap.set(cat._id, cat.name);
 	}
 
-	// Sum durations by category, filtering by date range
+	// Sum durations by category (date range already applied by index query)
 	const durationByCategory = new Map<string, number>();
 	for (const entry of allEntries) {
 		if (!entry.start_time || !entry.duration) continue;
-		if (entry.start_time < dayStart || entry.start_time > dayEnd) continue;
 
 		const catId = entry.categoryId ?? "";
 		durationByCategory.set(

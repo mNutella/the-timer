@@ -126,12 +126,21 @@ export const searchTimeEntries = query({
 				),
 			}),
 		),
+		include: v.optional(
+			v.object({
+				client: v.optional(v.boolean()),
+				project: v.optional(v.boolean()),
+				category: v.optional(v.boolean()),
+				tags: v.optional(v.boolean()),
+			}),
+		),
 		paginationOpts: paginationOptsValidator,
 	},
-	handler: async (ctx, { userId, filters, paginationOpts }) => {
+	handler: async (ctx, { userId, filters, include, paginationOpts }) => {
 		const timeEntries = await TimeEntries.searchTimeEntries(ctx, {
 			userId,
 			filters,
+			include,
 			paginationOpts,
 		});
 

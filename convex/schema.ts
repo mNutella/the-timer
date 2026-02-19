@@ -63,6 +63,9 @@ const schema = defineEntSchema({
 		.index("by_user_and_category", ["userId", "categoryId"])
 		.index("by_user_start_time", ["userId", "start_time"])
 		.index("by_user_end_time", ["userId", "end_time"])
+		.index("by_user_client_start", ["userId", "clientId", "start_time"])
+		.index("by_user_project_start", ["userId", "projectId", "start_time"])
+		.index("by_user_category_start", ["userId", "categoryId", "start_time"])
 		.searchIndex("name", {
 			searchField: "name",
 			filterFields: ["userId", "clientId", "projectId", "categoryId"],

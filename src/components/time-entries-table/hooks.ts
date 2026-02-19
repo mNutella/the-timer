@@ -155,6 +155,7 @@ export function useTimeEntries(
 					endDate: filterByTimeRange?.to?.getTime(),
 				},
 			},
+			include: { client: true, project: true, category: true, tags: true },
 		},
 		{ initialNumItems: 10 },
 	);

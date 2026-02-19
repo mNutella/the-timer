@@ -21,6 +21,12 @@ interface SearchTimeEntriesParams {
 			endDate?: number;
 		};
 	};
+	include?: {
+		client?: boolean;
+		project?: boolean;
+		category?: boolean;
+		tags?: boolean;
+	};
 	paginationOpts: PaginationOptions;
 }
 
@@ -448,18 +454,18 @@ export async function getRecentProjects(
 	const recentEntries = await ctx
 		.table("time_entries", "userId", (q) => q.eq("userId", userId))
 		.order("desc")
-		.take(50);
+		.take(20);
 
 	const seen = new Set<string>();
 	const results = [];
 	for (const entry of recentEntries) {
-		if (results.length >= limit || !entry.projectId) continue;
+		if (results.length >= limit) break;
+		if (!entry.projectId) continue;
 		if (seen.has(entry.projectId)) continue;
 		seen.add(entry.projectId);
-		const [project, client, category] = await Promise.all([
+		const [project, client] = await Promise.all([
 			entry.edge("project"),
 			entry.edge("client"),
-			entry.edge("category"),
 		]);
 		if (!project) continue;
 		results.push({
@@ -467,8 +473,8 @@ export async function getRecentProjects(
 			projectName: project.name,
 			clientId: client?._id,
 			clientName: client?.name,
-			categoryId: category?._id,
-			categoryName: category?.name,
+			categoryId: entry.categoryId,
+			categoryName: undefined,
 			lastEntryName: entry.name,
 		});
 	}
@@ -477,7 +483,7 @@ export async function getRecentProjects(
 
 export async function searchTimeEntries(
 	ctx: QueryCtx,
-	{ userId, filters, paginationOpts }: SearchTimeEntriesParams,
+	{ userId, filters, include, paginationOpts }: SearchTimeEntriesParams,
 ) {
 	let timeEntries: EntQuery<"time_entries"> | null = null;
 
@@ -615,13 +621,20 @@ export async function searchTimeEntries(
 	const { page: paginatedTimeEntries, ...restPagination } =
 		await timeEntries.paginate(paginationOpts);
 
+	const includeClient = include?.client !== false;
+	const includeProject = include?.project !== false;
+	const includeCategory = include?.category === true;
+	const includeTags = include?.tags === true;
+
 	const finalPage = await Promise.all(
 		paginatedTimeEntries.map(async (timeEntry) => {
 			const [client, project, category, tags] = await Promise.all([
-				timeEntry.edge("client"),
-				timeEntry.edge("project"),
-				timeEntry.edge("category"),
-				timeEntry.edge("tags"),
+				includeClient ? timeEntry.edge("client") : (null as null),
+				includeProject ? timeEntry.edge("project") : (null as null),
+				includeCategory ? timeEntry.edge("category") : (null as null),
+				includeTags
+					? timeEntry.edge("tags")
+					: ([] as Awaited<ReturnType<typeof timeEntry.edge<"tags">>>),
 			]);
 			return {
 				...omit(timeEntry as Doc<"time_entries">, ["userId"]),

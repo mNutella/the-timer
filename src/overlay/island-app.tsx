@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
-import { useMutation, useQuery } from "convex/react";
+import { emit, listen } from "@tauri-apps/api/event";
+import { useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/../convex/_generated/api";
@@ -44,11 +44,35 @@ type RecentProject = NonNullable<
 >[number];
 
 export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
-  const runningTimer = useQuery(api.time_entries.getRunningTimer, { userId });
-  const recentProjects = useQuery(api.time_entries.getRecentProjects, {
-    userId,
-    limit: 4,
-  });
+  // Receive query data from main window via Tauri events (no duplicate subscriptions)
+  const [runningTimer, setRunningTimer] = useState<
+    RunningTimer | null | undefined
+  >(undefined);
+  const [recentProjects, setRecentProjects] = useState<
+    RecentProject[] | undefined
+  >(undefined);
+
+  useEffect(() => {
+    const unlistenTimer = listen<RunningTimer | null>(
+      "island-running-timer",
+      (event) => {
+        setRunningTimer(event.payload);
+      },
+    );
+    const unlistenProjects = listen<RecentProject[]>(
+      "island-recent-projects",
+      (event) => {
+        setRecentProjects(event.payload);
+      },
+    );
+    // Signal to main window that listeners are ready
+    emit("island-ready", null);
+    return () => {
+      unlistenTimer.then((f) => f());
+      unlistenProjects.then((f) => f());
+    };
+  }, []);
+
   const [state, setState] = useState<IslandState>("compact");
   const stateRef = useRef<IslandState>("compact");
   stateRef.current = state;
@@ -510,6 +534,7 @@ function HoverContent({
         style={{
           position: "absolute",
           top: 0,
+          bottom: 0,
           left: 0,
           display: "flex",
           alignItems: "center",
@@ -557,23 +582,29 @@ function HoverContent({
             </span>
           </div>
           {(timer.client || timer.project) && (
-            <span
+            <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                borderRadius: 9999,
-                background: "rgba(255,255,255,0.1)",
-                padding: "3px 8px",
-                fontSize: 10,
-                color: "rgba(255,255,255,0.6)",
-                maxHeight: "24px",
                 position: "absolute",
                 top: 0,
+                bottom: 0,
                 right: 0,
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              {timer.client?.name || timer.project?.name}
-            </span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  borderRadius: 9999,
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "3px 8px",
+                  fontSize: 10,
+                  color: "rgba(255,255,255,0.6)",
+                }}
+              >
+                {timer.client?.name || timer.project?.name}
+              </span>
+            </div>
           )}
         </>
       )}
@@ -606,6 +637,9 @@ function HoverContent({
             position: "absolute",
             right: 0,
             top: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
           }}
         >
           <span
