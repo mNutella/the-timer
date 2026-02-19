@@ -123,6 +123,20 @@ fn do_create_island(app: &AppHandle) -> Result<(), String> {
     panel.set_hides_on_deactivate(false);
     panel.set_accepts_mouse_moved_events(true);
 
+    // Hide from the macOS Accessibility hierarchy so tiling window managers
+    // (e.g. AeroSpace) don't detect this panel as a managed window.
+    // AeroSpace enumerates windows via kAXWindowsAttribute on the app's
+    // AXUIElement — removing the panel from accessibility prevents it from
+    // being assigned to a workspace and moved off-screen on workspace switch.
+    // Also set canJoinAllSpaces for native Spaces compatibility.
+    unsafe {
+        let ns_panel = panel.as_panel();
+        let _: () = objc2::msg_send![ns_panel, setAccessibilityElement: false];
+        // canJoinAllSpaces (1) + stationary (1<<4) + fullScreenAuxiliary (1<<8)
+        let behavior: usize = (1 << 0) | (1 << 4) | (1 << 8);
+        let _: () = objc2::msg_send![ns_panel, setCollectionBehavior: behavior];
+    }
+
     // Ensure panel is fully transparent after to_panel() conversion.
     // Without this, AppKit may draw the window background (rectangular)
     // one frame before the webview repaints, flashing sharp corners during resize.

@@ -336,7 +336,7 @@ function IslandContainer({
 
       <Layer
         active={state === "hover"}
-        // delay={150}
+        delay={150}
         style={{
           alignItems: "stretch",
           justifyContent: "center",
@@ -578,29 +578,46 @@ function HoverContent({
         </>
       )}
       {!isRunning && (
-        <span
+        <div
           style={{
-            fontSize: 12,
-            color: "rgba(255,255,255,0.4)",
-            fontFamily: "Inter, sans-serif",
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            textAlign: "center",
+            display: "flex",
+            justifyContent: "center",
           }}
         >
-          No active timer
-        </span>
+          <span
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.4)",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            No active timer
+          </span>
+        </div>
       )}
       {isEmptyBadge && (
-        <span
+        <div
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            borderRadius: 9999,
-            padding: "3px 8px",
-            fontSize: 10,
-            color: "rgba(255,255,255,0.6)",
+            position: "absolute",
+            right: 0,
+            top: 0,
           }}
         >
-          No client/project
-        </span>
+          <span
+            style={{
+              borderRadius: 9999,
+              fontSize: 10,
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
+            No client/project
+          </span>
+        </div>
       )}
     </div>
   );

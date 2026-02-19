@@ -17,7 +17,9 @@
 				"width": 1200,
 				"height": 650,
 				"center": true,
-				"decorations": false,
+				"decorations": true,
+				"titleBarStyle": "Overlay",
+				"hiddenTitle": true,
 				"shadow": true
 			}
 		],
