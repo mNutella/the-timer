@@ -10,6 +10,7 @@
 		"core:window:allow-start-dragging",
 		"core:window:allow-create",
 		"core:webview:allow-create-webview-window",
-		"core:event:default"
+		"core:event:default",
+		"global-shortcut:default"
 	]
 }

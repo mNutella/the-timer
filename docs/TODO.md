@@ -83,9 +83,9 @@ Replace hardcoded user ID with real auth flow.
 
 Leverage Tauri for native desktop experience.
 
-- [ ] **System tray icon** - Show timer status (running/stopped)
-- [ ] **Tray menu** - Quick start/stop, recent entries
-- [ ] **Global hotkey** - Start/stop timer from anywhere (e.g., Cmd+Shift+T)
+- [x] **System tray icon** - Show timer status (running/stopped)
+- [x] **Tray menu** - Quick start/stop, recent entries
+- [x] **Global hotkey** - Start/stop timer from anywhere (e.g., Cmd+Shift+T)
 - [ ] **Native notifications** - Alert when timer runs > configurable threshold
 - [x] **Mini timer window** - Always-on-top Dynamic Island overlay near MacBook notch
 - [ ] **Auto-start** - Optional launch on system boot

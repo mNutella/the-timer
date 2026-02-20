@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useIslandDataBridge } from "@/hooks/use-island-data-bridge";
+import { useTrayDataBridge } from "@/hooks/use-tray-data-bridge";
 
 export const Route = createFileRoute("/(app)")({
 	component: RouteComponent,
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/(app)")({
 function RouteComponent() {
 	const location = useLocation();
 	useIslandDataBridge();
+	useTrayDataBridge();
 
 	return (
 		<SidebarProvider
