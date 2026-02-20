@@ -7,13 +7,17 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import type { TimeEntry } from "../../lib/types";
 
-export function CustomizeTableMenu({ table }: { table: Table<TimeEntry> }) {
+export function CustomizeTableMenu({
+	table,
+	className,
+}: { table: Table<TimeEntry>; className?: string }) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="outline" size="sm" className="w-fit h-9">
+				<Button variant="outline" size="sm" className={cn("w-fit h-9", className)}>
 					<IconLayoutColumns />
 					<span className="hidden lg:inline">Customize</span>
 					<span className="lg:hidden">Columns</span>
@@ -35,7 +39,10 @@ export function CustomizeTableMenu({ table }: { table: Table<TimeEntry> }) {
 								checked={column.getIsVisible()}
 								onCheckedChange={(value) => column.toggleVisibility(!!value)}
 							>
-								{(column.columnDef.header as string) || column.id}
+								{(column.columnDef.meta as { title?: string })?.title ??
+									(typeof column.columnDef.header === "string"
+										? column.columnDef.header
+										: column.id.replace(/_/g, " "))}
 							</DropdownMenuCheckboxItem>
 						);
 					})}

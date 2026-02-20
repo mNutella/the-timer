@@ -481,6 +481,52 @@ export async function getRecentProjects(
 	return results;
 }
 
+export async function bulkDelete(
+	ctx: MutationCtx,
+	{
+		ids,
+		userId,
+	}: { ids: Id<"time_entries">[]; userId: Id<"users"> },
+) {
+	for (const id of ids) {
+		const entry = await ctx.table("time_entries").getX(id);
+		if (entry.userId !== userId) {
+			throw new Error("Time entry does not belong to user");
+		}
+		await entry.delete();
+	}
+}
+
+export async function bulkUpdate(
+	ctx: MutationCtx,
+	{
+		ids,
+		userId,
+		clientId,
+		projectId,
+		categoryId,
+	}: {
+		ids: Id<"time_entries">[];
+		userId: Id<"users">;
+		clientId?: Id<"clients">;
+		projectId?: Id<"projects">;
+		categoryId?: Id<"categories">;
+	},
+) {
+	const patch: Record<string, unknown> = { updated_at: Date.now() };
+	if (clientId !== undefined) patch.clientId = clientId;
+	if (projectId !== undefined) patch.projectId = projectId;
+	if (categoryId !== undefined) patch.categoryId = categoryId;
+
+	for (const id of ids) {
+		const entry = await ctx.table("time_entries").getX(id);
+		if (entry.userId !== userId) {
+			throw new Error("Time entry does not belong to user");
+		}
+		await entry.patch(patch);
+	}
+}
+
 export async function searchTimeEntries(
 	ctx: QueryCtx,
 	{ userId, filters, include, paginationOpts }: SearchTimeEntriesParams,

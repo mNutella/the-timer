@@ -36,11 +36,11 @@ The main missing feature - ability to export filtered time entries to Excel.
 
 Improve the time entries table for daily usability.
 
-- [ ] **Column sorting** - Sort by date, duration, name, client, project (click column header)
-- [ ] **Row selection** - Checkbox column for selecting multiple entries
-- [ ] **Bulk actions** - Delete selected, export selected, change client/project for selected
-- [ ] **Duplicate entry** - Quick action to copy a time entry
-- [ ] **Description/notes UI** - Expandable row or modal to edit description and notes fields
+- [x] **Column sorting** - Sort by date, duration, name, client, project (click column header)
+- [x] **Row selection** - Checkbox column for selecting multiple entries
+- [x] **Bulk actions** - Delete selected, export selected, change client/project for selected
+- [x] **Duplicate entry** - Quick action to copy a time entry
+- [x] **Description/notes UI** - Expandable row or modal to edit description and notes fields
 
 ---
 

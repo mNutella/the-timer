@@ -131,6 +131,54 @@ export function useStartStopTimeEntry(timeEntryId: Id<"time_entries">) {
 	};
 }
 
+export function useUpdateTimeEntryDetails(timeEntryId: Id<"time_entries">) {
+	const update = withToast(
+		useMutation(api.time_entries.update),
+		"Updating notes...",
+		"Notes updated",
+		"Failed to update notes",
+	);
+	return (fields: { notes?: string }) =>
+		update({ id: timeEntryId, userId, ...fields });
+}
+
+export function useDuplicateTimeEntry(timeEntryId: Id<"time_entries">) {
+	const create = withToast(
+		useMutation(api.time_entries.create),
+		"Duplicating entry...",
+		"Entry duplicated",
+		"Failed to duplicate entry",
+	);
+	return () => create({ userId, name: "", timeEntryId });
+}
+
+export function useBulkDeleteTimeEntries() {
+	const remove = withToast(
+		useMutation(api.time_entries.bulkDelete),
+		"Deleting entries...",
+		"Entries deleted",
+		"Failed to delete entries",
+	);
+	return (ids: Id<"time_entries">[]) => remove({ ids, userId });
+}
+
+export function useBulkUpdateTimeEntries() {
+	const update = withToast(
+		useMutation(api.time_entries.bulkUpdate),
+		"Updating entries...",
+		"Entries updated",
+		"Failed to update entries",
+	);
+	return (
+		ids: Id<"time_entries">[],
+		fields: {
+			clientId?: Id<"clients">;
+			projectId?: Id<"projects">;
+			categoryId?: Id<"categories">;
+		},
+	) => update({ ids, userId, ...fields });
+}
+
 export function useTimeEntries(
 	searchValue: string,
 	filterByClients: Client[],

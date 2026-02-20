@@ -1,4 +1,5 @@
 import {
+	type Column,
 	type ColumnDef,
 	type ColumnFiltersState,
 	flexRender,
@@ -14,8 +15,11 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Table,
@@ -27,7 +31,9 @@ import {
 } from "@/components/ui/table";
 import type { Category, Client, Project, TimeEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import type { Id } from "@/../convex/_generated/dataModel";
 import { ActionsCell } from "./actions-cell";
+import { BulkActionsBar } from "./bulk-actions-bar";
 import { CategoryCell } from "./category-cell";
 import { ClientCell } from "./client-cell";
 import { CustomizeTableMenu } from "./customize-table-menu";
@@ -38,10 +44,58 @@ import { StartEndTimeCell } from "./start-end-time-cell";
 import { StartStopCell } from "./start-stop-cell";
 import { TimeEntryCell } from "./time-entry-cell";
 
+function SortableHeader<T>({
+	column,
+	title,
+}: { column: Column<T>; title: string }) {
+	const sorted = column.getIsSorted();
+	return (
+		<Button
+			variant="ghost"
+			size="sm"
+			className="-ml-3 h-8"
+			onClick={() => column.toggleSorting(sorted === "asc")}
+		>
+			{title}
+			{sorted === "asc" ? (
+				<ArrowUp className="ml-1 h-3.5 w-3.5" />
+			) : sorted === "desc" ? (
+				<ArrowDown className="ml-1 h-3.5 w-3.5" />
+			) : (
+				<ChevronsUpDown className="ml-1 h-3.5 w-3.5 opacity-50" />
+			)}
+		</Button>
+	);
+}
+
 const columns: ColumnDef<TimeEntry>[] = [
 	{
+		id: "select",
+		header: ({ table }) => (
+			<Checkbox
+				checked={
+					table.getIsAllPageRowsSelected() ||
+					(table.getIsSomePageRowsSelected() && "indeterminate")
+				}
+				onCheckedChange={(value) =>
+					table.toggleAllPageRowsSelected(!!value)
+				}
+				aria-label="Select all"
+			/>
+		),
+		cell: ({ row }) => (
+			<Checkbox
+				checked={row.getIsSelected()}
+				onCheckedChange={(value) => row.toggleSelected(!!value)}
+				aria-label="Select row"
+			/>
+		),
+		enableSorting: false,
+		enableHiding: false,
+	},
+	{
 		accessorKey: "name",
-		header: "Name",
+		header: ({ column }) => <SortableHeader column={column} title="Name" />,
 		cell: ({ row }) => (
 			<TimeEntryCell
 				timeEntryId={row.original._id}
@@ -52,14 +106,19 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 	{
 		accessorKey: "client",
-		header: "Client",
+		header: ({ column }) => <SortableHeader column={column} title="Client" />,
 		cell: ({ row }) => (
 			<ClientCell timeEntryId={row.original._id} client={row.original.client} />
 		),
+		sortingFn: (rowA, rowB) => {
+			const a = rowA.original.client?.name ?? "";
+			const b = rowB.original.client?.name ?? "";
+			return a.localeCompare(b);
+		},
 	},
 	{
 		accessorKey: "project",
-		header: "Project",
+		header: ({ column }) => <SortableHeader column={column} title="Project" />,
 		cell: ({ row }) => (
 			<ProjectCell
 				timeEntryId={row.original._id}
@@ -67,20 +126,34 @@ const columns: ColumnDef<TimeEntry>[] = [
 				project={row.original.project}
 			/>
 		),
+		sortingFn: (rowA, rowB) => {
+			const a = rowA.original.project?.name ?? "";
+			const b = rowB.original.project?.name ?? "";
+			return a.localeCompare(b);
+		},
 	},
 	{
 		accessorKey: "category",
-		header: "Category",
+		header: ({ column }) => (
+			<SortableHeader column={column} title="Category" />
+		),
 		cell: ({ row }) => (
 			<CategoryCell
 				timeEntryId={row.original._id}
 				category={row.original.category}
 			/>
 		),
+		sortingFn: (rowA, rowB) => {
+			const a = rowA.original.category?.name ?? "";
+			const b = rowB.original.category?.name ?? "";
+			return a.localeCompare(b);
+		},
 	},
 	{
 		accessorKey: "duration",
-		header: "Duration",
+		header: ({ column }) => (
+			<SortableHeader column={column} title="Duration" />
+		),
 		cell: ({ row }) => (
 			<DurationCell
 				timeEntryId={row.original._id}
@@ -89,10 +162,17 @@ const columns: ColumnDef<TimeEntry>[] = [
 				inProgress={!row.original.end_time}
 			/>
 		),
+		sortingFn: (rowA, rowB) => {
+			const a = rowA.original.duration ?? 0;
+			const b = rowB.original.duration ?? 0;
+			return a - b;
+		},
 	},
 	{
 		accessorKey: "start_end_time",
-		header: "Start/End Time",
+		header: ({ column }) => (
+			<SortableHeader column={column} title="Start/End Time" />
+		),
 		cell: ({ row }) => (
 			<StartEndTimeCell
 				timeEntryId={row.original._id}
@@ -100,9 +180,15 @@ const columns: ColumnDef<TimeEntry>[] = [
 				endTime={row.original.end_time ?? 0}
 			/>
 		),
+		sortingFn: (rowA, rowB) => {
+			const a = rowA.original.start_time ?? 0;
+			const b = rowB.original.start_time ?? 0;
+			return a - b;
+		},
 	},
 	{
 		id: "start_stop_timer",
+		enableSorting: false,
 		cell: ({ row }) => (
 			<div className="flex items-center justify-center w-full h-full">
 				<StartStopCell
@@ -114,7 +200,14 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 	{
 		id: "actions",
-		cell: ({ row }) => <ActionsCell timeEntryId={row.original._id} />,
+		enableSorting: false,
+		cell: ({ row }) => (
+			<ActionsCell
+				timeEntryId={row.original._id}
+				entryName={row.original.name}
+				notes={row.original.notes}
+			/>
+		),
 	},
 ];
 
@@ -281,8 +374,18 @@ export default function TimeEntriesTable({
 
 	return (
 		<div className="w-full flex-col justify-start gap-6">
-			<div className="flex items-center justify-end px-4 lg:px-6">
-				<CustomizeTableMenu table={table} />
+			<div className="flex items-center gap-2 px-4 lg:px-6">
+				<BulkActionsBar
+					selectedCount={table.getFilteredSelectedRowModel().rows.length}
+					totalCount={table.getFilteredRowModel().rows.length}
+					selectedIds={
+						table
+							.getFilteredSelectedRowModel()
+							.rows.map((r) => r.original._id) as Id<"time_entries">[]
+					}
+					onClearSelection={() => table.resetRowSelection()}
+				/>
+				<CustomizeTableMenu table={table} className="ml-auto" />
 			</div>
 			<div className="relative flex flex-col gap-4 px-4 lg:px-6 mt-2">
 				<div className="rounded-lg border">
@@ -380,12 +483,6 @@ export default function TimeEntriesTable({
 							</TableBody>
 						</Table>
 					</ScrollArea>
-				</div>
-				<div className="flex items-center justify-between px-4">
-					<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-						{table.getFilteredSelectedRowModel().rows.length} of{" "}
-						{table.getFilteredRowModel().rows.length} row(s) selected.
-					</div>
 				</div>
 			</div>
 		</div>

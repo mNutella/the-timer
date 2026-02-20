@@ -109,6 +109,29 @@ export const updateCategory = mutation({
 	},
 });
 
+export const bulkDelete = mutation({
+	args: {
+		ids: v.array(v.id("time_entries")),
+		userId: v.id("users"),
+	},
+	handler: async (ctx, params) => {
+		await TimeEntries.bulkDelete(ctx, params);
+	},
+});
+
+export const bulkUpdate = mutation({
+	args: {
+		ids: v.array(v.id("time_entries")),
+		userId: v.id("users"),
+		clientId: v.optional(v.id("clients")),
+		projectId: v.optional(v.id("projects")),
+		categoryId: v.optional(v.id("categories")),
+	},
+	handler: async (ctx, params) => {
+		await TimeEntries.bulkUpdate(ctx, params);
+	},
+});
+
 export const searchTimeEntries = query({
 	args: {
 		userId: v.id("users"),
