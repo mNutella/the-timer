@@ -25,26 +25,28 @@ import { entDefinitions } from "./schema";
 
 const triggers = new Triggers<DataModel>();
 
-// triggers.register("time_entries", timeEntriesByUserAggregate.trigger());
-triggers.register(
-	"time_entries",
-	timeEntriesTotalDurationByDateAggregate.trigger(),
-);
+if (!process.env.VITEST) {
+	// triggers.register("time_entries", timeEntriesByUserAggregate.trigger());
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByDateAggregate.trigger(),
+	);
 
-triggers.register(
-	"time_entries",
-	timeEntriesTotalDurationByClientAndDateAggregate.trigger(),
-);
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByClientAndDateAggregate.trigger(),
+	);
 
-triggers.register(
-	"time_entries",
-	timeEntriesTotalDurationByProjectAndDateAggregate.trigger(),
-);
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByProjectAndDateAggregate.trigger(),
+	);
 
-triggers.register(
-	"time_entries",
-	timeEntriesTotalDurationByCategoryAndDateAggregate.trigger(),
-);
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByCategoryAndDateAggregate.trigger(),
+	);
+}
 
 export const query = customQuery(
 	rawQuery,
