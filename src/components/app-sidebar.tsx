@@ -1,6 +1,9 @@
 import {
+	IconBriefcase,
+	IconCategory,
 	IconChartBar,
 	IconDashboard,
+	IconFolder,
 	IconHelp,
 	IconInnerShadowTop,
 	IconSearch,
@@ -39,11 +42,23 @@ const data = {
 			url: "/analytics",
 			icon: IconChartBar,
 		},
-		// {
-		// 	title: "Projects",
-		// 	url: "#",
-		// 	icon: IconFolder,
-		// },
+	],
+	navManage: [
+		{
+			title: "Clients",
+			url: "/clients",
+			icon: IconBriefcase,
+		},
+		{
+			title: "Projects",
+			url: "/projects",
+			icon: IconFolder,
+		},
+		{
+			title: "Categories",
+			url: "/categories",
+			icon: IconCategory,
+		},
 	],
 	navSecondary: [
 		{
@@ -101,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
-				{/* <NavDocuments items={data.documents} /> */}
+				<NavMain items={data.navManage} label="Manage" />
 				<NavSecondary items={data.navSecondary} className="mt-auto" />
 			</SidebarContent>
 			<SidebarFooter>

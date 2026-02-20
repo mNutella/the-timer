@@ -91,18 +91,18 @@ export function TimeRangeFilter({
 					<IconCalendar />
 					<div className="flex flex-col text-sm">
 						{!timeRange?.from && !timeRange?.to ? (
-							<span>Select Date</span>
+							<span>Filter by Period</span>
 						) : (
 							<div className="flex text-center gap-x-1">
 								<div>
 									{timeRange?.from?.toLocaleDateString() || (
-										<span>Select Date</span>
+										<span>Filter by Period</span>
 									)}
 								</div>
 								<div>-</div>
 								<div>
 									{timeRange?.to?.toLocaleDateString() || (
-										<span className="">Select Date</span>
+										<span className="">Filter by Period</span>
 									)}
 								</div>
 							</div>

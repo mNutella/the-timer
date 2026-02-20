@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as appIndexRouteImport } from './routes/(app)/index'
+import { Route as appProjectsRouteImport } from './routes/(app)/projects'
+import { Route as appClientsRouteImport } from './routes/(app)/clients'
+import { Route as appCategoriesRouteImport } from './routes/(app)/categories'
 import { Route as appAnalyticsRouteImport } from './routes/(app)/analytics'
 
 const appRouteRoute = appRouteRouteImport.update({
@@ -22,6 +25,21 @@ const appIndexRoute = appIndexRouteImport.update({
   path: '/',
   getParentRoute: () => appRouteRoute,
 } as any)
+const appProjectsRoute = appProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => appRouteRoute,
+} as any)
+const appClientsRoute = appClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => appRouteRoute,
+} as any)
+const appCategoriesRoute = appCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => appRouteRoute,
+} as any)
 const appAnalyticsRoute = appAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -31,23 +49,39 @@ const appAnalyticsRoute = appAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof appIndexRoute
   '/analytics': typeof appAnalyticsRoute
+  '/categories': typeof appCategoriesRoute
+  '/clients': typeof appClientsRoute
+  '/projects': typeof appProjectsRoute
 }
 export interface FileRoutesByTo {
   '/analytics': typeof appAnalyticsRoute
+  '/categories': typeof appCategoriesRoute
+  '/clients': typeof appClientsRoute
+  '/projects': typeof appProjectsRoute
   '/': typeof appIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(app)': typeof appRouteRouteWithChildren
   '/(app)/analytics': typeof appAnalyticsRoute
+  '/(app)/categories': typeof appCategoriesRoute
+  '/(app)/clients': typeof appClientsRoute
+  '/(app)/projects': typeof appProjectsRoute
   '/(app)/': typeof appIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analytics'
+  fullPaths: '/' | '/analytics' | '/categories' | '/clients' | '/projects'
   fileRoutesByTo: FileRoutesByTo
-  to: '/analytics' | '/'
-  id: '__root__' | '/(app)' | '/(app)/analytics' | '/(app)/'
+  to: '/analytics' | '/categories' | '/clients' | '/projects' | '/'
+  id:
+    | '__root__'
+    | '/(app)'
+    | '/(app)/analytics'
+    | '/(app)/categories'
+    | '/(app)/clients'
+    | '/(app)/projects'
+    | '/(app)/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -70,6 +104,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appIndexRouteImport
       parentRoute: typeof appRouteRoute
     }
+    '/(app)/projects': {
+      id: '/(app)/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof appProjectsRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/clients': {
+      id: '/(app)/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof appClientsRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/categories': {
+      id: '/(app)/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof appCategoriesRouteImport
+      parentRoute: typeof appRouteRoute
+    }
     '/(app)/analytics': {
       id: '/(app)/analytics'
       path: '/analytics'
@@ -82,11 +137,17 @@ declare module '@tanstack/react-router' {
 
 interface appRouteRouteChildren {
   appAnalyticsRoute: typeof appAnalyticsRoute
+  appCategoriesRoute: typeof appCategoriesRoute
+  appClientsRoute: typeof appClientsRoute
+  appProjectsRoute: typeof appProjectsRoute
   appIndexRoute: typeof appIndexRoute
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
   appAnalyticsRoute: appAnalyticsRoute,
+  appCategoriesRoute: appCategoriesRoute,
+  appClientsRoute: appClientsRoute,
+  appProjectsRoute: appProjectsRoute,
   appIndexRoute: appIndexRoute,
 }
 

@@ -59,11 +59,11 @@ Tags are fully defined in the schema and backend but have no UI.
 
 Currently clients/projects/categories can only be created inline. Dedicated pages needed.
 
-- [ ] **Clients page** - List all clients, edit name, delete (with confirmation), view total hours
-- [ ] **Projects page** - List projects, filter by client, edit, archive/complete, view total hours
-- [ ] **Categories page** - List categories, edit, delete
+- [x] **Clients page** - List all clients, edit name, delete (with confirmation), view total hours
+- [x] **Projects page** - List projects, filter by client, edit, archive/complete, view total hours
+- [x] **Categories page** - List categories, edit, delete
 - [ ] **Tags page** - List tags, edit name/color, delete
-- [ ] **Add navigation items** - Add sidebar links for these pages
+- [x] **Add navigation items** - Add sidebar links for these pages
 
 ---
 
@@ -135,3 +135,9 @@ For reference, these are already implemented and working:
 - [x] Dynamic Island overlay with NSPanel, JS-driven state animations
 - [x] Native CALayer corner masking to prevent border-radius flash during resize
 - [x] NSPanel focus swizzling for inline editing in overlay
+- [x] Entity management pages (Clients, Projects, Categories) with list/edit/delete
+- [x] Sidebar "Manage" section with navigation links
+- [x] Delete confirmation dialogs for entity management
+- [x] Total hours via aggregates on entity management pages
+- [x] Project status management (active/archived/completed) with badge dropdown
+- [x] Project filtering by client on management page
