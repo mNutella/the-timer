@@ -18,9 +18,9 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Table,
 	TableBody,
@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/table";
 import type { Category, Client, Project, TimeEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { ActionsCell } from "./actions-cell";
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { CategoryCell } from "./category-cell";
@@ -47,7 +46,10 @@ import { TimeEntryCell } from "./time-entry-cell";
 function SortableHeader<T>({
 	column,
 	title,
-}: { column: Column<T>; title: string }) {
+}: {
+	column: Column<T>;
+	title: string;
+}) {
 	const sorted = column.getIsSorted();
 	return (
 		<Button
@@ -77,9 +79,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 					table.getIsAllPageRowsSelected() ||
 					(table.getIsSomePageRowsSelected() && "indeterminate")
 				}
-				onCheckedChange={(value) =>
-					table.toggleAllPageRowsSelected(!!value)
-				}
+				onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
 				aria-label="Select all"
 			/>
 		),
@@ -134,9 +134,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 	{
 		accessorKey: "category",
-		header: ({ column }) => (
-			<SortableHeader column={column} title="Category" />
-		),
+		header: ({ column }) => <SortableHeader column={column} title="Category" />,
 		cell: ({ row }) => (
 			<CategoryCell
 				timeEntryId={row.original._id}
@@ -151,9 +149,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 	{
 		accessorKey: "duration",
-		header: ({ column }) => (
-			<SortableHeader column={column} title="Duration" />
-		),
+		header: ({ column }) => <SortableHeader column={column} title="Duration" />,
 		cell: ({ row }) => (
 			<DurationCell
 				timeEntryId={row.original._id}
@@ -373,8 +369,8 @@ export default function TimeEntriesTable({
 	});
 
 	return (
-		<div className="w-full flex-col justify-start gap-6">
-			<div className="flex items-center gap-2 px-4 lg:px-6">
+		<div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+			<div className="shrink-0 flex items-center gap-2 px-4 lg:px-6">
 				<BulkActionsBar
 					selectedCount={table.getFilteredSelectedRowModel().rows.length}
 					totalCount={table.getFilteredRowModel().rows.length}
@@ -387,17 +383,9 @@ export default function TimeEntriesTable({
 				/>
 				<CustomizeTableMenu table={table} className="ml-auto" />
 			</div>
-			<div className="relative flex flex-col gap-4 px-4 lg:px-6 mt-2">
-				<div className="rounded-lg border">
-					<ScrollArea
-						ref={scrollAreaRef}
-						className={cn(
-							"relative",
-							rowVirtualizer.getVirtualItems().length
-								? "h-[calc(100vh-400px)]"
-								: "h-full",
-						)}
-					>
+			<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 mt-2 pb-2">
+				<div className="rounded-lg border flex-1 min-h-0 overflow-hidden">
+					<div ref={scrollAreaRef} className="h-full overflow-y-auto">
 						<Table className="grid">
 							<TableHeader className="bg-muted sticky grid top-0 z-10">
 								{table.getHeaderGroups().map((headerGroup) => (
@@ -482,7 +470,7 @@ export default function TimeEntriesTable({
 								)}
 							</TableBody>
 						</Table>
-					</ScrollArea>
+					</div>
 				</div>
 			</div>
 		</div>

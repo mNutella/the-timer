@@ -35,9 +35,9 @@ function slugify(name: string): string {
 	return name.replace(/\s+/g, "_").toLowerCase();
 }
 
-type StackDimension = "client" | "project" | "category";
+export type StackDimension = "client" | "project" | "category";
 
-function getStackDimension(
+export function getStackDimension(
 	clientFilter: Client[],
 	projectFilter: Project[],
 	categoryFilter: Category[],
@@ -48,7 +48,7 @@ function getStackDimension(
 	return null;
 }
 
-function getEntityIds(
+export function getEntityIds(
 	dimension: StackDimension,
 	clientFilter: Client[],
 	projectFilter: Project[],
@@ -59,7 +59,7 @@ function getEntityIds(
 	return categoryFilter.map((c) => c._id);
 }
 
-function getConstraintFilters(
+export function getConstraintFilters(
 	dimension: StackDimension,
 	clientFilter: Client[],
 	projectFilter: Project[],
@@ -256,23 +256,23 @@ export function TimeEntriesChartBarInteractive({
 	return (
 		<Card className="py-0 h-full">
 			<CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
-				<div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+				<div className="flex flex-1 flex-col justify-center gap-1 px-6 py-2">
 					<CardTitle>Daily Time Tracked</CardTitle>
 					<CardDescription>{dateLabel}</CardDescription>
 				</div>
 				<div className="flex">
-					<div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 sm:border-t-0 sm:border-l sm:px-8 sm:py-6">
+					<div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-2 sm:border-t-0 sm:border-l sm:px-8">
 						<span className="text-muted-foreground text-xs">Total Hours</span>
-						<span className="text-lg leading-none font-bold sm:text-3xl">
+						<span className="text-lg leading-none font-bold sm:text-2xl">
 							{totalHours.toFixed(1)}h
 						</span>
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent className="px-2 sm:p-6">
+			<CardContent className="px-2 sm:px-4 sm:py-3">
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[250px] w-full"
+					className="aspect-auto h-[180px] w-full"
 				>
 					<BarChart
 						accessibilityLayer

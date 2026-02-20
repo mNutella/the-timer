@@ -31,8 +31,8 @@ function Analytics() {
 	} = useFilters();
 
 	return (
-		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-			<div className="px-4 lg:px-6">
+		<div className="flex flex-col h-[calc(100dvh-var(--header-height)-1rem)] overflow-hidden">
+			<div className="shrink-0 px-4 lg:px-6 pt-3 pb-2">
 				<div className="flex items-center justify-start gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
 					<ClientFilter
@@ -55,8 +55,8 @@ function Analytics() {
 						onChange={setFilterByTimeRange}
 					/>
 				</div>
-				<div className="grid grid-cols-4 gap-4 mt-4">
-					<div className="col-span-3 gap-y-4 flex flex-col">
+				<div className="grid grid-cols-4 gap-3 mt-3">
+					<div className="col-span-3">
 						<TimeEntriesChartBarInteractive
 							clientFilter={filterByClients}
 							projectFilter={filterByProjects}
@@ -72,16 +72,17 @@ function Analytics() {
 							dateRange={filterByTimeRange}
 						/>
 					</div>
-					{/* <ChartAreaInteractive /> */}
 				</div>
 			</div>
-			<TimeEntriesTable
-				searchValue={searchValue}
-				filterByClients={filterByClients}
-				filterByProjects={filterByProjects}
-				filterByCategories={filterByCategories}
-				filterByTimeRange={filterByTimeRange}
-			/>
+			<div className="flex flex-col flex-1 min-h-0">
+				<TimeEntriesTable
+					searchValue={searchValue}
+					filterByClients={filterByClients}
+					filterByProjects={filterByProjects}
+					filterByCategories={filterByCategories}
+					filterByTimeRange={filterByTimeRange}
+				/>
+			</div>
 		</div>
 	);
 }

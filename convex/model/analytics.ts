@@ -543,6 +543,265 @@ async function getDailyBreakdownFromEntries(
 	return results;
 }
 
+export async function getEntityBreakdown(
+	ctx: QueryCtx,
+	{
+		userId,
+		groupBy,
+		entityIds,
+		constraintFilters,
+		dateRange,
+	}: {
+		userId: Id<"users">;
+		groupBy: "client" | "project" | "category";
+		entityIds?: string[];
+		constraintFilters?: {
+			clientIds?: string[];
+			projectIds?: string[];
+			categoryIds?: string[];
+		};
+		dateRange: { startDate: number; endDate: number };
+	},
+) {
+	const { startDate, endDate } = dateRange;
+
+	const clientConstraints = constraintFilters?.clientIds ?? [];
+	const projectConstraints = constraintFilters?.projectIds ?? [];
+	const categoryConstraints = constraintFilters?.categoryIds ?? [];
+	const hasCrossFilters =
+		clientConstraints.length > 0 ||
+		projectConstraints.length > 0 ||
+		categoryConstraints.length > 0;
+
+	// Resolve entity IDs and names
+	let ids: string[];
+	const entityNames = new Map<string, string>();
+
+	if (entityIds && entityIds.length > 0) {
+		ids = entityIds;
+		for (const id of ids) {
+			if (groupBy === "client") {
+				const entity = await ctx.table("clients").get(id as Id<"clients">);
+				entityNames.set(id, entity?.name ?? "Unknown");
+			} else if (groupBy === "project") {
+				const entity = await ctx.table("projects").get(id as Id<"projects">);
+				entityNames.set(id, entity?.name ?? "Unknown");
+			} else {
+				const entity = await ctx
+					.table("categories")
+					.get(id as Id<"categories">);
+				entityNames.set(id, entity?.name ?? "Unknown");
+			}
+		}
+	} else {
+		ids = [];
+		const edgeName =
+			groupBy === "client"
+				? "clients"
+				: groupBy === "project"
+					? "projects"
+					: "categories";
+		const entities = await ctx.table("users").getX(userId).edge(edgeName);
+		for (const e of entities) {
+			ids.push(e._id);
+			entityNames.set(e._id, e.name);
+		}
+	}
+
+	if (!hasCrossFilters) {
+		const aggregate =
+			groupBy === "client"
+				? timeEntriesTotalDurationByClientAndDateAggregate
+				: groupBy === "project"
+					? timeEntriesTotalDurationByProjectAndDateAggregate
+					: timeEntriesTotalDurationByCategoryAndDateAggregate;
+
+		const results: Array<{
+			entityId: string;
+			name: string;
+			duration: number;
+		}> = [];
+
+		for (const entityId of ids) {
+			const duration = await aggregate.sum(ctx, {
+				namespace: userId,
+				bounds: {
+					lower: {
+						key: [entityId, getStartOfDay(startDate)],
+						inclusive: true,
+					},
+					upper: {
+						key: [entityId, getEndOfDay(endDate)],
+						inclusive: true,
+					},
+				},
+			});
+			if (duration > 0) {
+				results.push({
+					entityId,
+					name: entityNames.get(entityId) ?? "Unknown",
+					duration,
+				});
+			}
+		}
+
+		// Add unassigned bucket when showing all entities
+		if (!entityIds || entityIds.length === 0) {
+			const unassignedDuration = await aggregate.sum(ctx, {
+				namespace: userId,
+				bounds: {
+					lower: { key: ["", getStartOfDay(startDate)], inclusive: true },
+					upper: { key: ["", getEndOfDay(endDate)], inclusive: true },
+				},
+			});
+			if (unassignedDuration > 0) {
+				const label =
+					groupBy === "client"
+						? "No Client"
+						: groupBy === "project"
+							? "No Project"
+							: "Uncategorized";
+				results.push({
+					entityId: "",
+					name: label,
+					duration: unassignedDuration,
+				});
+			}
+		}
+
+		results.sort((a, b) => b.duration - a.duration);
+		return results;
+	}
+
+	// Slow path: cross-dimensional filters require entry-level queries
+	return getEntityBreakdownFromEntries(ctx, {
+		userId,
+		groupBy,
+		entityIds: ids,
+		entityNames,
+		constraintFilters: {
+			clientIds: clientConstraints,
+			projectIds: projectConstraints,
+			categoryIds: categoryConstraints,
+		},
+		startDate,
+		endDate,
+	});
+}
+
+async function getEntityBreakdownFromEntries(
+	ctx: QueryCtx,
+	{
+		userId,
+		groupBy,
+		entityIds,
+		entityNames,
+		constraintFilters,
+		startDate,
+		endDate,
+	}: {
+		userId: Id<"users">;
+		groupBy: "client" | "project" | "category";
+		entityIds: string[];
+		entityNames: Map<string, string>;
+		constraintFilters: {
+			clientIds: string[];
+			projectIds: string[];
+			categoryIds: string[];
+		};
+		startDate: number;
+		endDate: number;
+	},
+) {
+	const dayStart = getStartOfDay(startDate);
+	const dayEnd = getEndOfDay(endDate);
+	const entityIdSet = new Set(entityIds);
+
+	const indexName =
+		groupBy === "client"
+			? ("by_user_client_start" as const)
+			: groupBy === "project"
+				? ("by_user_project_start" as const)
+				: ("by_user_category_start" as const);
+
+	const fieldName =
+		groupBy === "client"
+			? "clientId"
+			: groupBy === "project"
+				? "projectId"
+				: "categoryId";
+
+	type EntryLike = {
+		start_time?: number;
+		duration?: number;
+		clientId?: Id<"clients">;
+		projectId?: Id<"projects">;
+		categoryId?: Id<"categories">;
+	};
+	const allEntries: EntryLike[] = [];
+
+	for (const entityId of entityIds) {
+		const entries = await ctx.table("time_entries", indexName, (q) => {
+			if (groupBy === "client") {
+				return q
+					.eq("userId", userId)
+					.eq("clientId", entityId as Id<"clients">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd);
+			}
+			if (groupBy === "project") {
+				return q
+					.eq("userId", userId)
+					.eq("projectId", entityId as Id<"projects">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd);
+			}
+			return q
+				.eq("userId", userId)
+				.eq("categoryId", entityId as Id<"categories">)
+				.gte("start_time", dayStart)
+				.lte("start_time", dayEnd);
+		});
+		allEntries.push(...entries);
+	}
+
+	const clientSet = new Set(constraintFilters.clientIds);
+	const projectSet = new Set(constraintFilters.projectIds);
+	const categorySet = new Set(constraintFilters.categoryIds);
+
+	const durationByEntity = new Map<string, number>();
+	for (const entry of allEntries) {
+		if (!entry.start_time || !entry.duration) continue;
+		if (clientSet.size > 0 && !clientSet.has(entry.clientId ?? "")) continue;
+		if (projectSet.size > 0 && !projectSet.has(entry.projectId ?? "")) continue;
+		if (categorySet.size > 0 && !categorySet.has(entry.categoryId ?? ""))
+			continue;
+
+		const entityId = (entry[fieldName] as string) ?? "";
+		if (!entityIdSet.has(entityId)) continue;
+
+		durationByEntity.set(
+			entityId,
+			(durationByEntity.get(entityId) ?? 0) + entry.duration,
+		);
+	}
+
+	const results: Array<{ entityId: string; name: string; duration: number }> =
+		[];
+	for (const [entityId, duration] of durationByEntity) {
+		if (duration > 0) {
+			results.push({
+				entityId,
+				name: entityNames.get(entityId) ?? "Unknown",
+				duration,
+			});
+		}
+	}
+
+	results.sort((a, b) => b.duration - a.duration);
+	return results;
+}
+
 export async function getCategoryBreakdown(
 	ctx: QueryCtx,
 	{

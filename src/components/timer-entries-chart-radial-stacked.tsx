@@ -7,6 +7,11 @@ import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import {
+	getConstraintFilters,
+	getEntityIds,
+	getStackDimension,
+} from "@/components/time-entries-chart-bar";
+import {
 	Card,
 	CardContent,
 	CardDescription,
@@ -52,39 +57,72 @@ export function TimeEntriesChartRadialStacked({
 		return getDefaultDateRange();
 	}, [dateRange?.from, dateRange?.to]);
 
-	const rawData = useQuery(api.time_entries.getCategoryBreakdown, {
+	const stackDimension = useMemo(
+		() => getStackDimension(clientFilter, projectFilter, categoryFilter),
+		[clientFilter, projectFilter, categoryFilter],
+	);
+
+	const groupBy = stackDimension ?? "category";
+
+	const entityIds = useMemo(
+		() =>
+			stackDimension
+				? getEntityIds(
+						stackDimension,
+						clientFilter,
+						projectFilter,
+						categoryFilter,
+					)
+				: [],
+		[stackDimension, clientFilter, projectFilter, categoryFilter],
+	);
+
+	const constraintFilters = useMemo(
+		() =>
+			stackDimension
+				? getConstraintFilters(
+						stackDimension,
+						clientFilter,
+						projectFilter,
+						categoryFilter,
+					)
+				: undefined,
+		[stackDimension, clientFilter, projectFilter, categoryFilter],
+	);
+
+	const rawData = useQuery(api.time_entries.getEntityBreakdown, {
 		userId: import.meta.env.VITE_USER_ID as Id<"users">,
-		clientIds: clientFilter.map((c) => c._id),
-		projectIds: projectFilter.map((p) => p._id),
-		categoryIds: categoryFilter.map((c) => c._id),
+		groupBy,
+		entityIds: entityIds.length > 0 ? entityIds : undefined,
+		constraintFilters,
 		dateRange: range,
 	});
 
-	const { chartData, chartConfig, totalHours, categoryKeys } = useMemo(() => {
-		const categories = rawData ?? [];
+	const { chartData, chartConfig, totalHours, entityKeys } = useMemo(() => {
+		const entities = rawData ?? [];
 		const dataObj: Record<string, number> = {};
 		const config: ChartConfig = {};
 		let total = 0;
 		const keys: string[] = [];
 
-		for (let i = 0; i < categories.length; i++) {
-			const cat = categories[i];
-			const hours = Math.round((cat.duration / 3_600_000) * 100) / 100;
-			const key = cat.name.replace(/\s+/g, "_").toLowerCase();
+		for (let i = 0; i < entities.length; i++) {
+			const entity = entities[i];
+			const hours = Math.round((entity.duration / 3_600_000) * 100) / 100;
+			const key = entity.name.replace(/\s+/g, "_").toLowerCase();
 			dataObj[key] = hours;
 			total += hours;
 			keys.push(key);
 			config[key] = {
-				label: cat.name,
+				label: entity.name,
 				color: CHART_COLORS[i % CHART_COLORS.length],
 			};
 		}
 
 		return {
-			chartData: categories.length > 0 ? [dataObj] : [],
+			chartData: entities.length > 0 ? [dataObj] : [],
 			chartConfig: config,
 			totalHours: total,
-			categoryKeys: keys,
+			entityKeys: keys,
 		};
 	}, [rawData]);
 
@@ -93,6 +131,13 @@ export function TimeEntriesChartRadialStacked({
 		[clientFilter, projectFilter, categoryFilter],
 	);
 
+	const dimensionLabel =
+		groupBy === "client"
+			? "Client"
+			: groupBy === "project"
+				? "Project"
+				: "Category";
+
 	const dateLabel =
 		dateRange?.from && dateRange?.to
 			? `${dateRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${dateRange.to.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
@@ -100,20 +145,20 @@ export function TimeEntriesChartRadialStacked({
 
 	return (
 		<Card className="flex flex-col h-full">
-			<CardHeader className="items-center pb-0">
-				<CardTitle>Time by Category</CardTitle>
+			<CardHeader className="items-center py-2 pb-0">
+				<CardTitle>Time by {dimensionLabel}</CardTitle>
 				<CardDescription>{dateLabel}</CardDescription>
 			</CardHeader>
-			<CardContent className="flex flex-1 items-center pb-0">
+			<CardContent className="flex flex-1 items-center justify-center p-2">
 				<ChartContainer
 					config={chartConfig}
-					className="mx-auto p-0 aspect-video w-full max-w-[450px] h-full"
+					className="mx-auto aspect-square w-full max-w-[200px]"
 				>
 					<RadialBarChart
 						data={chartData}
 						endAngle={360}
-						innerRadius={100}
-						outerRadius={160}
+						innerRadius={60}
+						outerRadius={100}
 					>
 						<ChartTooltip
 							cursor={false}
@@ -137,18 +182,23 @@ export function TimeEntriesChartRadialStacked({
 								content={({ viewBox }) => {
 									if (viewBox && "cx" in viewBox && "cy" in viewBox) {
 										return (
-											<text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+											<text
+												x={viewBox.cx}
+												y={viewBox.cy}
+												textAnchor="middle"
+												dominantBaseline="central"
+											>
 												<tspan
 													x={viewBox.cx}
-													y={(viewBox.cy || 0) - 16}
-													className="fill-foreground text-2xl font-bold"
+													y={(viewBox.cy || 0) - 8}
+													className="fill-foreground text-xl font-bold"
 												>
 													{totalHours.toFixed(1)}
 												</tspan>
 												<tspan
 													x={viewBox.cx}
-													y={(viewBox.cy || 0) + 4}
-													className="fill-muted-foreground"
+													y={(viewBox.cy || 0) + 10}
+													className="fill-muted-foreground text-xs"
 												>
 													Total hours
 												</tspan>
@@ -158,14 +208,14 @@ export function TimeEntriesChartRadialStacked({
 								}}
 							/>
 						</PolarRadiusAxis>
-						{categoryKeys.map((key, i) => (
+						{entityKeys.map((key, i) => (
 							<RadialBar
 								key={key}
 								dataKey={key}
 								stackId="a"
-								cornerRadius={5}
+								cornerRadius={3}
 								fill={CHART_COLORS[i % CHART_COLORS.length]}
-								className="stroke-transparent stroke-2"
+								stroke="none"
 							/>
 						))}
 					</RadialBarChart>
