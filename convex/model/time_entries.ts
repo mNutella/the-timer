@@ -483,10 +483,7 @@ export async function getRecentProjects(
 
 export async function bulkDelete(
 	ctx: MutationCtx,
-	{
-		ids,
-		userId,
-	}: { ids: Id<"time_entries">[]; userId: Id<"users"> },
+	{ ids, userId }: { ids: Id<"time_entries">[]; userId: Id<"users"> },
 ) {
 	for (const id of ids) {
 		const entry = await ctx.table("time_entries").getX(id);
@@ -527,10 +524,13 @@ export async function bulkUpdate(
 	}
 }
 
-export async function searchTimeEntries(
+type Filters = SearchTimeEntriesParams["filters"];
+
+function buildFilteredQuery(
 	ctx: QueryCtx,
-	{ userId, filters, include, paginationOpts }: SearchTimeEntriesParams,
-) {
+	userId: Id<"users">,
+	filters?: Filters,
+): EntQuery<"time_entries"> | null {
 	let timeEntries: EntQuery<"time_entries"> | null = null;
 
 	const nameQuery = (filters?.name ?? "").trim();
@@ -660,6 +660,15 @@ export async function searchTimeEntries(
 		);
 	}
 
+	return timeEntries;
+}
+
+export async function searchTimeEntries(
+	ctx: QueryCtx,
+	{ userId, filters, include, paginationOpts }: SearchTimeEntriesParams,
+) {
+	const timeEntries = buildFilteredQuery(ctx, userId, filters);
+
 	if (!timeEntries) {
 		return { page: [], continueCursor: "", isDone: true };
 	}
@@ -700,4 +709,37 @@ export async function searchTimeEntries(
 		page: finalPage,
 		...restPagination,
 	};
+}
+
+export async function getAllTimeEntries(
+	ctx: QueryCtx,
+	{ userId, filters }: { userId: Id<"users">; filters?: Filters },
+) {
+	const query = buildFilteredQuery(ctx, userId, filters);
+
+	if (!query) {
+		return [];
+	}
+
+	const entries = await query;
+
+	return Promise.all(
+		entries.map(async (entry) => {
+			const [client, project, category] = await Promise.all([
+				entry.edge("client"),
+				entry.edge("project"),
+				entry.edge("category"),
+			]);
+			return {
+				...omit(entry as Doc<"time_entries">, ["userId"]),
+				client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
+				project: project
+					? omit(project as Doc<"projects">, ["userId", "clientId"])
+					: null,
+				category: category
+					? omit(category as Doc<"categories">, ["userId"])
+					: null,
+			};
+		}),
+	);
 }

@@ -19,14 +19,10 @@ These items fix existing broken/incomplete features that block a usable app.
 
 The main missing feature - ability to export filtered time entries to Excel.
 
-- [ ] **Add xlsx library** - Install `exceljs` or `xlsx` package
-- [ ] **Create export utility** - Build `src/lib/export.ts` with functions to:
-  - Format time entries for export
-  - Generate Excel workbook with headers, data rows, and summary
-  - Apply professional formatting (column widths, bold headers, date formats)
-- [ ] **Add "Export to Excel" button** - Place in table toolbar (next to filters)
-- [ ] **Implement filtered export** - Export only entries matching current filters (client, project, category, date range, search)
-- [ ] **Add summary sheet** - Totals by client, project, and category
+- [x] **Create export utility** - Built `src/lib/export.ts` with CSV/JSON generation, detailed/summary modes, grouping by client/project/category/date
+- [x] **Add Export button** - Export button in table toolbar opens config dialog
+- [x] **Implement filtered export** - Export respects all active filters (client, project, category, date range, search)
+- [x] **Add summary mode** - Summary export with totals grouped by client, project, category, or date
 - [ ] **Tauri file save dialog** - Use native OS file picker for save location
 - [ ] **Add export to analytics page** - Export button on analytics page as well
 
@@ -101,7 +97,7 @@ Leverage Tauri for native desktop experience.
 - [ ] **Undo delete** - Toast with undo action after deleting entry
 - [ ] **Idle detection** - Detect when user is idle and prompt to stop timer
 - [ ] **Weekly/monthly reports** - Pre-built report views
-- [ ] **CSV export** - Alternative to Excel for simpler needs
+- [x] **CSV export** - CSV and JSON export with detailed/summary modes
 
 ---
 
@@ -141,3 +137,4 @@ For reference, these are already implemented and working:
 - [x] Total hours via aggregates on entity management pages
 - [x] Project status management (active/archived/completed) with badge dropdown
 - [x] Project filtering by client on management page
+- [x] Export time entries (CSV/JSON, detailed/summary, grouping, filter-aware)

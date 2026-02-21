@@ -15,7 +15,7 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronsUpDown, Download } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -37,6 +37,7 @@ import { CategoryCell } from "./category-cell";
 import { ClientCell } from "./client-cell";
 import { CustomizeTableMenu } from "./customize-table-menu";
 import { DurationCell } from "./duration-cell";
+import { ExportDialog } from "./export-dialog";
 import { useTimeEntries } from "./hooks";
 import { ProjectCell } from "./project-cell";
 import { StartEndTimeCell } from "./start-end-time-cell";
@@ -264,6 +265,7 @@ export default function TimeEntriesTable({
 	);
 	const scrollAreaRef = React.useRef<HTMLDivElement>(null);
 	const loaderRef = React.useRef<HTMLTableCellElement>(null);
+	const [exportOpen, setExportOpen] = React.useState(false);
 	const [rowSelection, setRowSelection] = React.useState({});
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
@@ -381,8 +383,27 @@ export default function TimeEntriesTable({
 					}
 					onClearSelection={() => table.resetRowSelection()}
 				/>
-				<CustomizeTableMenu table={table} className="ml-auto" />
+				<div className="ml-auto flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setExportOpen(true)}
+					>
+						<Download className="size-4" />
+						<span className="hidden lg:inline">Export</span>
+					</Button>
+					<CustomizeTableMenu table={table} />
+				</div>
 			</div>
+			<ExportDialog
+				open={exportOpen}
+				onOpenChange={setExportOpen}
+				searchValue={searchValue}
+				filterByClients={filterByClients}
+				filterByProjects={filterByProjects}
+				filterByCategories={filterByCategories}
+				filterByTimeRange={filterByTimeRange}
+			/>
 			<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 mt-2 pb-2">
 				<div className="rounded-lg border flex-1 min-h-0 overflow-hidden">
 					<div ref={scrollAreaRef} className="h-full overflow-y-auto">

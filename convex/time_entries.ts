@@ -389,6 +389,29 @@ export const getTotalDuration = query({
 	},
 });
 
+export const exportTimeEntries = query({
+	args: {
+		userId: v.id("users"),
+		filters: v.optional(
+			v.object({
+				name: v.optional(v.string()),
+				clientIds: v.optional(v.array(v.id("clients"))),
+				projectIds: v.optional(v.array(v.id("projects"))),
+				categoryIds: v.optional(v.array(v.id("categories"))),
+				dateRange: v.optional(
+					v.object({
+						startDate: v.optional(v.number()),
+						endDate: v.optional(v.number()),
+					}),
+				),
+			}),
+		),
+	},
+	handler: async (ctx, { userId, filters }) => {
+		return TimeEntries.getAllTimeEntries(ctx, { userId, filters });
+	},
+});
+
 export const getRunningTimer = query({
 	args: {
 		userId: v.id("users"),
