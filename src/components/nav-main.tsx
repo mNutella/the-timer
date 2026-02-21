@@ -1,6 +1,6 @@
-import { type Icon, IconCirclePlusFilled } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
+import { CirclePlus, type LucideIcon } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import {
@@ -20,7 +20,7 @@ export function NavMain({
 	items: {
 		title: string;
 		url: string;
-		icon?: Icon;
+		icon?: LucideIcon;
 	}[];
 	label?: string;
 }) {
@@ -52,7 +52,7 @@ export function NavMain({
 								className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
 								onClick={startTimer}
 							>
-								<IconCirclePlusFilled />
+								<CirclePlus />
 								<span>Start Timer</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>

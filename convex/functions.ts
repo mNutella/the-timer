@@ -1,7 +1,4 @@
-/* eslint-disable no-restricted-imports */
-
 import { entsTableFactory } from "convex-ents";
-/* eslint-enable no-restricted-imports */
 import {
 	customCtx,
 	customMutation,
@@ -17,7 +14,6 @@ import {
 import {
 	timeEntriesTotalDurationByCategoryAndDateAggregate,
 	timeEntriesTotalDurationByClientAndDateAggregate,
-	// timeEntriesByUserAggregate,
 	timeEntriesTotalDurationByDateAggregate,
 	timeEntriesTotalDurationByProjectAndDateAggregate,
 } from "./aggregates";
@@ -26,7 +22,6 @@ import { entDefinitions } from "./schema";
 const triggers = new Triggers<DataModel>();
 
 if (!process.env.VITEST) {
-	// triggers.register("time_entries", timeEntriesByUserAggregate.trigger());
 	triggers.register(
 		"time_entries",
 		timeEntriesTotalDurationByDateAggregate.trigger(),

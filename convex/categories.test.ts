@@ -1,10 +1,10 @@
-import { expect, test, describe } from "vitest";
+import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import {
 	createTest,
-	seedUser,
 	seedCategory,
 	seedTimeEntry,
+	seedUser,
 } from "./setup.testing";
 
 describe("categories", () => {
@@ -43,6 +43,59 @@ describe("categories", () => {
 				userId: userId2,
 			}),
 		).rejects.toThrow("does not belong to user");
+	});
+
+	test("searchByName returns all categories when query is empty", async () => {
+		const t = createTest();
+		const userId = await t.run(async (ctx) => seedUser(ctx));
+		await t.run(async (ctx) => {
+			await seedCategory(ctx, userId, "Development");
+			await seedCategory(ctx, userId, "Design");
+		});
+
+		const result = await t.query(api.categories.searchByName, {
+			userId,
+			query: "",
+			paginationOpts: { numItems: 10, cursor: null },
+		});
+
+		expect(result.page).toHaveLength(2);
+	});
+
+	test("searchByName filters by name", async () => {
+		const t = createTest();
+		const userId = await t.run(async (ctx) => seedUser(ctx));
+		await t.run(async (ctx) => {
+			await seedCategory(ctx, userId, "Development");
+			await seedCategory(ctx, userId, "Design");
+		});
+
+		const result = await t.query(api.categories.searchByName, {
+			userId,
+			query: "Development",
+			paginationOpts: { numItems: 10, cursor: null },
+		});
+
+		expect(result.page).toHaveLength(1);
+		expect(result.page[0].name).toBe("Development");
+	});
+
+	test("update changes category name", async () => {
+		const t = createTest();
+		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const categoryId = await t.mutation(api.categories.create, {
+			name: "Old Name",
+			userId,
+		});
+
+		await t.mutation(api.categories.update, {
+			id: categoryId,
+			userId,
+			name: "New Name",
+		});
+
+		const category = await t.run(async (ctx) => ctx.db.get(categoryId));
+		expect(category!.name).toBe("New Name");
 	});
 
 	test("cascade deletion nullifies categoryId on time_entries", async () => {

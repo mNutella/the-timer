@@ -181,51 +181,48 @@ async function sumDurationForDay(
 	const categoryIds = filters.categoryIds ?? [];
 
 	if (clientIds.length > 0) {
-		let total = 0;
-		for (const clientId of clientIds) {
-			total += await timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
-				namespace: userId,
-				bounds: {
-					lower: { key: [clientId, dayStart], inclusive: true },
-					upper: { key: [clientId, dayEnd], inclusive: true },
-				},
-			});
-		}
-		return total;
+		const totals = await Promise.all(
+			clientIds.map((clientId) =>
+				timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
+					namespace: userId,
+					bounds: {
+						lower: { key: [clientId, dayStart], inclusive: true },
+						upper: { key: [clientId, dayEnd], inclusive: true },
+					},
+				}),
+			),
+		);
+		return totals.reduce((sum, t) => sum + t, 0);
 	}
 
 	if (projectIds.length > 0) {
-		let total = 0;
-		for (const projectId of projectIds) {
-			total += await timeEntriesTotalDurationByProjectAndDateAggregate.sum(
-				ctx,
-				{
+		const totals = await Promise.all(
+			projectIds.map((projectId) =>
+				timeEntriesTotalDurationByProjectAndDateAggregate.sum(ctx, {
 					namespace: userId,
 					bounds: {
 						lower: { key: [projectId, dayStart], inclusive: true },
 						upper: { key: [projectId, dayEnd], inclusive: true },
 					},
-				},
-			);
-		}
-		return total;
+				}),
+			),
+		);
+		return totals.reduce((sum, t) => sum + t, 0);
 	}
 
 	if (categoryIds.length > 0) {
-		let total = 0;
-		for (const categoryId of categoryIds) {
-			total += await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(
-				ctx,
-				{
+		const totals = await Promise.all(
+			categoryIds.map((categoryId) =>
+				timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
 					namespace: userId,
 					bounds: {
 						lower: { key: [categoryId, dayStart], inclusive: true },
 						upper: { key: [categoryId, dayEnd], inclusive: true },
 					},
-				},
-			);
-		}
-		return total;
+				}),
+			),
+		);
+		return totals.reduce((sum, t) => sum + t, 0);
 	}
 
 	return timeEntriesTotalDurationByDateAggregate.sum(ctx, {

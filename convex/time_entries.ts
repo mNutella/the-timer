@@ -350,36 +350,39 @@ export const getTotalDuration = query({
 		const categoryIds = filters?.categoryIds ?? [];
 
 		if (clientIds.length > 0) {
-			let total = 0;
-			for (const clientId of clientIds) {
-				total += await Analytics.getTotalHoursByClientAndDate(ctx, {
-					userId,
-					filters: { clientId, dateRange },
-				});
-			}
-			return total;
+			const totals = await Promise.all(
+				clientIds.map((clientId) =>
+					Analytics.getTotalHoursByClientAndDate(ctx, {
+						userId,
+						filters: { clientId, dateRange },
+					}),
+				),
+			);
+			return totals.reduce((sum, t) => sum + t, 0);
 		}
 
 		if (projectIds.length > 0) {
-			let total = 0;
-			for (const projectId of projectIds) {
-				total += await Analytics.getTotalHoursByProjectAndDate(ctx, {
-					userId,
-					filters: { projectId, dateRange },
-				});
-			}
-			return total;
+			const totals = await Promise.all(
+				projectIds.map((projectId) =>
+					Analytics.getTotalHoursByProjectAndDate(ctx, {
+						userId,
+						filters: { projectId, dateRange },
+					}),
+				),
+			);
+			return totals.reduce((sum, t) => sum + t, 0);
 		}
 
 		if (categoryIds.length > 0) {
-			let total = 0;
-			for (const categoryId of categoryIds) {
-				total += await Analytics.getTotalHoursByCategoryAndDate(ctx, {
-					userId,
-					filters: { categoryId, dateRange },
-				});
-			}
-			return total;
+			const totals = await Promise.all(
+				categoryIds.map((categoryId) =>
+					Analytics.getTotalHoursByCategoryAndDate(ctx, {
+						userId,
+						filters: { categoryId, dateRange },
+					}),
+				),
+			);
+			return totals.reduce((sum, t) => sum + t, 0);
 		}
 
 		return Analytics.getTotalHoursByDate(ctx, {

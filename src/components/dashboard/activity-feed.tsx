@@ -1,9 +1,5 @@
-import {
-	IconPlayerPlay,
-	IconPlayerStop,
-	IconPointFilled,
-} from "@tabler/icons-react";
 import { useMutation } from "convex/react";
+import { Circle, Play, Square } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -143,7 +139,7 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 			<div className="flex shrink-0 items-center gap-2">
 				{isRunning ? (
 					<Badge className="animate-pulse gap-1 tabular-nums">
-						<IconPointFilled className="size-3" />
+						<Circle className="size-3" />
 						{elapsed}
 					</Badge>
 				) : (
@@ -166,7 +162,7 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 						size="icon"
 						className="size-7"
 					>
-						<IconPlayerStop className="size-3.5" />
+						<Square className="size-3.5" />
 					</Button>
 				) : (
 					<Button
@@ -175,7 +171,7 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 						size="icon"
 						className="size-7"
 					>
-						<IconPlayerPlay className="size-3.5" />
+						<Play className="size-3.5" />
 					</Button>
 				)}
 			</div>

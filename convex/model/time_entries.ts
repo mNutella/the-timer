@@ -8,6 +8,7 @@ import {
 	getStartOfDay,
 	updateIfDefined,
 } from "../utils";
+import { applyOrFilter, assertOwnership } from "./helpers";
 
 interface SearchTimeEntriesParams {
 	userId: Id<"users">;
@@ -113,9 +114,7 @@ export async function create(
 
 	if (timeEntryId) {
 		const timeEntry = await ctx.table("time_entries").getX(timeEntryId);
-		if (timeEntry?.userId !== userId) {
-			throw new Error("Time entry does not belong to user");
-		}
+		assertOwnership(timeEntry, userId, "Time entry");
 
 		const [client, project, category, tags] = await Promise.all([
 			timeEntry.edge("client"),
@@ -168,10 +167,7 @@ export async function stop(
 	{ id, userId }: StopTimeEntryParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(id);
-
-	if (timeEntry.userId !== userId) {
-		throw new Error("Activity does not belong to user");
-	}
+	assertOwnership(timeEntry, userId, "Time entry");
 
 	if (timeEntry.end_time !== undefined) {
 		return timeEntry;
@@ -205,10 +201,7 @@ export async function update(
 	}: UpdateTimeEntryParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(id);
-
-	if (timeEntry.userId !== userId) {
-		throw new Error("Activity does not belong to user");
-	}
+	assertOwnership(timeEntry, userId, "Time entry");
 
 	const updateTimeEntry: Partial<Ent<"time_entries">> = {};
 
@@ -255,9 +248,7 @@ export async function deleteOne(
 		throw new Error("Time entry not found");
 	}
 
-	if (time_entry.userId !== userId) {
-		throw new Error("Activity does not belong to user");
-	}
+	assertOwnership(time_entry, userId, "Time entry");
 
 	await time_entry.delete();
 }
@@ -267,10 +258,7 @@ export async function updateClient(
 	{ timeEntryId, userId, clientId, newClientName }: UpdateClientParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(timeEntryId);
-
-	if (timeEntry.userId !== userId) {
-		throw new Error("Time entry does not belong to user");
-	}
+	assertOwnership(timeEntry, userId, "Time entry");
 
 	if (clientId && newClientName) {
 		throw new Error("Provide exactly one of clientId or newClientName");
@@ -327,10 +315,7 @@ export async function updateProject(
 	{ timeEntryId, userId, projectId, newProjectName }: UpdateProjectParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(timeEntryId);
-
-	if (timeEntry.userId !== userId) {
-		throw new Error("Time entry does not belong to user");
-	}
+	assertOwnership(timeEntry, userId, "Time entry");
 
 	if (projectId && newProjectName) {
 		throw new Error("Provide exactly one of projectId or newProjectName");
@@ -341,7 +326,7 @@ export async function updateProject(
 	if (!nextProjectId && newProjectName) {
 		const normalized = newProjectName.trim();
 		if (!normalized) {
-			throw new Error("Client name cannot be empty");
+			throw new Error("Project name cannot be empty");
 		}
 
 		const existingProject = await ctx
@@ -375,10 +360,7 @@ export async function updateCategory(
 	{ timeEntryId, userId, categoryId, newCategoryName }: UpdateCategoryParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(timeEntryId);
-
-	if (timeEntry.userId !== userId) {
-		throw new Error("Time entry does not belong to user");
-	}
+	assertOwnership(timeEntry, userId, "Time entry");
 
 	if (categoryId && newCategoryName) {
 		throw new Error("Provide exactly one of categoryId or newCategoryName");
@@ -389,7 +371,7 @@ export async function updateCategory(
 	if (!nextCategoryId && newCategoryName) {
 		const normalized = newCategoryName.trim();
 		if (!normalized) {
-			throw new Error("Client name cannot be empty");
+			throw new Error("Category name cannot be empty");
 		}
 
 		const existingCategory = await ctx
@@ -487,9 +469,7 @@ export async function bulkDelete(
 ) {
 	for (const id of ids) {
 		const entry = await ctx.table("time_entries").getX(id);
-		if (entry.userId !== userId) {
-			throw new Error("Time entry does not belong to user");
-		}
+		assertOwnership(entry, userId, "Time entry");
 		await entry.delete();
 	}
 }
@@ -517,9 +497,7 @@ export async function bulkUpdate(
 
 	for (const id of ids) {
 		const entry = await ctx.table("time_entries").getX(id);
-		if (entry.userId !== userId) {
-			throw new Error("Time entry does not belong to user");
-		}
+		assertOwnership(entry, userId, "Time entry");
 		await entry.patch(patch);
 	}
 }
@@ -588,64 +566,21 @@ function buildFilteredQuery(
 			.order("desc");
 	}
 
+	if (!timeEntries) return null;
+
 	// Apply array filters via .filter() for multi-select (OR logic)
-	if (!hasName) {
-		if (clientIds.length > 0) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("clientId"), clientIds[0]);
-				for (let i = 1; i < clientIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("clientId"), clientIds[i]));
-				}
-				return expr;
-			});
-		}
-		if (projectIds.length > 0) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("projectId"), projectIds[0]);
-				for (let i = 1; i < projectIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("projectId"), projectIds[i]));
-				}
-				return expr;
-			});
-		}
-		if (categoryIds.length > 0) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("categoryId"), categoryIds[0]);
-				for (let i = 1; i < categoryIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("categoryId"), categoryIds[i]));
-				}
-				return expr;
-			});
-		}
-	} else {
-		// For name search with multiple IDs, filter in-memory for the additional IDs
-		if (clientIds.length > 1) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("clientId"), clientIds[0]);
-				for (let i = 1; i < clientIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("clientId"), clientIds[i]));
-				}
-				return expr;
-			});
-		}
-		if (projectIds.length > 1) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("projectId"), projectIds[0]);
-				for (let i = 1; i < projectIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("projectId"), projectIds[i]));
-				}
-				return expr;
-			});
-		}
-		if (categoryIds.length > 1) {
-			timeEntries = timeEntries.filter((q) => {
-				let expr = q.eq(q.field("categoryId"), categoryIds[0]);
-				for (let i = 1; i < categoryIds.length; i++) {
-					expr = q.or(expr, q.eq(q.field("categoryId"), categoryIds[i]));
-				}
-				return expr;
-			});
-		}
+	// For name search, single-value IDs are already applied in the search index,
+	// so we only need post-filters when there are multiple IDs (threshold > 1).
+	// For non-name queries, all IDs need post-filtering (threshold > 0).
+	const filterThreshold = hasName ? 1 : 0;
+	if (clientIds.length > filterThreshold) {
+		timeEntries = applyOrFilter(timeEntries, "clientId", clientIds);
+	}
+	if (projectIds.length > filterThreshold) {
+		timeEntries = applyOrFilter(timeEntries, "projectId", projectIds);
+	}
+	if (categoryIds.length > filterThreshold) {
+		timeEntries = applyOrFilter(timeEntries, "categoryId", categoryIds);
 	}
 
 	if (startDate !== undefined) {

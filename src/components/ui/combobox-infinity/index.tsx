@@ -62,33 +62,6 @@ function ComboboxView({
 			{children}
 		</Parent>
 	);
-	// if (isMobile) {
-	// 	return (
-	// 		<Drawer
-	// 			open={isOpen}
-	// 			onOpenChange={(open) => {
-	// 				setIsOpen(open);
-
-	// 				onPopoverOpenChange?.(open);
-	// 			}}
-	// 		>
-	// 			{children}
-	// 		</Drawer>
-	// 	);
-	// }
-
-	// return (
-	// 	<Popover
-	// 		open={isOpen}
-	// 		onOpenChange={(open) => {
-	// 			setIsOpen(open);
-
-	// 			onPopoverOpenChange?.(open);
-	// 		}}
-	// 	>
-	// 		{children}
-	// 	</Popover>
-	// );
 }
 
 function ComboboxTrigger({

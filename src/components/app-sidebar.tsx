@@ -1,15 +1,15 @@
-import {
-	IconBriefcase,
-	IconCategory,
-	IconChartBar,
-	IconDashboard,
-	IconFolder,
-	IconHelp,
-	IconInnerShadowTop,
-	IconSearch,
-	IconSettings,
-} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import {
+	BarChart3,
+	Briefcase,
+	Folder,
+	HelpCircle,
+	LayoutDashboard,
+	Search,
+	Settings,
+	Tag,
+	Timer,
+} from "lucide-react";
 import type * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -35,46 +35,46 @@ const data = {
 		{
 			title: "Dashboard",
 			url: "/",
-			icon: IconDashboard,
+			icon: LayoutDashboard,
 		},
 		{
 			title: "Analytics",
 			url: "/analytics",
-			icon: IconChartBar,
+			icon: BarChart3,
 		},
 	],
 	navManage: [
 		{
 			title: "Clients",
 			url: "/clients",
-			icon: IconBriefcase,
+			icon: Briefcase,
 		},
 		{
 			title: "Projects",
 			url: "/projects",
-			icon: IconFolder,
+			icon: Folder,
 		},
 		{
 			title: "Categories",
 			url: "/categories",
-			icon: IconCategory,
+			icon: Tag,
 		},
 	],
 	navSecondary: [
 		{
 			title: "Settings",
 			url: "#",
-			icon: IconSettings,
+			icon: Settings,
 		},
 		{
 			title: "Get Help",
 			url: "#",
-			icon: IconHelp,
+			icon: HelpCircle,
 		},
 		{
 			title: "Search",
 			url: "#",
-			icon: IconSearch,
+			icon: Search,
 		},
 	],
 	// documents: [
@@ -107,7 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							className="data-[slot=sidebar-menu-button]:!p-1.5"
 						>
 							<Link to="/" className="[&.active]:font-bold">
-								<IconInnerShadowTop className="!size-5" />
+								<Timer className="!size-5" />
 								<span className="text-base font-semibold">The Timer.</span>
 							</Link>
 						</SidebarMenuButton>

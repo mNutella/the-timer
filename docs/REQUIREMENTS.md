@@ -1,6 +1,6 @@
 # Requirements - The Timer
 
-A fully workable time tracking desktop application built with Tauri + React + Convex, with the ability to export hours based on filters to Excel.
+A fully workable time tracking desktop application built with Tauri + React + Convex, with the ability to export hours based on filters to CSV/JSON.
 
 ## Tech Stack
 
@@ -8,7 +8,7 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - **Backend:** Convex (serverless DB + functions), convex-ents, convex-helpers
 - **Desktop:** Tauri 2
 - **Charts:** Recharts
-- **Export:** Excel export (xlsx)
+- **Export:** CSV and JSON export
 
 ---
 
@@ -37,7 +37,7 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - [x] Live duration display that updates every second while running
 - [x] Resume a stopped time entry (creates new entry copying metadata)
 - [ ] Timer notification when running longer than X minutes (configurable)
-- [ ] Desktop tray / always-on-top mini timer widget
+- [x] Desktop tray / always-on-top mini timer widget
 
 ### 2.2 Time Entry CRUD
 - [x] Create time entries
@@ -47,9 +47,9 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - [x] Delete time entries
 - [x] Assign client, project, category to time entry
 - [x] Toast notifications on mutations (success/error)
-- [ ] Bulk delete time entries
-- [ ] Duplicate a time entry
-- [ ] Add/edit description and notes (fields exist but no UI)
+- [x] Bulk delete time entries
+- [x] Duplicate a time entry
+- [x] Add/edit description and notes
 - [ ] Tag support in UI (schema and backend exist, UI not implemented)
 
 ### 2.3 Time Entry Validation
@@ -65,21 +65,21 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 ### 3.1 Clients
 - [x] Create clients inline from time entry combobox
 - [x] Search clients with pagination
-- [ ] Dedicated client management page (list, edit, delete)
+- [x] Dedicated client management page (list, edit, delete)
 - [ ] Client details view
 
 ### 3.2 Projects
 - [x] Create projects inline (optionally linked to client)
 - [x] Search projects with pagination
 - [x] Filter projects by selected client
-- [ ] Project status management (active/archived/completed)
-- [ ] Dedicated project management page (list, edit, delete)
+- [x] Project status management (active/archived/completed)
+- [x] Dedicated project management page (list, edit, delete)
 - [ ] Project details view with time summary
 
 ### 3.3 Categories
 - [x] Create categories inline from time entry combobox
 - [x] Search categories with pagination
-- [ ] Dedicated category management page
+- [x] Dedicated category management page
 
 ### 3.4 Tags
 - [x] Schema and backend support
@@ -101,15 +101,15 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - [x] Filters shared between dashboard table and analytics
 - [ ] Filter by tags
 - [ ] Save/load filter presets
-- [ ] Quick date ranges (Today, This Week, This Month, Last Month, Custom)
+- [x] Quick date ranges (Today, This Week, This Month, Last Month, Custom)
 
 ### 4.2 Table Features
 - [x] Virtualized scrolling for performance
 - [x] Infinite scroll pagination (10 initial, 5 more per load)
 - [x] Column visibility customization
-- [ ] Column sorting (by date, duration, name, client, project)
+- [x] Column sorting (by date, duration, name, client, project)
 - [ ] Column reordering
-- [ ] Row selection for bulk actions
+- [x] Row selection for bulk actions
 
 ---
 
@@ -125,10 +125,10 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 ### 5.2 Charts
 - [x] Bar chart component (time entries by date)
 - [x] Radial stacked chart component
-- [ ] Connect charts to real filtered data (currently partially placeholder)
-- [ ] Time breakdown by client (pie/donut chart)
-- [ ] Time breakdown by project
-- [ ] Time breakdown by category
+- [x] Connect charts to real filtered data
+- [x] Time breakdown by client (pie/donut chart)
+- [x] Time breakdown by project
+- [x] Time breakdown by category
 - [ ] Daily/weekly/monthly trend line
 - [ ] Interactive chart tooltips with drill-down
 
@@ -141,27 +141,16 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 
 ---
 
-## 6. Excel Export (Key Feature)
+## 6. Export (Key Feature)
 
 ### 6.1 Export Functionality
-- [ ] Export filtered time entries to `.xlsx` file
-- [ ] Export should respect all active filters (client, project, category, date range, search)
-- [ ] Configurable columns in export (name, client, project, category, duration, start/end time, date, notes)
-- [ ] Duration formatted as hours (decimal) and/or HH:MM:SS
-- [ ] Summary sheet with totals by client/project/category
-- [ ] Date grouping in export (daily/weekly/monthly summaries)
-- [ ] File save dialog via Tauri (native OS file picker)
-- [ ] Export button in table toolbar and analytics page
-
-### 6.2 Export Format
-- Column headers: Date, Entry Name, Client, Project, Category, Start Time, End Time, Duration (h), Notes
-- Rows sorted by date (newest first) or configurable
-- Summary section at bottom or separate sheet with:
-  - Total hours
-  - Hours per client
-  - Hours per project
-  - Hours per category
-- Professional formatting (bold headers, column widths, date formatting)
+- [x] Export filtered time entries to CSV/JSON
+- [x] Export respects all active filters (client, project, category, date range, search)
+- [x] Configurable export modes (detailed/summary)
+- [x] Duration formatted as HH:MM:SS
+- [x] Summary mode with totals by client/project/category/date
+- [x] File save dialog via Tauri (native OS file picker)
+- [x] Export button in table toolbar and analytics page
 
 ---
 
@@ -177,8 +166,9 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - [x] Dashboard page
 - [x] Analytics page
 - [ ] Settings page (placeholder exists)
-- [ ] Client management page
-- [ ] Project management page
+- [x] Client management page
+- [x] Project management page
+- [x] Category management page
 
 ### 7.3 Inline Editing
 - [x] Time entry name editing
@@ -189,10 +179,10 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 - [x] Start/end time editing
 
 ### 7.4 Desktop Features (Tauri)
-- [ ] System tray with timer status
-- [ ] Global keyboard shortcut to start/stop timer
+- [x] System tray with timer status
+- [x] Global keyboard shortcut to start/stop timer
 - [ ] Native notifications for long-running timers
-- [ ] Always-on-top mini timer window
+- [x] Always-on-top mini timer window (Dynamic Island overlay)
 - [ ] Auto-start on system boot (optional)
 
 ---
@@ -200,9 +190,6 @@ A fully workable time tracking desktop application built with Tauri + React + Co
 ## 8. Known Issues to Fix
 
 - [ ] Rapid client/project changes can cause data inconsistency
-- [ ] Searchable combobox adds selected value to search input (should not)
-- [ ] SectionCards display hardcoded sample data (3 of 4 cards)
-- [ ] Analytics charts not fully connected to filtered real-time data
 - [ ] Tags UI not implemented despite backend support
 
 ---

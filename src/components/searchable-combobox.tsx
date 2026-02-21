@@ -146,7 +146,7 @@ export function SearchableCombobox<
 			<Trigger
 				id={id}
 				className={cn("w-full", className)}
-				value={value as any}
+				value={(value ?? undefined) as T | T[] | undefined}
 				placeholder={placeholder}
 			/>
 			<ComboboxContent>
@@ -258,7 +258,8 @@ function SearchableComboboxContent<
 
 	const hasSelectedItems = selectedItemsList.length > 0;
 	const hasUnselectedItems = unselectedItems.length > 0;
-	const hasNoItems = !hasSelectedItems && !hasUnselectedItems && status !== "LoadingFirstPage";
+	const hasNoItems =
+		!hasSelectedItems && !hasUnselectedItems && status !== "LoadingFirstPage";
 
 	const renderItem = (item: { _id: string; name: string }) => (
 		<CommandItem
@@ -286,15 +287,11 @@ function SearchableComboboxContent<
 			<ComboboxList>
 				<ScrollArea ref={scrollAreaRef} className="h-[200px]">
 					{hasSelectedItems && (
-						<CommandGroup>
-							{selectedItemsList.map(renderItem)}
-						</CommandGroup>
+						<CommandGroup>{selectedItemsList.map(renderItem)}</CommandGroup>
 					)}
 					{hasSelectedItems && hasUnselectedItems && <CommandSeparator />}
 					{hasUnselectedItems && (
-						<CommandGroup>
-							{unselectedItems.map(renderItem)}
-						</CommandGroup>
+						<CommandGroup>{unselectedItems.map(renderItem)}</CommandGroup>
 					)}
 					{hasNoItems && (
 						<p className="py-6 text-center text-sm text-muted-foreground">

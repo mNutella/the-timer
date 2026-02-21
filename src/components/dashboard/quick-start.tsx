@@ -1,6 +1,6 @@
-import { IconPlayerPlay } from "@tabler/icons-react";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { Play } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +75,7 @@ export function QuickStart() {
 							No recent projects
 						</span>
 						<Button onClick={handleGenericStart} variant="outline" size="sm">
-							<IconPlayerPlay className="mr-1 size-4" />
+							<Play className="mr-1 size-4" />
 							Start Timer
 						</Button>
 					</div>
@@ -89,7 +89,7 @@ export function QuickStart() {
 								onClick={() => handleQuickStart(project)}
 								className="h-auto gap-1.5 py-1.5"
 							>
-								<IconPlayerPlay className="size-3.5" />
+								<Play className="size-3.5" />
 								<span>{project.projectName}</span>
 								{project.clientName && (
 									<Badge variant="secondary" className="text-xs">

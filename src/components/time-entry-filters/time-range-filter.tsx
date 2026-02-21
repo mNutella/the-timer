@@ -1,4 +1,3 @@
-import { IconCalendar } from "@tabler/icons-react";
 import {
 	endOfMonth,
 	endOfWeek,
@@ -6,7 +5,11 @@ import {
 	startOfWeek,
 	subMonths,
 } from "date-fns";
-import { BrushCleaning, ChevronsUpDown } from "lucide-react";
+import {
+	BrushCleaning,
+	Calendar as CalendarIcon,
+	ChevronsUpDown,
+} from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
@@ -88,7 +91,7 @@ export function TimeRangeFilter({
 					className={cn(timeRange && "bg-primary text-primary-foreground")}
 					onClick={() => setOpen(true)}
 				>
-					<IconCalendar />
+					<CalendarIcon />
 					<div className="flex flex-col text-sm">
 						{!timeRange?.from && !timeRange?.to ? (
 							<span>Filter by Period</span>

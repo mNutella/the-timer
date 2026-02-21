@@ -1,7 +1,9 @@
-import type { IconProps } from "@tabler/icons-react";
-
-import { IconSearch } from "@tabler/icons-react";
-import { BrushCleaning, ChevronsUpDown } from "lucide-react";
+import {
+	BrushCleaning,
+	ChevronsUpDown,
+	type LucideProps,
+	Search,
+} from "lucide-react";
 import type { SelectableItem } from "@/components/searchable-combobox";
 import { ComboboxTrigger } from "@/components/ui/combobox-infinity";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
@@ -18,9 +20,9 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 	className?: string;
 	value?: T | T[];
 	placeholder?: string;
-	icon?: React.ComponentType<IconProps>;
+	icon?: React.ComponentType<LucideProps>;
 }) {
-	const Icon = icon ?? IconSearch;
+	const Icon = icon ?? Search;
 	const { onValueChange } = useComboboxContext<T>();
 
 	const items = Array.isArray(value) ? value : value ? [value] : [];

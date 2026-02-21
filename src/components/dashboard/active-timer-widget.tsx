@@ -1,6 +1,6 @@
-import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { Play, Square } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +71,7 @@ export function ActiveTimerWidget() {
 						</CardTitle>
 					</div>
 					<Button onClick={handleStart} size="sm">
-						<IconPlayerPlay className="mr-1 size-4" />
+						<Play className="mr-1 size-4" />
 						Start Timer
 					</Button>
 				</CardHeader>
@@ -103,7 +103,7 @@ export function ActiveTimerWidget() {
 					</div>
 				</div>
 				<Button onClick={handleStop} variant="destructive" size="sm">
-					<IconPlayerStop className="mr-1 size-4" />
+					<Square className="mr-1 size-4" />
 					Stop
 				</Button>
 			</CardHeader>

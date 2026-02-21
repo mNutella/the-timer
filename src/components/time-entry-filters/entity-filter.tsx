@@ -1,9 +1,9 @@
-import type { IconProps } from "@tabler/icons-react";
 import {
-	IconFlagSearch,
-	IconReportSearch,
-	IconUserSearch,
-} from "@tabler/icons-react";
+	FileSearch,
+	FlagTriangleRight,
+	type LucideProps,
+	UserSearch,
+} from "lucide-react";
 
 import { api } from "@/../convex/_generated/api";
 import type { SelectableItem } from "@/components/searchable-combobox";
@@ -11,7 +11,7 @@ import { SearchableCombobox } from "@/components/searchable-combobox";
 import { CustomSelectTrigger } from "@/components/time-entries-table/custom-select-trigger";
 import type { Category, Client, Project } from "@/lib/types";
 
-function createFilterTrigger(icon: React.ComponentType<IconProps>) {
+function createFilterTrigger(icon: React.ComponentType<LucideProps>) {
 	return function FilterTrigger<T extends SelectableItem>(props: {
 		id?: string;
 		className?: string;
@@ -28,9 +28,9 @@ function createFilterTrigger(icon: React.ComponentType<IconProps>) {
 	};
 }
 
-const ClientTrigger = createFilterTrigger(IconUserSearch);
-const ProjectTrigger = createFilterTrigger(IconReportSearch);
-const CategoryTrigger = createFilterTrigger(IconFlagSearch);
+const ClientTrigger = createFilterTrigger(UserSearch);
+const ProjectTrigger = createFilterTrigger(FileSearch);
+const CategoryTrigger = createFilterTrigger(FlagTriangleRight);
 
 type EntityFilterProps<T extends SelectableItem> = {
 	value: T[];

@@ -1,5 +1,5 @@
-import type { Icon } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
 import type * as React from "react";
 
 import {
@@ -17,7 +17,7 @@ export function NavSecondary({
 	items: {
 		title: string;
 		url: string;
-		icon: Icon;
+		icon: LucideIcon;
 	}[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
 	return (

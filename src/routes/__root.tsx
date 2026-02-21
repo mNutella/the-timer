@@ -32,7 +32,6 @@ function RootComponent() {
 			</ScrollArea>
 			<Toaster position="top-center" />
 			<TanStackRouterDevtools position="bottom-right" />
-			{/* <div className="absolute inset-0 bg-amber-50 blur-sm bg-[url('/futuristic-bg.png')] bg-cover bg-center" /> */}
 		</>
 	);
 }

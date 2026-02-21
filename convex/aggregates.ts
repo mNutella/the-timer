@@ -3,17 +3,6 @@ import { components } from "./_generated/api";
 import type { DataModel, Id } from "./_generated/dataModel";
 import { getStartOfDay } from "./utils";
 
-// export const timeEntriesByUserAggregate = new TableAggregate<{
-// 	Namespace: Id<"users">;
-// 	Key: null;
-// 	DataModel: DataModel;
-// 	TableName: "time_entries";
-// }>(components.time_entries_by_user, {
-// 	namespace: (d) => d.userId,
-// 	// We only need counts, so a constant key is fine
-// 	sortKey: () => null,
-// });
-
 export const timeEntriesTotalDurationByDateAggregate = new TableAggregate<{
 	Namespace: Id<"users">;
 	Key: [number];

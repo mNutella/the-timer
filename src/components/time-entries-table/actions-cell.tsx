@@ -1,9 +1,5 @@
-import {
-	IconCopy,
-	IconDotsVertical,
-	IconNote,
-} from "@tabler/icons-react";
 import type { Id } from "convex/_generated/dataModel";
+import { Copy, MoreVertical, StickyNote } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,17 +35,17 @@ export function ActionsCell({
 						className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
 						size="icon"
 					>
-						<IconDotsVertical />
+						<MoreVertical />
 						<span className="sr-only">Open menu</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-40">
 					<DropdownMenuItem onClick={() => setDetailsOpen(true)}>
-						<IconNote className="h-4 w-4" />
+						<StickyNote className="h-4 w-4" />
 						Edit notes
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={duplicateTimeEntry}>
-						<IconCopy className="h-4 w-4" />
+						<Copy className="h-4 w-4" />
 						Duplicate
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />

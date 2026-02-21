@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 import { timeEntriesTotalDurationByClientAndDateAggregate } from "./aggregates";
 import { mutation, query } from "./functions";
+import * as Clients from "./model/clients";
 import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
@@ -10,14 +11,8 @@ export const create = mutation({
 		name: v.string(),
 		userId: v.id("users"),
 	},
-	handler: async (ctx, { name, userId }) => {
-		const clientId = await ctx.table("clients").insert({
-			name,
-			userId,
-			updated_at: Date.now(),
-		});
-
-		return clientId;
+	handler: async (ctx, params) => {
+		return Clients.create(ctx, params);
 	},
 });
 
@@ -71,14 +66,8 @@ export const update = mutation({
 		userId: v.id("users"),
 		name: v.string(),
 	},
-	handler: async (ctx, { id, userId, name }) => {
-		const client = await ctx.table("clients").getX(id);
-
-		if (client.userId !== userId) {
-			throw new Error("Client does not belong to user");
-		}
-
-		await client.patch({ name, updated_at: Date.now() });
+	handler: async (ctx, params) => {
+		await Clients.update(ctx, params);
 	},
 });
 
@@ -87,34 +76,8 @@ export const deleteOne = mutation({
 		id: v.id("clients"),
 		userId: v.id("users"),
 	},
-	handler: async (ctx, { id, userId }) => {
-		const client = await ctx.table("clients").getX(id);
-
-		if (client.userId !== userId) {
-			throw new Error("Client does not belong to user");
-		}
-
-		// Nullify clientId on linked time entries
-		const timeEntries = await ctx.table(
-			"time_entries",
-			"by_user_and_client",
-			(q) => q.eq("userId", userId).eq("clientId", id),
-		);
-
-		for (const entry of timeEntries) {
-			await entry.patch({ clientId: undefined, updated_at: Date.now() });
-		}
-
-		// Nullify clientId on linked projects
-		const projects = await ctx.table("projects", "by_user_and_client", (q) =>
-			q.eq("userId", userId).eq("clientId", id),
-		);
-
-		for (const project of projects) {
-			await project.patch({ clientId: undefined, updated_at: Date.now() });
-		}
-
-		await client.delete();
+	handler: async (ctx, params) => {
+		await Clients.deleteOne(ctx, params);
 	},
 });
 

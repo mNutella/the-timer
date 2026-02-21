@@ -3,35 +3,17 @@ import { v } from "convex/values";
 
 import { timeEntriesTotalDurationByProjectAndDateAggregate } from "./aggregates";
 import { mutation, query } from "./functions";
+import * as Projects from "./model/projects";
 import { getEndOfDay, getStartOfDay } from "./utils";
 
-// TODO: remake this logic. Make it as internal mutation and use it time_entries use it here for create a project.
-// In time_entries we need to use this mutation to create and update an activity linked to a new project.
 export const create = mutation({
 	args: {
 		name: v.string(),
 		userId: v.id("users"),
 		clientId: v.optional(v.id("clients")),
 	},
-	handler: async (ctx, { name, userId, clientId }) => {
-		// Check if user has access to client if clientId is provided
-		if (clientId) {
-			const client = await ctx.table("clients").getX(clientId);
-			if (client.userId !== userId) {
-				throw new Error("User does not have access to this client");
-			}
-		}
-
-		const projectData: any = {
-			name,
-			userId,
-			status: "active",
-			updated_at: Date.now(),
-			clientId,
-		};
-		const projectId = await ctx.table("projects").insert(projectData);
-
-		return projectId;
+	handler: async (ctx, params) => {
+		return Projects.create(ctx, params);
 	},
 });
 
@@ -101,26 +83,8 @@ export const update = mutation({
 		clientId: v.optional(v.id("clients")),
 		clearClientId: v.optional(v.boolean()),
 	},
-	handler: async (
-		ctx,
-		{ id, userId, name, status, clientId, clearClientId },
-	) => {
-		const project = await ctx.table("projects").getX(id);
-
-		if (project.userId !== userId) {
-			throw new Error("Project does not belong to user");
-		}
-
-		const updates: Record<string, unknown> = { updated_at: Date.now() };
-		if (name !== undefined) updates.name = name;
-		if (status !== undefined) updates.status = status;
-		if (clearClientId) {
-			updates.clientId = undefined;
-		} else if (clientId !== undefined) {
-			updates.clientId = clientId;
-		}
-
-		await project.patch(updates);
+	handler: async (ctx, params) => {
+		await Projects.update(ctx, params);
 	},
 });
 
@@ -129,25 +93,8 @@ export const deleteOne = mutation({
 		id: v.id("projects"),
 		userId: v.id("users"),
 	},
-	handler: async (ctx, { id, userId }) => {
-		const project = await ctx.table("projects").getX(id);
-
-		if (project.userId !== userId) {
-			throw new Error("Project does not belong to user");
-		}
-
-		// Nullify projectId on linked time entries
-		const timeEntries = await ctx.table(
-			"time_entries",
-			"by_user_and_project",
-			(q) => q.eq("userId", userId).eq("projectId", id),
-		);
-
-		for (const entry of timeEntries) {
-			await entry.patch({ projectId: undefined, updated_at: Date.now() });
-		}
-
-		await project.delete();
+	handler: async (ctx, params) => {
+		await Projects.deleteOne(ctx, params);
 	},
 });
 

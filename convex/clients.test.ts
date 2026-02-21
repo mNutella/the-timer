@@ -1,11 +1,11 @@
-import { expect, test, describe } from "vitest";
+import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import {
 	createTest,
-	seedUser,
 	seedClient,
 	seedProject,
 	seedTimeEntry,
+	seedUser,
 } from "./setup.testing";
 
 describe("clients", () => {
@@ -64,6 +64,64 @@ describe("clients", () => {
 				name: "Hacked",
 			}),
 		).rejects.toThrow("does not belong to user");
+	});
+
+	test("searchByName returns all clients when query is empty", async () => {
+		const t = createTest();
+		const userId = await t.run(async (ctx) => seedUser(ctx));
+		await t.run(async (ctx) => {
+			await seedClient(ctx, userId, "Alpha");
+			await seedClient(ctx, userId, "Beta");
+		});
+
+		const result = await t.query(api.clients.searchByName, {
+			userId,
+			query: "",
+			paginationOpts: { numItems: 10, cursor: null },
+		});
+
+		expect(result.page).toHaveLength(2);
+	});
+
+	test("searchByName filters by name", async () => {
+		const t = createTest();
+		const userId = await t.run(async (ctx) => seedUser(ctx));
+		await t.run(async (ctx) => {
+			await seedClient(ctx, userId, "Acme Corp");
+			await seedClient(ctx, userId, "Beta Inc");
+		});
+
+		const result = await t.query(api.clients.searchByName, {
+			userId,
+			query: "Acme",
+			paginationOpts: { numItems: 10, cursor: null },
+		});
+
+		expect(result.page).toHaveLength(1);
+		expect(result.page[0].name).toBe("Acme Corp");
+	});
+
+	test("searchByName does not return clients from other users", async () => {
+		const t = createTest();
+		const user1 = await t.run(async (ctx) =>
+			seedUser(ctx, { email: "u1@test.com" }),
+		);
+		const user2 = await t.run(async (ctx) =>
+			seedUser(ctx, { email: "u2@test.com" }),
+		);
+		await t.run(async (ctx) => {
+			await seedClient(ctx, user1, "User1 Client");
+			await seedClient(ctx, user2, "User2 Client");
+		});
+
+		const result = await t.query(api.clients.searchByName, {
+			userId: user1,
+			query: "",
+			paginationOpts: { numItems: 10, cursor: null },
+		});
+
+		expect(result.page).toHaveLength(1);
+		expect(result.page[0].name).toBe("User1 Client");
 	});
 
 	test("cascade deletion nullifies clientId on time_entries and projects", async () => {

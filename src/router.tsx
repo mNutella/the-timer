@@ -5,9 +5,9 @@ import { ConvexQueryCacheProvider } from "convex-helpers/react/cache";
 import { routeTree } from "./routeTree.gen";
 
 export function createRouter() {
-	const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
+	const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 	if (!CONVEX_URL) {
-		console.error("missing envar VITE_CONVEX_URL");
+		throw new Error("Missing environment variable VITE_CONVEX_URL");
 	}
 	const convexQueryClient = new ConvexReactClient(CONVEX_URL);
 

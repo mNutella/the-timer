@@ -3,6 +3,7 @@ import { v } from "convex/values";
 
 import { timeEntriesTotalDurationByCategoryAndDateAggregate } from "./aggregates";
 import { mutation, query } from "./functions";
+import * as Categories from "./model/categories";
 import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
@@ -10,14 +11,8 @@ export const create = mutation({
 		name: v.string(),
 		userId: v.id("users"),
 	},
-	handler: async (ctx, { name, userId }) => {
-		const categoryId = await ctx.table("categories").insert({
-			name,
-			userId,
-			updated_at: Date.now(),
-		});
-
-		return categoryId;
+	handler: async (ctx, params) => {
+		return Categories.create(ctx, params);
 	},
 });
 
@@ -68,14 +63,8 @@ export const update = mutation({
 		userId: v.id("users"),
 		name: v.string(),
 	},
-	handler: async (ctx, { id, userId, name }) => {
-		const category = await ctx.table("categories").getX(id);
-
-		if (category.userId !== userId) {
-			throw new Error("Category does not belong to user");
-		}
-
-		await category.patch({ name, updated_at: Date.now() });
+	handler: async (ctx, params) => {
+		await Categories.update(ctx, params);
 	},
 });
 
@@ -84,25 +73,8 @@ export const deleteOne = mutation({
 		id: v.id("categories"),
 		userId: v.id("users"),
 	},
-	handler: async (ctx, { id, userId }) => {
-		const category = await ctx.table("categories").getX(id);
-
-		if (category.userId !== userId) {
-			throw new Error("Category does not belong to user");
-		}
-
-		// Nullify categoryId on linked time entries
-		const timeEntries = await ctx.table(
-			"time_entries",
-			"by_user_and_category",
-			(q) => q.eq("userId", userId).eq("categoryId", id),
-		);
-
-		for (const entry of timeEntries) {
-			await entry.patch({ categoryId: undefined, updated_at: Date.now() });
-		}
-
-		await category.delete();
+	handler: async (ctx, params) => {
+		await Categories.deleteOne(ctx, params);
 	},
 });
 
