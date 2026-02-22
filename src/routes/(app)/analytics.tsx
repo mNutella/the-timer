@@ -19,6 +19,7 @@ export const Route = createFileRoute("/(app)/analytics")({
 function Analytics() {
 	const {
 		searchValue,
+		debouncedSearchValue,
 		setSearchValue,
 		filterByClients,
 		setFilterByClients,
@@ -76,7 +77,7 @@ function Analytics() {
 			</div>
 			<div className="flex flex-col flex-1 min-h-0">
 				<TimeEntriesTable
-					searchValue={searchValue}
+					searchValue={debouncedSearchValue}
 					filterByClients={filterByClients}
 					filterByProjects={filterByProjects}
 					filterByCategories={filterByCategories}
