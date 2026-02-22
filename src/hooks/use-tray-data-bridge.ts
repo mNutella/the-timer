@@ -3,6 +3,7 @@ import { useQuery } from "convex-helpers/react/cache";
 import { useEffect, useRef } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { useSettings } from "@/lib/settings";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 const isTauri =
@@ -18,6 +19,8 @@ const isTauri =
  * show window) and routes them to Convex mutations.
  */
 export function useTrayDataBridge() {
+	const { settings } = useSettings();
+
 	const runningTimer = useQuery(
 		api.time_entries.getRunningTimer,
 		isTauri ? { userId } : "skip",
@@ -36,7 +39,9 @@ export function useTrayDataBridge() {
 	runningTimerRef.current = runningTimer;
 	recentProjectsRef.current = recentProjects;
 
-	// Emit timer state to Rust tray on changes
+	// Emit timer state to Rust tray on changes.
+	// showTitle controls menu bar elapsed display; the menu itself always
+	// reflects the real timer state so start/stop/recent actions keep working.
 	useEffect(() => {
 		if (!isTauri || runningTimer === undefined) return;
 		import("@tauri-apps/api/event").then(({ emit }) => {
@@ -48,6 +53,7 @@ export function useTrayDataBridge() {
 						name: runningTimer.name || "",
 						projectName: runningTimer.project?.name || "",
 						clientName: runningTimer.client?.name || "",
+						showTitle: settings.enableTrayTimer,
 					}
 				: {
 						running: false,
@@ -56,10 +62,11 @@ export function useTrayDataBridge() {
 						name: null,
 						projectName: null,
 						clientName: null,
+						showTitle: settings.enableTrayTimer,
 					};
 			emit("tray-timer-state", payload);
 		});
-	}, [runningTimer]);
+	}, [runningTimer, settings.enableTrayTimer]);
 
 	// Emit recent entries to Rust tray on changes
 	useEffect(() => {

@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
 import { RouterProvider } from "@tanstack/react-router";
+import { invoke } from "@tauri-apps/api/core";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
@@ -18,5 +18,8 @@ if (!rootElement.innerHTML) {
 	);
 }
 
-// Create the Dynamic Island overlay after the main window is ready
-invoke("create_island").catch(console.error);
+// Create the Dynamic Island overlay after the main window is ready (unless disabled in settings)
+const storedSettings = JSON.parse(localStorage.getItem("app-settings") || "{}");
+if (storedSettings.enableIsland !== false) {
+	invoke("create_island").catch(console.error);
+}

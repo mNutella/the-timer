@@ -2,6 +2,7 @@ import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexQueryCacheProvider } from "convex-helpers/react/cache";
 
+import { SettingsProvider } from "@/lib/settings";
 import { routeTree } from "./routeTree.gen";
 
 export function createRouter() {
@@ -18,7 +19,9 @@ export function createRouter() {
 		defaultSsr: false,
 		Wrap: ({ children }) => (
 			<ConvexProvider client={convexQueryClient}>
-				<ConvexQueryCacheProvider>{children}</ConvexQueryCacheProvider>
+				<ConvexQueryCacheProvider>
+					<SettingsProvider>{children}</SettingsProvider>
+				</ConvexQueryCacheProvider>
 			</ConvexProvider>
 		),
 	});

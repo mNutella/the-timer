@@ -11,6 +11,14 @@ pub struct TimerPayload {
     pub name: Option<String>,
     pub project_name: Option<String>,
     pub client_name: Option<String>,
+    /// When false, the elapsed time is hidden from the menu bar title.
+    /// The tray menu itself still reflects the real timer state.
+    #[serde(default = "default_true")]
+    pub show_title: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 /// Internal timer state held across tray updates.
@@ -23,6 +31,7 @@ pub struct TimerState {
     pub name: Option<String>,
     pub project_name: Option<String>,
     pub client_name: Option<String>,
+    pub show_title: bool,
 }
 
 impl Default for TimerState {
@@ -34,6 +43,7 @@ impl Default for TimerState {
             name: None,
             project_name: None,
             client_name: None,
+            show_title: true,
         }
     }
 }
@@ -47,6 +57,7 @@ impl TimerState {
             name: p.name.clone(),
             project_name: p.project_name.clone(),
             client_name: p.client_name.clone(),
+            show_title: p.show_title,
         }
     }
 
@@ -82,7 +93,7 @@ impl TimerState {
 
     /// Short label for the tray title (next to the icon in the menu bar).
     pub fn tray_title(&self) -> String {
-        if self.running {
+        if self.running && self.show_title {
             self.elapsed_string()
         } else {
             String::new()

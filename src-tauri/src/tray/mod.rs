@@ -114,7 +114,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         thread::spawn(move || loop {
             thread::sleep(Duration::from_secs(1));
             let state = timer_state.lock().unwrap().clone();
-            if state.running {
+            if state.running && state.show_title {
                 if let Some(tray) = app_handle.tray_by_id(&tray_id) {
                     let _ = tray.set_title(Some(&state.tray_title()));
                 }
