@@ -1,5 +1,4 @@
 pub mod menu;
-pub mod shortcut;
 pub mod state;
 
 use std::sync::{Arc, Mutex};
@@ -122,9 +121,6 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             }
         });
     }
-
-    // Register global shortcut
-    shortcut::register(app);
 
     println!("[tray] System tray initialized");
 

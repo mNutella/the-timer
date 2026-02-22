@@ -11,7 +11,6 @@
 		"core:window:allow-create",
 		"core:webview:allow-create-webview-window",
 		"core:event:default",
-		"global-shortcut:default",
 		"dialog:default",
 		"fs:default",
 		{
