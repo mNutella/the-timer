@@ -84,8 +84,8 @@ function DefaultComboboxTrigger<T extends SelectableItem>({
 		: value?.name;
 
 	return (
-		<ComboboxTrigger id={id} className={cn("w-full", className)}>
-			{displayValue || (placeholder ?? "Select")}
+		<ComboboxTrigger id={id} className={cn("w-full overflow-hidden", className)}>
+			<span className="truncate">{displayValue || (placeholder ?? "Select")}</span>
 		</ComboboxTrigger>
 	);
 }

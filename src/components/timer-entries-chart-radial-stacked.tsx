@@ -152,13 +152,13 @@ export function TimeEntriesChartRadialStacked({
 			<CardContent className="flex flex-1 items-center justify-center p-2">
 				<ChartContainer
 					config={chartConfig}
-					className="mx-auto aspect-square w-full max-w-[200px]"
+					className="mx-auto aspect-square w-full max-w-[240px]"
 				>
 					<RadialBarChart
 						data={chartData}
 						endAngle={360}
-						innerRadius={60}
-						outerRadius={100}
+						innerRadius={70}
+						outerRadius={115}
 					>
 						<ChartTooltip
 							cursor={false}

@@ -1,10 +1,8 @@
 "use client";
 
-import { useQuery } from "convex-helpers/react/cache";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import {
 	Card,
@@ -23,17 +21,6 @@ import {
 } from "@/components/ui/chart";
 import type { Category, Client, Project } from "@/lib/types";
 import { CHART_COLORS, getFilterDescription } from "@/lib/utils";
-
-function getDefaultDateRange(): { startDate: number; endDate: number } {
-	const end = new Date();
-	const start = new Date();
-	start.setMonth(start.getMonth() - 3);
-	return { startDate: start.getTime(), endDate: end.getTime() };
-}
-
-function slugify(name: string): string {
-	return name.replace(/\s+/g, "_").toLowerCase();
-}
 
 export type StackDimension = "client" | "project" | "category";
 
@@ -83,6 +70,10 @@ export function getConstraintFilters(
 }
 
 interface TimeEntriesChartBarInteractiveProps {
+	chartData: Record<string, unknown>[];
+	chartConfig: ChartConfig;
+	entityKeys: string[] | null;
+	totalHours: number;
 	clientFilter: Client[];
 	projectFilter: Project[];
 	categoryFilter: Category[];
@@ -90,159 +81,15 @@ interface TimeEntriesChartBarInteractiveProps {
 }
 
 export function TimeEntriesChartBarInteractive({
+	chartData,
+	chartConfig,
+	entityKeys,
+	totalHours,
 	clientFilter,
 	projectFilter,
 	categoryFilter,
 	dateRange,
 }: TimeEntriesChartBarInteractiveProps) {
-	const range = useMemo(() => {
-		if (dateRange?.from && dateRange?.to) {
-			return {
-				startDate: dateRange.from.getTime(),
-				endDate: dateRange.to.getTime(),
-			};
-		}
-		return getDefaultDateRange();
-	}, [dateRange?.from, dateRange?.to]);
-
-	const stackDimension = useMemo(
-		() => getStackDimension(clientFilter, projectFilter, categoryFilter),
-		[clientFilter, projectFilter, categoryFilter],
-	);
-
-	const entityIds = useMemo(
-		() =>
-			stackDimension
-				? getEntityIds(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
-				: [],
-		[stackDimension, clientFilter, projectFilter, categoryFilter],
-	);
-
-	const constraintFilters = useMemo(
-		() =>
-			stackDimension
-				? getConstraintFilters(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
-				: undefined,
-		[stackDimension, clientFilter, projectFilter, categoryFilter],
-	);
-
-	// Non-stacked: use existing getDailyDurations
-	const flatData = useQuery(
-		api.time_entries.getDailyDurations,
-		stackDimension === null
-			? {
-					userId: import.meta.env.VITE_USER_ID as Id<"users">,
-					filters: {
-						dateRange: range,
-					},
-				}
-			: "skip",
-	);
-
-	// Stacked: use new getDailyDurationBreakdown
-	const breakdownData = useQuery(
-		api.time_entries.getDailyDurationBreakdown,
-		stackDimension !== null
-			? {
-					userId: import.meta.env.VITE_USER_ID as Id<"users">,
-					groupBy: stackDimension,
-					entityIds,
-					constraintFilters,
-					dateRange: range,
-				}
-			: "skip",
-	);
-
-	// Build entity name map for stacked mode
-	const entityNameMap = useMemo(() => {
-		const map = new Map<string, string>();
-		if (stackDimension === "client") {
-			for (const c of clientFilter) map.set(c._id, c.name);
-		} else if (stackDimension === "project") {
-			for (const p of projectFilter) map.set(p._id, p.name);
-		} else if (stackDimension === "category") {
-			for (const c of categoryFilter) map.set(c._id, c.name);
-		}
-		return map;
-	}, [stackDimension, clientFilter, projectFilter, categoryFilter]);
-
-	// Build chart data and config for stacked mode
-	const { chartData, chartConfig, entityKeys, totalHours } = useMemo((): {
-		chartData: Record<string, unknown>[];
-		chartConfig: ChartConfig;
-		entityKeys: string[] | null;
-		totalHours: number;
-	} => {
-		if (stackDimension === null || !breakdownData) {
-			// Non-stacked mode
-			const data = (flatData ?? []).map((d) => ({
-				date: d.date,
-				hours: Math.round((d.duration / 3_600_000) * 100) / 100,
-			}));
-			const total = data.reduce((acc, curr) => acc + (curr.hours as number), 0);
-			return {
-				chartData: data,
-				chartConfig: {
-					hours: {
-						label: "Hours",
-						color: "var(--chart-1)",
-					},
-				},
-				entityKeys: null,
-				totalHours: total,
-			};
-		}
-
-		// Stacked mode: transform breakdown data
-		const keys: string[] = [];
-		const config: ChartConfig = {};
-		const seenKeys = new Set<string>();
-
-		for (const entityId of entityIds) {
-			const name = entityNameMap.get(entityId) ?? "Unknown";
-			let key = slugify(name);
-			// Ensure unique keys
-			if (seenKeys.has(key)) {
-				key = `${key}_${entityId.slice(-4)}`;
-			}
-			seenKeys.add(key);
-			keys.push(key);
-			config[key] = {
-				label: name,
-				color: CHART_COLORS[(keys.length - 1) % CHART_COLORS.length],
-			};
-		}
-
-		let total = 0;
-		const data = breakdownData.map((day) => {
-			const row: Record<string, unknown> = { date: day.date };
-			for (let i = 0; i < day.breakdown.length; i++) {
-				const hours =
-					Math.round((day.breakdown[i].duration / 3_600_000) * 100) / 100;
-				row[keys[i]] = hours;
-				total += hours;
-			}
-			return row;
-		});
-
-		return {
-			chartData: data,
-			chartConfig: config,
-			entityKeys: keys,
-			totalHours: total,
-		};
-	}, [stackDimension, flatData, breakdownData, entityIds, entityNameMap]);
-
 	const filterDescription = useMemo(
 		() => getFilterDescription(clientFilter, projectFilter, categoryFilter),
 		[clientFilter, projectFilter, categoryFilter],
@@ -272,7 +119,7 @@ export function TimeEntriesChartBarInteractive({
 			<CardContent className="px-2 sm:px-4 sm:py-3">
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[180px] w-full"
+					className="aspect-auto h-[240px] w-full"
 				>
 					<BarChart
 						accessibilityLayer
