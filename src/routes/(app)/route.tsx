@@ -1,8 +1,6 @@
-import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Dock } from "@/components/dock";
 import { useIslandDataBridge } from "@/hooks/use-island-data-bridge";
 import { useTrayDataBridge } from "@/hooks/use-tray-data-bridge";
 
@@ -11,35 +9,17 @@ export const Route = createFileRoute("/(app)")({
 });
 
 function RouteComponent() {
-	const location = useLocation();
 	useIslandDataBridge();
 	useTrayDataBridge();
 
 	return (
-		<SidebarProvider
-			style={
-				{
-					"--sidebar-width": "calc(var(--spacing) * 72)",
-					"--header-height": "calc(var(--spacing) * 12)",
-				} as React.CSSProperties
-			}
-		>
-			<AppSidebar variant="inset" />
-			<SidebarInset>
-				<SiteHeader
-					pageTitle={
-						location.pathname === "/"
-							? "Dashboard"
-							: location.pathname.charAt(1).toUpperCase() +
-								location.pathname.slice(2)
-					}
-				/>
-				<div className="flex flex-1 flex-col relative">
-					<div className="@container/main flex flex-1 flex-col gap-2">
-						<Outlet />
-					</div>
+		<>
+			<main className="flex flex-1 flex-col relative min-h-dvh pb-24">
+				<div className="@container/main flex flex-1 flex-col gap-2 max-w-7xl mx-auto w-full px-4 lg:px-6">
+					<Outlet />
 				</div>
-			</SidebarInset>
-		</SidebarProvider>
+			</main>
+			<Dock />
+		</>
 	);
 }

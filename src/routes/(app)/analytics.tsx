@@ -58,7 +58,7 @@ function Analytics() {
 	);
 
 	return (
-		<div className="flex flex-col h-[calc(100dvh-var(--header-height)-1rem)] overflow-hidden">
+		<div className="flex flex-col h-[calc(100dvh-6rem)] overflow-hidden">
 			<div className="shrink-0 px-4 lg:px-6 pt-3 pb-2">
 				<div className="flex items-center justify-start gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
