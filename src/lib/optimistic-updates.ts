@@ -4,12 +4,21 @@ import { api } from "@/../convex/_generated/api";
 
 // ─── Shared Helpers ─────────────────────────────────────────────
 
-/** Find an entity by ID from any cached list query variant. */
+/** Find an entity by ID from any cached list or searchByName query. */
 // biome-ignore lint/suspicious/noExplicitAny: getAllQueries returns loosely-typed results
-function findInCache(localStore: OptimisticLocalStore, queryRef: any, id: string) {
-	for (const { value } of localStore.getAllQueries(queryRef)) {
+function findInCache(localStore: OptimisticLocalStore, listRef: any, searchRef: any, id: string) {
+	// Check flat list queries (e.g. clients.list)
+	for (const { value } of localStore.getAllQueries(listRef)) {
 		if (!value) continue;
 		const found = (value as { _id: string }[]).find((item) => item._id === id);
+		if (found) return found;
+	}
+	// Check paginated searchByName queries (e.g. clients.searchByName)
+	for (const { value } of localStore.getAllQueries(searchRef)) {
+		if (!value) continue;
+		const page = (value as { page?: { _id: string }[] }).page;
+		if (!page) continue;
+		const found = page.find((item) => item._id === id);
 		if (found) return found;
 	}
 	return null;
@@ -284,7 +293,7 @@ export function optimisticUpdateProject(
 					updated.clientName = null;
 				} else if (args.clientId !== undefined) {
 					updated.clientId = args.clientId;
-					const client = findInCache(localStore, api.clients.list, args.clientId);
+					const client = findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId);
 					updated.clientName = client ? (client as unknown as { name: string }).name : null;
 				}
 				return updated;
@@ -414,7 +423,7 @@ export function optimisticUpdateTimeEntryClient(
 	if (args.newClientName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
 		clientId: args.clientId,
-		client: args.clientId ? findInCache(localStore, api.clients.list, args.clientId) : null,
+		client: args.clientId ? findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) : null,
 	});
 }
 
@@ -430,7 +439,7 @@ export function optimisticUpdateTimeEntryProject(
 	if (args.newProjectName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
 		projectId: args.projectId,
-		project: args.projectId ? findInCache(localStore, api.projects.list, args.projectId) : null,
+		project: args.projectId ? findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) : null,
 	});
 }
 
@@ -446,7 +455,7 @@ export function optimisticUpdateTimeEntryCategory(
 	if (args.newCategoryName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
 		categoryId: args.categoryId,
-		category: args.categoryId ? findInCache(localStore, api.categories.list, args.categoryId) : null,
+		category: args.categoryId ? findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) : null,
 	});
 }
 
@@ -468,15 +477,15 @@ export function optimisticBulkUpdateTimeEntries(
 	const patch: Record<string, unknown> = {};
 	if (args.clientId !== undefined) {
 		patch.clientId = args.clientId;
-		patch.client = findInCache(localStore, api.clients.list, args.clientId) ?? null;
+		patch.client = findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) ?? null;
 	}
 	if (args.projectId !== undefined) {
 		patch.projectId = args.projectId;
-		patch.project = findInCache(localStore, api.projects.list, args.projectId) ?? null;
+		patch.project = findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) ?? null;
 	}
 	if (args.categoryId !== undefined) {
 		patch.categoryId = args.categoryId;
-		patch.category = findInCache(localStore, api.categories.list, args.categoryId) ?? null;
+		patch.category = findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) ?? null;
 	}
 
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
