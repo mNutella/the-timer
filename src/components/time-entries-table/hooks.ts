@@ -22,7 +22,7 @@ import type { Category, Client, Project, TimeEntry } from "../../lib/types";
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 export const CELL_INPUT_CLASS =
-	"w-full border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30 truncate";
+	"w-full justify-start border-transparent bg-transparent px-4 shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30 truncate";
 
 export function SaveHint({ visible }: { visible: boolean }) {
 	if (!visible) return null;
