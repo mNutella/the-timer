@@ -5,6 +5,8 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -17,6 +19,10 @@ export function CustomizeTableMenu({
 	table: Table<TimeEntry>;
 	className?: string;
 }) {
+	const hasHiddenColumns = table
+		.getAllColumns()
+		.some((col) => col.getCanHide() && !col.getIsVisible());
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -53,6 +59,16 @@ export function CustomizeTableMenu({
 							</DropdownMenuCheckboxItem>
 						);
 					})}
+				{hasHiddenColumns && (
+					<>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onClick={() => table.resetColumnVisibility()}
+						>
+							Reset to default
+						</DropdownMenuItem>
+					</>
+				)}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

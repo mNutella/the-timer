@@ -60,6 +60,44 @@ function TimeInput({
 	);
 }
 
+function formatCompactDateTime(
+	start: Date | undefined,
+	end: Date | undefined,
+): React.ReactNode {
+	if (!start) return <span className="text-muted-foreground">Select Date</span>;
+
+	const fmtDate = (d: Date) =>
+		d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+	const fmtTime = (d: Date) =>
+		d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+	if (!end) return `${fmtDate(start)}, ${fmtTime(start)}`;
+
+	const sameDay =
+		start.getFullYear() === end.getFullYear() &&
+		start.getMonth() === end.getMonth() &&
+		start.getDate() === end.getDate();
+
+	if (sameDay) {
+		const startParts = fmtTime(start).match(/^(.+?)(\s?[AP]M)$/i);
+		const endParts = fmtTime(end).match(/^(.+?)(\s?[AP]M)$/i);
+		if (startParts && endParts) {
+			const samePeriod =
+				startParts[2].trim() === endParts[2].trim();
+			const startStr = samePeriod ? startParts[1] : fmtTime(start);
+			return `${fmtDate(start)} \u00b7 ${startStr} \u2013 ${fmtTime(end)}`;
+		}
+		return `${fmtDate(start)} \u00b7 ${fmtTime(start)} \u2013 ${fmtTime(end)}`;
+	}
+
+	return (
+		<>
+			<div>{`${fmtDate(start)}, ${fmtTime(start)}`}</div>
+			<div>{`${fmtDate(end)}, ${fmtTime(end)}`}</div>
+		</>
+	);
+}
+
 export default function TimeEntriesStartEndCalendar({
 	startTime,
 	endTime,
@@ -107,38 +145,7 @@ export default function TimeEntriesStartEndCalendar({
 					onClick={() => setOpen((prev) => !prev)}
 				>
 					<div className="flex flex-col text-sm">
-						{!currentRange.from && !currentRange.to ? (
-							<span className="text-muted-foreground">Select Date</span>
-						) : (
-							<>
-								<div className="flex text-center gap-x-2">
-									<div>
-										{initialRange.from?.toLocaleDateString() || (
-											<span className="text-muted-foreground">Select Date</span>
-										)}
-									</div>
-									<div>-</div>
-									<div>
-										{initialRange.to?.toLocaleDateString() || (
-											<span className="text-muted-foreground">Select Date</span>
-										)}
-									</div>
-								</div>
-								<div className="flex text-center gap-x-2">
-									<div>
-										{initialRange.from?.toLocaleTimeString() || (
-											<span className="text-muted-foreground">Select Time</span>
-										)}
-									</div>
-									<div>-</div>
-									<div>
-										{initialRange.to?.toLocaleTimeString() || (
-											<span className="text-muted-foreground">Select Time</span>
-										)}
-									</div>
-								</div>
-							</>
-						)}
+						{formatCompactDateTime(initialRange.from, initialRange.to)}
 					</div>
 				</Button>
 			</PopoverTrigger>

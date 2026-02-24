@@ -46,7 +46,8 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 			className={cn(
 				className,
 				"w-fit lg:w-[200px]",
-				hasSelection && "bg-primary text-primary-foreground",
+				hasSelection &&
+				"bg-primary text-primary-foreground hover:bg-primary/90",
 			)}
 		>
 			<Icon />

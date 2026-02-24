@@ -57,7 +57,13 @@ function SortableHeader<T>({
 			variant="ghost"
 			size="sm"
 			className="-ml-3 h-8"
-			onClick={() => column.toggleSorting(sorted === "asc")}
+			onClick={() => {
+				if (sorted === "desc") {
+					column.clearSorting();
+				} else {
+					column.toggleSorting(sorted === "asc");
+				}
+			}}
 		>
 			{title}
 			{sorted === "asc" ? (
@@ -101,6 +107,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 			<TimeEntryCell
 				timeEntryId={row.original._id}
 				timeEntryName={row.original.name}
+				notes={row.original.notes}
 			/>
 		),
 		enableHiding: false,
@@ -228,7 +235,7 @@ const CustomRow = React.forwardRef<
 			{row.getVisibleCells().map((cell) => (
 				<TableCell
 					key={cell.id}
-					className={cn("flex justify-start items-center overflow-hidden")}
+					className={cn("flex justify-start items-center overflow-hidden min-w-0")}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}
 				</TableCell>
@@ -347,6 +354,16 @@ export default function TimeEntriesTable({
 			switch (colId) {
 				case "select":
 					return "40px";
+				case "name":
+					return "minmax(100px, 2fr)";
+				case "client":
+				case "project":
+				case "category":
+					return "minmax(80px, 1fr)";
+				case "duration":
+					return "120px";
+				case "start_end_time":
+					return "minmax(120px, 1.5fr)";
 				case "start_stop_timer":
 					return "64px";
 				case "actions":
@@ -372,29 +389,6 @@ export default function TimeEntriesTable({
 
 	return (
 		<div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-			<div className="shrink-0 flex items-center gap-2 px-4 lg:px-6">
-				<BulkActionsBar
-					selectedCount={table.getFilteredSelectedRowModel().rows.length}
-					totalCount={table.getFilteredRowModel().rows.length}
-					selectedIds={
-						table
-							.getFilteredSelectedRowModel()
-							.rows.map((r) => r.original._id) as Id<"time_entries">[]
-					}
-					onClearSelection={() => table.resetRowSelection()}
-				/>
-				<div className="ml-auto flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setExportOpen(true)}
-					>
-						<Download className="size-4" />
-						<span className="hidden lg:inline">Export</span>
-					</Button>
-					<CustomizeTableMenu table={table} />
-				</div>
-			</div>
 			<ExportDialog
 				open={exportOpen}
 				onOpenChange={setExportOpen}
@@ -404,8 +398,31 @@ export default function TimeEntriesTable({
 				filterByCategories={filterByCategories}
 				filterByTimeRange={filterByTimeRange}
 			/>
-			<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 mt-2 pb-2">
+			<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 pb-2">
 				<div className="rounded-lg border flex-1 min-h-0 overflow-hidden">
+					<div className="shrink-0 flex items-center gap-2 bg-card border-b border-border py-2 px-4">
+						<BulkActionsBar
+							selectedCount={table.getFilteredSelectedRowModel().rows.length}
+							totalCount={table.getFilteredRowModel().rows.length}
+							selectedIds={
+								table
+									.getFilteredSelectedRowModel()
+									.rows.map((r) => r.original._id) as Id<"time_entries">[]
+							}
+							onClearSelection={() => table.resetRowSelection()}
+						/>
+						<div className="ml-auto flex items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setExportOpen(true)}
+							>
+								<Download className="size-4" />
+								<span className="hidden lg:inline">Export</span>
+							</Button>
+							<CustomizeTableMenu table={table} />
+						</div>
+					</div>
 					<div ref={scrollAreaRef} className="h-full overflow-y-auto">
 						<Table className="grid">
 							<TableHeader className="bg-muted sticky grid top-0 z-10">
