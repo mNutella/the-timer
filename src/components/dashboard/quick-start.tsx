@@ -1,17 +1,10 @@
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
-import { Play } from "lucide-react";
+import { Play, Zap } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { withToast } from "@/lib/utils";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
@@ -53,24 +46,28 @@ export function QuickStart() {
 
 	if (recentProjects === undefined) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-base">Quick Start</CardTitle>
-					<CardDescription>Loading recent projects...</CardDescription>
-				</CardHeader>
-			</Card>
+			<div className="rounded-xl border border-border bg-card p-5">
+				<div className="flex items-center gap-2">
+					<Zap className="size-4 text-muted-foreground" />
+					<p className="text-sm font-medium">Quick Start</p>
+				</div>
+				<p className="mt-2 text-sm text-muted-foreground">
+					Loading recent projects...
+				</p>
+			</div>
 		);
 	}
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base">Quick Start</CardTitle>
-				<CardDescription>Start a timer from recent projects</CardDescription>
-			</CardHeader>
-			<CardContent>
+		<div className="rounded-xl border border-border bg-card p-5">
+			<div className="flex items-center gap-2">
+				<Zap className="size-4 text-muted-foreground" />
+				<p className="text-sm font-medium">Quick Start</p>
+			</div>
+			<p className="mt-0.5 text-xs text-muted-foreground">Recent projects</p>
+			<div className="mt-3">
 				{recentProjects.length === 0 ? (
-					<div className="flex items-center gap-3">
+					<div className="flex flex-col gap-2">
 						<span className="text-sm text-muted-foreground">
 							No recent projects
 						</span>
@@ -80,19 +77,19 @@ export function QuickStart() {
 						</Button>
 					</div>
 				) : (
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-col gap-1.5">
 						{recentProjects.map((project) => (
 							<Button
 								key={project.projectId}
 								variant="outline"
 								size="sm"
 								onClick={() => handleQuickStart(project)}
-								className="h-auto gap-1.5 py-1.5"
+								className="h-auto w-full justify-start gap-1.5 py-2 hover:border-emerald-500/40 hover:bg-emerald-500/5"
 							>
-								<Play className="size-3.5" />
-								<span>{project.projectName}</span>
+								<Play className="size-3 shrink-0 text-emerald-400" />
+								<span className="truncate">{project.projectName}</span>
 								{project.clientName && (
-									<Badge variant="secondary" className="text-xs">
+									<Badge variant="secondary" className="ml-auto shrink-0 text-xs">
 										{project.clientName}
 									</Badge>
 								)}
@@ -100,7 +97,7 @@ export function QuickStart() {
 						))}
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }

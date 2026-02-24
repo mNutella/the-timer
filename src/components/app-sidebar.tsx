@@ -27,9 +27,9 @@ import {
 
 const data = {
 	user: {
-		name: "shadcn",
-		email: "m@example.com",
-		avatar: "/avatars/shadcn.jpg",
+		name: "User",
+		email: "",
+		avatar: "",
 	},
 	navMain: [
 		{
@@ -108,7 +108,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						>
 							<Link to="/" className="[&.active]:font-bold">
 								<Timer className="!size-5" />
-								<span className="text-base font-semibold">The Timer.</span>
+								<span className="text-base font-semibold tracking-tight">The Timer.</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

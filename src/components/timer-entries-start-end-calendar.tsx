@@ -103,7 +103,7 @@ export default function TimeEntriesStartEndCalendar({
 				<Button
 					variant="outline"
 					id="dates"
-					className="w-fit border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30 box-content"
+					className="w-fit border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-input/30 box-content"
 					onClick={() => setOpen((prev) => !prev)}
 				>
 					<div className="flex flex-col text-sm">

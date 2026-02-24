@@ -1,14 +1,9 @@
 import { useQuery } from "convex-helpers/react/cache";
+import { Clock, Hash, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { getEndOfDay, getStartOfDay } from "@/../convex/utils";
-import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { formatDuration } from "@/lib/utils";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
@@ -35,35 +30,57 @@ export function TodaySummaryCards({
 			: 0;
 
 	return (
-		<div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-3">
-			<Card className="@container/card">
-				<CardHeader>
-					<CardDescription>Total Time Today</CardDescription>
-					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
-						{totalDuration !== undefined
-							? formatDuration(totalDuration)
-							: "--:--:--"}
-					</CardTitle>
-				</CardHeader>
-			</Card>
-			<Card className="@container/card">
-				<CardHeader>
-					<CardDescription>Entries Today</CardDescription>
-					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
-						{entryCount !== undefined ? count : "--"}
-					</CardTitle>
-				</CardHeader>
-			</Card>
-			<Card className="@container/card">
-				<CardHeader>
-					<CardDescription>Average Duration</CardDescription>
-					<CardTitle className="text-2xl font-sans font-semibold tabular-nums @[250px]/card:text-3xl">
-						{totalDuration !== undefined && entryCount !== undefined
-							? formatDuration(avg)
-							: "--:--:--"}
-					</CardTitle>
-				</CardHeader>
-			</Card>
+		<div className="rounded-xl border border-border bg-card px-4 lg:px-6">
+			<div className="grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-[1.4fr_1fr_1fr] @xl/main:divide-y-0 @xl/main:divide-x">
+				{/* Featured: Total Time — larger treatment */}
+				<div className="flex items-center gap-4 py-5 pr-6">
+					<div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10">
+						<Clock className="size-5 text-emerald-400" />
+					</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Total Time Today
+						</p>
+						<p className="mt-1 text-3xl font-semibold tabular-nums tracking-tight">
+							{totalDuration !== undefined
+								? formatDuration(totalDuration)
+								: "--:--:--"}
+						</p>
+					</div>
+				</div>
+
+				{/* Entries — compact */}
+				<div className="flex items-center gap-3 py-5 @xl/main:pl-6">
+					<div className="flex size-8 items-center justify-center rounded-lg bg-muted">
+						<Hash className="size-4 text-muted-foreground" />
+					</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Entries
+						</p>
+						<p className="mt-0.5 text-xl font-semibold tabular-nums">
+							{entryCount !== undefined ? String(count) : "--"}
+						</p>
+					</div>
+				</div>
+
+				{/* Average — compact */}
+				<div className="flex items-center gap-3 py-5 @xl/main:pl-6">
+					<div className="flex size-8 items-center justify-center rounded-lg bg-muted">
+						<TrendingUp className="size-4 text-muted-foreground" />
+					</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Avg Duration
+						</p>
+						<p className="mt-0.5 text-xl font-semibold tabular-nums">
+							{totalDuration !== undefined && entryCount !== undefined
+								? formatDuration(avg)
+								: "--:--:--"}
+						</p>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }

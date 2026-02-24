@@ -27,7 +27,7 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
 	return (
 		<>
-			<ScrollArea className="h-screen z-10 bg-transparent">
+			<ScrollArea className="h-[100dvh] z-10 bg-transparent">
 				<Outlet />
 			</ScrollArea>
 			<Toaster position="top-center" />
