@@ -1,89 +1,52 @@
-# CLAUDE.md
+## Workflow Orchestration
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+### 1. Plan Node Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan immediately - don't keep pushing
+- Use plan mode for verification steps, not just building
+- Write detailed specs upfront to reduce ambiguity
 
-## Commands
+### 2. Subagent Strategy
+- Use subagents liberally to keep main context window clean
+- Offload research, exploration, and parallel analysis to subagents
+- For complex problems, throw more compute at it via subagents
+- One task per subagent for focused execution
 
-```bash
-# Development - run frontend and Convex backend concurrently
-pnpm dev              # Vite dev server on port 1420
-npx convex dev        # Convex backend (separate terminal)
+### 3. Self-Improvement Loop
+- After ANY correction from the user: update `tasks/lessons.md` with the pattern
+- Write rules for yourself that prevent the same mistake
+- Ruthlessly iterate on these lessons until mistake rate drops
+- Review lessons at session start for relevant project
 
-# Tauri desktop app
-pnpm tauri dev        # Run as native desktop app (starts Vite internally)
-pnpm tauri build      # Build desktop binary
+### 4. Verification Before Done
+- Never mark a task complete without proving it works
+- Diff behavior between main and your changes when relevant
+- Ask yourself: "Would a staff engineer approve this?"
+- Run tests, check logs, demonstrate correctness
 
-# Build & type check
-pnpm build            # tsc && vite build
+### 5. Demand Elegance (Balanced)
+- For non-trivial changes: pause and ask "is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes - don't over-engineer
+- Challenge your own work before presenting it
 
-# Formatting & linting (Biome, not ESLint)
-npx @biomejs/biome check .              # Check all
-npx @biomejs/biome check --write .      # Auto-fix
-npx @biomejs/biome format --write .     # Format only
-```
+### 6. Autonomous Bug Fixing
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests - then resolve them
+- Zero context switching required from the user
+- Go fix failing CI tests without being told how
 
-## Code Style
+## Task Management
 
-- **Formatter:** Biome with tabs, double quotes
-- **Path alias:** `@/` maps to `./src/*`
-- **CSS:** Tailwind CSS v4 (no tailwind.config — uses `@tailwindcss/vite` plugin)
-- **Components:** Shadcn/ui style with Radix UI primitives and `class-variance-authority`
+1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
+2. **Verify Plan**: Check in before starting implementation
+3. **Track Progress**: Mark items complete as you go
+4. **Explain Changes**: High-level summary at each step
+5. **Document Results**: Add review section to `tasks/todo.md`
+6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
-## Architecture
+## Core Principles
 
-### Stack
-- **Frontend:** React 18 + TypeScript, TanStack Router (file-based routing), TanStack Table (virtualized), TanStack Query
-- **Backend:** Convex (serverless DB + real-time functions), `convex-ents` (entity framework), `convex-helpers`
-- **Desktop:** Tauri 2 (Rust shell)
-- **Charts:** Recharts
-
-### Backend (`convex/`)
-
-**Custom function wrappers** — all queries/mutations use wrapped versions from `convex/functions.ts`, NOT raw Convex functions. These inject `convex-ents` table access and trigger support:
-```ts
-import { query, mutation } from "./functions";  // NOT from "./_generated/server"
-```
-
-**Entity types** are in `convex/types.ts`: `QueryCtx`, `MutationCtx`, `Ent<T>`, `EntWriter<T>`, `EntQuery<T>`.
-
-**Schema** (`convex/schema.ts`) uses `convex-ents` (`defineEnt`/`defineEntSchema`). Entities: `users`, `clients`, `projects`, `time_entries`, `categories`, `tags`. Relationships are defined via `.edge()` (singular) and `.edges()` (plural).
-
-**Business logic separation** — API layer in `convex/time_entries.ts` (thin mutation/query handlers) delegates to `convex/model/time_entries.ts` (business logic) and `convex/model/analytics.ts` (aggregate queries).
-
-**Aggregates** (`convex/aggregates.ts`) — uses `@convex-dev/aggregate` `TableAggregate` for pre-computed analytics (total duration by date, by client+date, by project+date, by category+date). Registered as Convex components in `convex.config.ts`. Maintained via triggers in `convex/functions.ts`.
-
-**No auth yet** — user ID is passed from frontend via `import.meta.env.VITE_USER_ID`. All mutations take `userId` as an explicit parameter.
-
-### Frontend (`src/`)
-
-**Routing** — TanStack Router with file-based routes in `src/routes/`. Layout route at `(app)/` wraps pages with sidebar. Auto code-splitting enabled.
-
-**Provider chain** — `src/router.tsx` sets up `ConvexProvider` > `ConvexQueryCacheProvider` > Router. Convex URL from `VITE_CONVEX_URL` env var.
-
-**Frontend types** (`src/lib/types.ts`) — `TimeEntry`, `Client`, `Project`, `Category`, `Tags` are all derived from the paginated query return type, ensuring backend-frontend type alignment.
-
-**Time entries table** (`src/components/time-entries-table/`) — virtualized table using TanStack Table + TanStack Virtual. `hooks.ts` contains all mutation hooks (`useUpdateTimeEntryName`, `useUpdateTimeEntryClient`, `useStartStopTimeEntry`, etc.) and the main `useTimeEntries` paginated query hook. Each cell type is a separate component with inline editing.
-
-**Filter state** — `src/hooks/use-filters.ts` exports `useFilters()` managing search, client, project, category, and date range filters. Shared between dashboard and analytics pages.
-
-**Combobox pattern** — `SearchableCombobox` and `ComboboxInfinity` handle entity selection with server-side search, pagination, and on-the-fly creation (pass `newClientName`/`newProjectName`/`newCategoryName` to mutations).
-
-**Toast pattern** — mutations are wrapped with `withToast()` from `src/lib/utils.ts` for loading/success/error notifications via Sonner.
-
-### Key Patterns
-
-- **Pagination:** Uses `useStablePaginatedQuery` (custom hook wrapping Convex's paginated query) with `initialNumItems: 10` and intersection observer for infinite scroll.
-- **Duration:** Stored as milliseconds in DB. Displayed as `HH:MM:SS`. Parsed via `parseDurationToMilliseconds()` from `src/lib/utils.ts`.
-- **Timer:** A running timer = time entry with `start_time` set, `end_time` undefined. Starting a new timer auto-stops any running one. Resume creates a new entry copying metadata from the original.
-- **Client→Project cascading:** When a time entry's client changes, the project is cleared if it belonged to a different client.
-
-## Workflow
-
-- **Before committing:** Check `docs/TODO.md` and mark any items completed by the changes being committed. Move completed items to the "Completed Features" section.
-
-## Environment Variables
-
-```
-VITE_CONVEX_URL=      # Convex deployment URL
-VITE_USER_ID=         # Hardcoded user ID (temporary, no auth yet)
-```
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
