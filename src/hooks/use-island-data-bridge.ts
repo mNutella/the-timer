@@ -1,7 +1,9 @@
+import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { useEffect, useRef } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { optimisticCreateTimer, optimisticStopTimer, optimisticUpdateTimeEntry } from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
@@ -29,11 +31,23 @@ export function useIslandDataBridge() {
 		enabled ? { userId, limit: 4 } : "skip",
 	);
 
+	// Mutations for island action events (executed in main window for optimistic updates)
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
+	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
+
 	// Keep refs for the handshake callback (avoids stale closures)
 	const runningTimerRef = useRef(runningTimer);
 	const recentProjectsRef = useRef(recentProjects);
 	runningTimerRef.current = runningTimer;
 	recentProjectsRef.current = recentProjects;
+
+	const createRef = useRef(createMutation);
+	const stopRef = useRef(stopMutation);
+	const updateRef = useRef(updateMutation);
+	createRef.current = createMutation;
+	stopRef.current = stopMutation;
+	updateRef.current = updateMutation;
 
 	// Show or hide island when setting changes at runtime.
 	// We use show/hide instead of create/destroy because closing the NSPanel
@@ -86,6 +100,54 @@ export function useIslandDataBridge() {
 		});
 		return () => {
 			unlisten?.();
+		};
+	}, [enabled]);
+
+	// Listen for island mutation events and execute them in the main window
+	useEffect(() => {
+		if (!enabled) return;
+		let cleaned = false;
+		const unlisteners: (() => void)[] = [];
+
+		function addListener(fn: () => void) {
+			if (cleaned) fn();
+			else unlisteners.push(fn);
+		}
+
+		import("@tauri-apps/api/event").then(({ listen }) => {
+			if (cleaned) return;
+
+			listen<{ id: string }>("island-stop-timer", (event) => {
+				stopRef.current({ id: event.payload.id as Id<"time_entries">, userId });
+			}).then(addListener);
+
+			listen<{
+				name: string;
+				projectId?: string;
+				clientId?: string;
+				categoryId?: string;
+			}>("island-create-timer", (event) => {
+				createRef.current({
+					userId,
+					name: event.payload.name,
+					projectId: event.payload.projectId as Id<"projects"> | undefined,
+					clientId: event.payload.clientId as Id<"clients"> | undefined,
+					categoryId: event.payload.categoryId as Id<"categories"> | undefined,
+				});
+			}).then(addListener);
+
+			listen<{ id: string; name: string }>("island-update-name", (event) => {
+				updateRef.current({
+					id: event.payload.id as Id<"time_entries">,
+					userId,
+					name: event.payload.name,
+				});
+			}).then(addListener);
+		});
+
+		return () => {
+			cleaned = true;
+			for (const unlisten of unlisteners) unlisten();
 		};
 	}, [enabled]);
 }

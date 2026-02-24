@@ -1,13 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
-import { useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
-
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 type IslandState = "compact" | "hover" | "expanded";
 
@@ -53,23 +49,34 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
   >(undefined);
 
   useEffect(() => {
-    const unlistenTimer = listen<RunningTimer | null>(
-      "island-running-timer",
-      (event) => {
+    let cleaned = false;
+    let unlistenTimer: (() => void) | null = null;
+    let unlistenProjects: (() => void) | null = null;
+
+    // Register listeners first, THEN signal ready to avoid race condition
+    Promise.all([
+      listen<RunningTimer | null>("island-running-timer", (event) => {
         setRunningTimer(event.payload);
-      },
-    );
-    const unlistenProjects = listen<RecentProject[]>(
-      "island-recent-projects",
-      (event) => {
+      }),
+      listen<RecentProject[]>("island-recent-projects", (event) => {
         setRecentProjects(event.payload);
-      },
-    );
-    // Signal to main window that listeners are ready
-    emit("island-ready", null);
+      }),
+    ]).then(([unT, unP]) => {
+      if (cleaned) {
+        // StrictMode unmounted before promises resolved — clean up immediately
+        unT();
+        unP();
+        return;
+      }
+      unlistenTimer = unT;
+      unlistenProjects = unP;
+      emit("island-ready", null);
+    });
+
     return () => {
-      unlistenTimer.then((f) => f());
-      unlistenProjects.then((f) => f());
+      cleaned = true;
+      unlistenTimer?.();
+      unlistenProjects?.();
     };
   }, []);
 
@@ -80,7 +87,6 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
   const leaveTimer = useRef<number | null>(null);
   const guardTimer = useRef<number | null>(null);
   const exitGuard = useRef(false);
-  const deferredExit = useRef(false);
 
   // JS-driven window animation refs
   const animationRef = useRef<number | null>(null);
@@ -104,19 +110,21 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
     }, 200);
   }, []);
 
-  /** Activate the exit guard for `ms`, then verify mouse position with Rust. */
+  /** Activate the guard for `ms`, blocking both enter and exit events
+   *  during the window-resize animation. When the guard expires, do a
+   *  definitive mouse-position check and transition to the correct state. */
   const guardResize = useCallback(
     (ms: number) => {
       exitGuard.current = true;
-      deferredExit.current = false;
       if (guardTimer.current) clearTimeout(guardTimer.current);
       guardTimer.current = window.setTimeout(async () => {
         exitGuard.current = false;
         guardTimer.current = null;
-        if (deferredExit.current) {
-          deferredExit.current = false;
-          const inside = await invoke<boolean>("check_island_mouse");
-          if (!inside) scheduleCollapse();
+        const inside = await invoke<boolean>("check_island_mouse");
+        if (!inside && stateRef.current !== "compact") {
+          scheduleCollapse();
+        } else if (inside && stateRef.current === "compact") {
+          animateRef.current?.("hover");
         }
       }, ms);
     },
@@ -148,8 +156,9 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
       // Set state immediately → CSS opacity / border-radius transitions start
       setState(target);
 
-      // Brief guard for the tracking-area rebuild at the start of the resize
-      guardResize(150);
+      // Guard mouse events for the full animation — the NSTrackingArea is
+      // rebuilt every frame during resize, generating spurious enter/exit events.
+      guardResize(TRANSITION_MS);
 
       // Animate window resize frame-by-frame
       const start = performance.now();
@@ -178,21 +187,20 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
   // Native mouse tracking via Tauri events (NSTrackingArea).
   useEffect(() => {
     const unlistenEnter = listen("island-mouse-entered", () => {
-      deferredExit.current = false;
       if (leaveTimer.current) {
         clearTimeout(leaveTimer.current);
         leaveTimer.current = null;
       }
+      // During animation the tracking area rebuilds every frame — ignore
+      // spurious enters; the post-animation check will reconcile state.
+      if (exitGuard.current) return;
       if (stateRef.current === "compact") {
         animateToState("hover");
       }
     });
 
     const unlistenExit = listen("island-mouse-exited", () => {
-      if (exitGuard.current) {
-        deferredExit.current = true;
-        return;
-      }
+      if (exitGuard.current) return;
       scheduleCollapse();
     });
 
@@ -293,22 +301,18 @@ function IslandContainer({
   const elapsed = useLiveElapsedTime(runningTimer?.start_time ?? 0, isRunning);
   const dims = getDimensions(state, hasNotch, notchWidth);
 
-  const createMutation = useMutation(api.time_entries.create);
-  const stopMutation = useMutation(api.time_entries.stop);
-  const updateMutation = useMutation(api.time_entries.update);
-
   const handleNameUpdate = useCallback(
     (name: string) => {
       if (runningTimer) {
-        updateMutation({ id: runningTimer._id, userId, name });
+        emit("island-update-name", { id: runningTimer._id, name });
       }
     },
-    [runningTimer, updateMutation],
+    [runningTimer],
   );
 
   const handleStop = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (runningTimer) stopMutation({ id: runningTimer._id, userId });
+    if (runningTimer) emit("island-stop-timer", { id: runningTimer._id });
   };
 
   const handleStart = (
@@ -317,8 +321,7 @@ function IslandContainer({
     customName?: string,
   ) => {
     e.stopPropagation();
-    createMutation({
-      userId,
+    emit("island-create-timer", {
       name: customName || project?.lastEntryName || "New Time Entry",
       projectId: project?.projectId,
       clientId: project?.clientId,
@@ -519,8 +522,6 @@ function HoverContent({
   elapsed: string;
   timer: RunningTimer | null;
 }) {
-  const isEmptyBadge = !(timer?.client || timer?.project);
-
   return (
     <div
       style={{
@@ -631,7 +632,7 @@ function HoverContent({
           </span>
         </div>
       )}
-      {isEmptyBadge && (
+      {!(timer?.client || timer?.project) && (
         <div
           style={{
             position: "absolute",

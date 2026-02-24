@@ -140,6 +140,9 @@ export function optimisticCreateTimer(
 		userId: Id<"users">;
 		name: string;
 		timeEntryId?: Id<"time_entries">;
+		clientId?: Id<"clients">;
+		projectId?: Id<"projects">;
+		categoryId?: Id<"categories">;
 	},
 ) {
 	const now = Date.now();
@@ -183,6 +186,44 @@ export function optimisticCreateTimer(
 		stopEntryInSearchPages(localStore, oldRunning._id, now);
 	}
 
+	// Resolve entity references from cache when IDs are passed directly
+	const clientId = source?.clientId ?? args.clientId;
+	const projectId = source?.projectId ?? args.projectId;
+	const categoryId = source?.categoryId ?? args.categoryId;
+
+	// Resolve entity objects from cache when not available from source.
+	// Try entity list/search caches first, then fall back to getRecentProjects
+	// (always active via the island data bridge).
+	let client: RunningTimer["client"] = source?.client ?? null;
+	let project: RunningTimer["project"] = source?.project ?? null;
+	let category: RunningTimer["category"] = source?.category ?? null;
+
+	if (!client && clientId) {
+		client = findInCache(localStore, api.clients.list, api.clients.searchByName, clientId) as RunningTimer["client"];
+	}
+	if (!project && projectId) {
+		project = findInCache(localStore, api.projects.list, api.projects.searchByName, projectId) as RunningTimer["project"];
+	}
+	if (!category && categoryId) {
+		category = findInCache(localStore, api.categories.list, api.categories.searchByName, categoryId) as RunningTimer["category"];
+	}
+
+	// Fallback: resolve names from getRecentProjects cache (always active via bridge)
+	if ((!client && clientId) || (!project && projectId)) {
+		for (const { value } of localStore.getAllQueries(api.time_entries.getRecentProjects)) {
+			if (!value) continue;
+			for (const rp of value) {
+				if (!client && clientId && rp.clientId === clientId && rp.clientName) {
+					client = { _id: clientId, name: rp.clientName } as unknown as RunningTimer["client"];
+				}
+				if (!project && projectId && rp.projectId === projectId && rp.projectName) {
+					project = { _id: projectId, name: rp.projectName } as unknown as RunningTimer["project"];
+				}
+			}
+			if ((!clientId || client) && (!projectId || project)) break;
+		}
+	}
+
 	// Build the synthetic new entry
 	const syntheticEntry = {
 		_id: "__optimistic__" as Id<"time_entries">,
@@ -194,12 +235,12 @@ export function optimisticCreateTimer(
 		duration: undefined,
 		notes: source?.notes,
 		updated_at: now,
-		clientId: source?.clientId,
-		projectId: source?.projectId,
-		categoryId: source?.categoryId,
-		client: source?.client ?? null,
-		project: source?.project ?? null,
-		category: source?.category ?? null,
+		clientId,
+		projectId,
+		categoryId,
+		client,
+		project,
+		category,
 		tags: source?.tags ?? [],
 	};
 
@@ -368,45 +409,14 @@ export function optimisticUpdateTimeEntry(
 		endDate?: number;
 	},
 ) {
-	// Update in paginated search results
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.time_entries.searchTimeEntries,
-	)) {
-		if (!value) continue;
-		const idx = value.page.findIndex((e) => e._id === args.id);
-		if (idx === -1) continue;
+	const patch: Record<string, unknown> = {};
+	if (args.name !== undefined) patch.name = args.name;
+	if (args.notes !== undefined) patch.notes = args.notes;
+	if (args.duration !== undefined) patch.duration = args.duration;
+	if (args.startDate !== undefined) patch.start_time = args.startDate;
+	if (args.endDate !== undefined) patch.end_time = args.endDate;
 
-		const entry = value.page[idx];
-		const updated = { ...entry };
-		if (args.name !== undefined) updated.name = args.name;
-		if (args.notes !== undefined) updated.notes = args.notes;
-		if (args.duration !== undefined) updated.duration = args.duration;
-		if (args.startDate !== undefined) updated.start_time = args.startDate;
-		if (args.endDate !== undefined) updated.end_time = args.endDate;
-
-		const newPage = [...value.page];
-		newPage[idx] = updated;
-		localStore.setQuery(api.time_entries.searchTimeEntries, queryArgs, {
-			...value,
-			page: newPage,
-		});
-	}
-
-	// Also update getRunningTimer if this is the active timer
-	const runningTimer = localStore.getQuery(
-		api.time_entries.getRunningTimer,
-		{ userId: args.userId },
-	);
-	if (runningTimer && runningTimer._id === args.id) {
-		const updated = { ...runningTimer };
-		if (args.name !== undefined) updated.name = args.name;
-		if (args.notes !== undefined) updated.notes = args.notes;
-		localStore.setQuery(
-			api.time_entries.getRunningTimer,
-			{ userId: args.userId },
-			updated,
-		);
-	}
+	updateTimeEntryInCaches(localStore, args.id, args.userId, patch);
 }
 
 // ─── Time Entry: Update Client/Project/Category ─────────────────

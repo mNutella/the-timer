@@ -90,8 +90,9 @@
 	--sidebar-ring: oklch(0.72 0.17 160);
 }
 
-/* Force dark native controls (scrollbars, form elements) */
-html {
+/* Force dark native controls — scoped to main app to avoid breaking
+   the island overlay's transparent canvas during resize animations. */
+html:has(#root) {
 	color-scheme: dark;
 }
 
