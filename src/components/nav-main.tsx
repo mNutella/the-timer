@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { CirclePlus, type LucideIcon } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
@@ -25,7 +25,10 @@ export function NavMain({
 	}[];
 	label?: string;
 }) {
-	const createTimerMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createTimerMutation = useMutation(
+		api.time_entries.create,
+	).withOptimisticUpdate(optimisticCreateTimer);
+	const { pathname } = useLocation();
 
 	const startTimer = () => {
 		createTimerMutation({
@@ -40,7 +43,7 @@ export function NavMain({
 			<SidebarGroupContent className="flex flex-col gap-2">
 				{!label && (
 					<SidebarMenu>
-						<SidebarMenuItem className="flex items-center gap-2">
+						<SidebarMenuItem>
 							<SidebarMenuButton
 								tooltip="Start Timer"
 								className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
@@ -53,16 +56,26 @@ export function NavMain({
 					</SidebarMenu>
 				)}
 				<SidebarMenu>
-					{items.map((item) => (
-						<Link key={item.url} to={item.url} className="[&.active]:font-bold">
+					{items.map((item) => {
+						const active =
+							item.url === "/"
+								? pathname === "/"
+								: pathname.startsWith(item.url);
+						return (
 							<SidebarMenuItem key={item.title}>
-								<SidebarMenuButton tooltip={item.title}>
-									{item.icon && <item.icon />}
-									<span>{item.title}</span>
+								<SidebarMenuButton
+									asChild
+									isActive={active}
+									tooltip={item.title}
+								>
+									<Link to={item.url}>
+										{item.icon && <item.icon />}
+										<span>{item.title}</span>
+									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
-						</Link>
-					))}
+						);
+					})}
 				</SidebarMenu>
 			</SidebarGroupContent>
 		</SidebarGroup>

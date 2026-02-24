@@ -150,7 +150,24 @@
 		@apply border-border outline-ring/50;
 	}
 	body:has(#root) {
-		@apply bg-background text-foreground font-sans antialiased;
+		@apply bg-background text-foreground font-sans antialiased select-none cursor-default;
+	}
+	input,
+	textarea,
+	[contenteditable="true"],
+	pre,
+	code {
+		@apply select-text cursor-text;
+	}
+	a,
+	button,
+	[role="button"],
+	label,
+	select,
+	summary,
+	[type="checkbox"],
+	[type="radio"] {
+		@apply cursor-pointer;
 	}
 	body:has(#island-root) {
 		background: transparent !important;

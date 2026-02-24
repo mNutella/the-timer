@@ -3,9 +3,7 @@ import {
 	BarChart3,
 	Briefcase,
 	Folder,
-	HelpCircle,
 	LayoutDashboard,
-	Search,
 	Settings,
 	Tag,
 	Timer,
@@ -23,6 +21,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarRail,
 } from "@/components/ui/sidebar";
 
 const data = {
@@ -66,49 +65,25 @@ const data = {
 			url: "/settings",
 			icon: Settings,
 		},
-		{
-			title: "Get Help",
-			url: "#",
-			icon: HelpCircle,
-		},
-		{
-			title: "Search",
-			url: "#",
-			icon: Search,
-		},
 	],
-	// documents: [
-	// 	{
-	// 		name: "Data Library",
-	// 		url: "#",
-	// 		icon: IconDatabase,
-	// 	},
-	// 	{
-	// 		name: "Reports",
-	// 		url: "#",
-	// 		icon: IconReport,
-	// 	},
-	// 	{
-	// 		name: "Word Assistant",
-	// 		url: "#",
-	// 		icon: IconFileWord,
-	// 	},
-	// ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
-		<Sidebar collapsible="offcanvas" {...props}>
+		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader className="pt-8">
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton
 							asChild
+							size="lg"
 							className="data-[slot=sidebar-menu-button]:!p-1.5"
 						>
-							<Link to="/" className="[&.active]:font-bold">
+							<Link to="/">
 								<Timer className="!size-5" />
-								<span className="text-base font-semibold tracking-tight">The Timer.</span>
+								<span className="text-base font-semibold tracking-tight">
+									The Timer.
+								</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
@@ -122,6 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarFooter>
 				<NavUser user={data.user} />
 			</SidebarFooter>
+			<SidebarRail />
 		</Sidebar>
 	);
 }

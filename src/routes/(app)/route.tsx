@@ -1,6 +1,11 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Dock } from "@/components/dock";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { useIslandDataBridge } from "@/hooks/use-island-data-bridge";
 import { useTrayDataBridge } from "@/hooks/use-tray-data-bridge";
 
@@ -13,13 +18,16 @@ function RouteComponent() {
 	useTrayDataBridge();
 
 	return (
-		<>
-			<main className="flex flex-1 flex-col relative min-h-dvh pb-24">
-				<div className="@container/main flex flex-1 flex-col gap-2 max-w-7xl mx-auto w-full px-4 lg:px-6">
+		<SidebarProvider>
+			<AppSidebar />
+			<SidebarInset>
+				<header className="flex h-10 shrink-0 items-center px-4 md:hidden">
+					<SidebarTrigger className="-ml-1" />
+				</header>
+				<main className="@container/main flex flex-1 flex-col gap-2 w-full px-4 lg:px-6">
 					<Outlet />
-				</div>
-			</main>
-			<Dock />
-		</>
+				</main>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }
