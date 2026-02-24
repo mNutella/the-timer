@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { FolderKanban } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
@@ -91,6 +92,7 @@ function ProjectsPage() {
 
 	return (
 		<EntityManagementTable
+			icon={FolderKanban}
 			entityLabel="projects"
 			entityLabelSingular="project"
 			data={projects}

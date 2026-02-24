@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { Tag } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
@@ -33,6 +34,7 @@ function CategoriesPage() {
 
 	return (
 		<EntityManagementTable
+			icon={Tag}
 			entityLabel="categories"
 			entityLabelSingular="category"
 			data={categories}

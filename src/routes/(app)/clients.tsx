@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { Users } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
@@ -33,6 +34,7 @@ function ClientsPage() {
 
 	return (
 		<EntityManagementTable
+			icon={Users}
 			entityLabel="clients"
 			entityLabelSingular="client"
 			data={clients}
