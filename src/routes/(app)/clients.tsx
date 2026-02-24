@@ -7,7 +7,12 @@ import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
+import {
+	optimisticDeleteClient,
+	optimisticRenameClient,
+} from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(app)/clients")({
 	component: ClientsPage,
@@ -29,8 +34,8 @@ function ClientsPage() {
 				: undefined,
 	});
 	const createClient = useMutation(api.clients.create);
-	const updateClient = useMutation(api.clients.update);
-	const deleteClient = useMutation(api.clients.deleteOne);
+	const updateClient = useMutation(api.clients.update).withOptimisticUpdate(optimisticRenameClient);
+	const deleteClient = useMutation(api.clients.deleteOne).withOptimisticUpdate(optimisticDeleteClient);
 
 	return (
 		<EntityManagementTable
@@ -63,20 +68,12 @@ function ClientsPage() {
 				)({ name, userId })
 			}
 			onUpdate={(id, name) =>
-				withToast(
-					updateClient,
-					"Updating client...",
-					"Client updated",
-					"Failed to update client",
-				)({ id: id as Id<"clients">, userId, name })
+				updateClient({ id: id as Id<"clients">, userId, name })
+					.catch(() => toast.error("Failed to update client"))
 			}
 			onDelete={(id) =>
-				withToast(
-					deleteClient,
-					"Deleting client...",
-					"Client deleted",
-					"Failed to delete client",
-				)({ id: id as Id<"clients">, userId })
+				deleteClient({ id: id as Id<"clients">, userId })
+					.catch(() => toast.error("Failed to delete client"))
 			}
 		/>
 	);

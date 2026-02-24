@@ -22,7 +22,9 @@ import {
 } from "@/components/dock-item";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn, withToast } from "@/lib/utils";
+import { optimisticCreateTimer } from "@/lib/optimistic-updates";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function useDockMagnification() {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -84,19 +86,13 @@ function useDockMagnification() {
 }
 
 function useStartTimer() {
-	const createTimerMutation = useMutation(api.time_entries.create);
+	const createTimerMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 
 	return useCallback(() => {
-		const wrappedMutation = withToast(
-			createTimerMutation,
-			"Starting timer...",
-			"Timer started",
-			"Failed to start timer",
-		);
-		wrappedMutation({
+		createTimerMutation({
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: "New Time Entry",
-		});
+		}).catch(() => toast.error("Failed to start timer"));
 	}, [createTimerMutation]);
 }
 

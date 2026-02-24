@@ -1,6 +1,7 @@
 import { useMutation } from "convex/react";
 import { Circle, Clock, Play, Square } from "lucide-react";
 import { useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { getEndOfDay, getStartOfDay } from "@/../convex/utils";
@@ -8,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
+import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import type { TimeEntry } from "@/lib/types";
-import { cn, formatDuration, formatTimeForInput, withToast } from "@/lib/utils";
+import { cn, formatDuration, formatTimeForInput } from "@/lib/utils";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
@@ -85,37 +87,25 @@ export function ActivityFeed({
 }
 
 function ActivityRow({ entry }: { entry: TimeEntry }) {
-	const createMutation = useMutation(api.time_entries.create);
-	const stopMutation = useMutation(api.time_entries.stop);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
 	const isRunning = entry.end_time === undefined;
 	const elapsed = useLiveElapsedTime(entry.start_time ?? 0, isRunning);
 
 	const handleResume = () => {
-		const wrappedMutation = withToast(
-			createMutation,
-			"Resuming timer...",
-			"Timer resumed",
-			"Failed to resume timer",
-		);
-		wrappedMutation({
+		createMutation({
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: entry.name,
 			timeEntryId: entry._id,
-		});
+		}).catch(() => toast.error("Failed to resume timer"));
 	};
 
 	const handleStop = () => {
-		const wrappedMutation = withToast(
-			stopMutation,
-			"Stopping timer...",
-			"Timer stopped",
-			"Failed to stop timer",
-		);
-		wrappedMutation({
+		stopMutation({
 			id: entry._id,
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
-		});
+		}).catch(() => toast.error("Failed to stop timer"));
 	};
 
 	return (

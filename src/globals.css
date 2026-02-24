@@ -90,6 +90,15 @@
 	--sidebar-ring: oklch(0.72 0.17 160);
 }
 
+/* Force dark native controls (scrollbars, form elements) */
+html {
+	color-scheme: dark;
+}
+
+* {
+	scrollbar-width: thin;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

@@ -1,43 +1,34 @@
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { Play, Square, Timer } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
+import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import { cn } from "@/lib/utils";
-import { withToast } from "@/lib/utils";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 export function ActiveTimerWidget() {
 	const runningTimer = useQuery(api.time_entries.getRunningTimer, { userId });
-	const createMutation = useMutation(api.time_entries.create);
-	const stopMutation = useMutation(api.time_entries.stop);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
 	const isRunning = !!runningTimer;
 	const elapsed = useLiveElapsedTime(runningTimer?.start_time ?? 0, isRunning);
 
 	const handleStop = () => {
 		if (!runningTimer) return;
-		const wrappedMutation = withToast(
-			stopMutation,
-			"Stopping timer...",
-			"Timer stopped",
-			"Failed to stop timer",
-		);
-		wrappedMutation({ id: runningTimer._id, userId });
+		stopMutation({ id: runningTimer._id, userId })
+			.catch(() => toast.error("Failed to stop timer"));
 	};
 
 	const handleStart = () => {
-		const wrappedMutation = withToast(
-			createMutation,
-			"Starting timer...",
-			"Timer started",
-			"Failed to start timer",
-		);
-		wrappedMutation({ userId, name: "New Time Entry" });
+		createMutation({ userId, name: "New Time Entry" })
+			.catch(() => toast.error("Failed to start timer"));
 	};
 
 	if (runningTimer === undefined) {

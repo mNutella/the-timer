@@ -1,10 +1,22 @@
 import { useMutation } from "convex/react";
 import { createElement } from "react";
 import type { DateRange } from "react-day-picker";
+import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
-import { parseDurationToMilliseconds, withToast } from "@/lib/utils";
+import {
+	optimisticBulkDeleteTimeEntries,
+	optimisticBulkUpdateTimeEntries,
+	optimisticCreateTimer,
+	optimisticDeleteTimeEntry,
+	optimisticStopTimer,
+	optimisticUpdateTimeEntry,
+	optimisticUpdateTimeEntryCategory,
+	optimisticUpdateTimeEntryClient,
+	optimisticUpdateTimeEntryProject,
+} from "@/lib/optimistic-updates";
+import { parseDurationToMilliseconds } from "@/lib/utils";
 import type { Category, Client, Project, TimeEntry } from "../../lib/types";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
@@ -33,142 +45,94 @@ export function SaveHint({ visible }: { visible: boolean }) {
 }
 
 export function useUpdateTimeEntryName(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.update),
-		"Updating name...",
-		"Name updated",
-		"Failed to update name",
-	);
-	return (name: string) => update({ id: timeEntryId, name, userId });
+	const update = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
+	return (name: string) =>
+		update({ id: timeEntryId, name, userId })
+			.catch(() => toast.error("Failed to update name"));
 }
 
 export function useUpdateTimeEntryClient(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.updateClient),
-		"Updating client...",
-		"Client updated",
-		"Failed to update client",
-	);
+	const update = useMutation(api.time_entries.updateClient).withOptimisticUpdate(optimisticUpdateTimeEntryClient);
 	return (clientId?: Id<"clients">, newClientName?: string) =>
-		update({ timeEntryId, clientId, newClientName, userId });
+		update({ timeEntryId, clientId, newClientName, userId })
+			.catch(() => toast.error("Failed to update client"));
 }
 
 export function useUpdateTimeEntryProject(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.updateProject),
-		"Updating project...",
-		"Project updated",
-		"Failed to update project",
-	);
+	const update = useMutation(api.time_entries.updateProject).withOptimisticUpdate(optimisticUpdateTimeEntryProject);
 	return (projectId?: Id<"projects">, newProjectName?: string) =>
-		update({ timeEntryId, projectId, newProjectName, userId });
+		update({ timeEntryId, projectId, newProjectName, userId })
+			.catch(() => toast.error("Failed to update project"));
 }
 
 export function useUpdateTimeEntryCategory(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.updateCategory),
-		"Updating category...",
-		"Category updated",
-		"Failed to update category",
-	);
+	const update = useMutation(api.time_entries.updateCategory).withOptimisticUpdate(optimisticUpdateTimeEntryCategory);
 	return (categoryId?: Id<"categories">, newCategoryName?: string) =>
-		update({ timeEntryId, categoryId, newCategoryName, userId });
+		update({ timeEntryId, categoryId, newCategoryName, userId })
+			.catch(() => toast.error("Failed to update category"));
 }
 
 export function useUpdateDuration(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.update),
-		"Updating duration...",
-		"Duration updated",
-		"Failed to update duration",
-	);
+	const update = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
 	return (duration: string) =>
 		update({
 			id: timeEntryId,
 			userId,
 			duration: parseDurationToMilliseconds(duration),
-		});
+		}).catch(() => toast.error("Failed to update duration"));
 }
 
 export function useUpdateStartEndTime(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.update),
-		"Updating start/end time...",
-		"Start/end time updated",
-		"Failed to update start/end time",
-	);
+	const update = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
 	return (startDate: number, endDate: number) =>
-		update({ id: timeEntryId, userId, startDate, endDate });
+		update({ id: timeEntryId, userId, startDate, endDate })
+			.catch(() => toast.error("Failed to update start/end time"));
 }
 
 export function useDeleteTimeEntry(timeEntryId: Id<"time_entries">) {
-	const remove = withToast(
-		useMutation(api.time_entries.deleteOne),
-		"Deleting time entry...",
-		"Time entry deleted",
-		"Failed to delete time entry",
-	);
-	return () => remove({ id: timeEntryId, userId });
+	const remove = useMutation(api.time_entries.deleteOne).withOptimisticUpdate(optimisticDeleteTimeEntry);
+	return () =>
+		remove({ id: timeEntryId, userId })
+			.catch(() => toast.error("Failed to delete time entry"));
 }
 
 export function useStartStopTimeEntry(timeEntryId: Id<"time_entries">) {
-	const start = withToast(
-		useMutation(api.time_entries.create),
-		"Starting timer...",
-		"Timer started",
-		"Failed to start timer",
-	);
-	const stop = withToast(
-		useMutation(api.time_entries.stop),
-		"Stopping timer...",
-		"Timer stopped",
-		"Failed to stop timer",
-	);
+	const start = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const stop = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
 	return {
-		startTimer: () => start({ userId, name: "", timeEntryId }),
-		stopTimer: () => stop({ id: timeEntryId, userId }),
+		startTimer: () =>
+			start({ userId, name: "", timeEntryId })
+				.catch(() => toast.error("Failed to start timer")),
+		stopTimer: () =>
+			stop({ id: timeEntryId, userId })
+				.catch(() => toast.error("Failed to stop timer")),
 	};
 }
 
 export function useUpdateTimeEntryDetails(timeEntryId: Id<"time_entries">) {
-	const update = withToast(
-		useMutation(api.time_entries.update),
-		"Updating notes...",
-		"Notes updated",
-		"Failed to update notes",
-	);
+	const update = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
 	return (fields: { notes?: string }) =>
-		update({ id: timeEntryId, userId, ...fields });
+		update({ id: timeEntryId, userId, ...fields })
+			.catch(() => toast.error("Failed to update notes"));
 }
 
 export function useDuplicateTimeEntry(timeEntryId: Id<"time_entries">) {
-	const create = withToast(
-		useMutation(api.time_entries.create),
-		"Duplicating entry...",
-		"Entry duplicated",
-		"Failed to duplicate entry",
-	);
-	return () => create({ userId, name: "", timeEntryId });
+	const create = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	return () =>
+		create({ userId, name: "", timeEntryId })
+			.catch(() => toast.error("Failed to duplicate entry"));
 }
 
 export function useBulkDeleteTimeEntries() {
-	const remove = withToast(
-		useMutation(api.time_entries.bulkDelete),
-		"Deleting entries...",
-		"Entries deleted",
-		"Failed to delete entries",
-	);
-	return (ids: Id<"time_entries">[]) => remove({ ids, userId });
+	const remove = useMutation(api.time_entries.bulkDelete).withOptimisticUpdate(optimisticBulkDeleteTimeEntries);
+	return (ids: Id<"time_entries">[]) =>
+		remove({ ids, userId })
+			.catch(() => toast.error("Failed to delete entries"));
 }
 
 export function useBulkUpdateTimeEntries() {
-	const update = withToast(
-		useMutation(api.time_entries.bulkUpdate),
-		"Updating entries...",
-		"Entries updated",
-		"Failed to update entries",
-	);
+	const update = useMutation(api.time_entries.bulkUpdate).withOptimisticUpdate(optimisticBulkUpdateTimeEntries);
 	return (
 		ids: Id<"time_entries">[],
 		fields: {
@@ -176,7 +140,8 @@ export function useBulkUpdateTimeEntries() {
 			projectId?: Id<"projects">;
 			categoryId?: Id<"categories">;
 		},
-	) => update({ ids, userId, ...fields });
+	) => update({ ids, userId, ...fields })
+		.catch(() => toast.error("Failed to update entries"));
 }
 
 export function useTimeEntries(

@@ -11,7 +11,8 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { withToast } from "@/lib/utils";
+import { optimisticCreateTimer } from "@/lib/optimistic-updates";
+import { toast } from "sonner";
 
 export function NavMain({
 	items,
@@ -24,20 +25,13 @@ export function NavMain({
 	}[];
 	label?: string;
 }) {
-	const createTimerMutation = useMutation(api.time_entries.create);
+	const createTimerMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 
 	const startTimer = () => {
-		const wrappedMutation = withToast(
-			createTimerMutation,
-			"Starting timer...",
-			"Timer started",
-			"Failed to start timer",
-		);
-
-		wrappedMutation({
+		createTimerMutation({
 			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: "New Time Entry",
-		});
+		}).catch(() => toast.error("Failed to start timer"));
 	};
 
 	return (

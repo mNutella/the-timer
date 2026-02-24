@@ -5,7 +5,8 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { withToast } from "@/lib/utils";
+import { optimisticCreateTimer } from "@/lib/optimistic-updates";
+import { toast } from "sonner";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
@@ -14,34 +15,23 @@ export function QuickStart() {
 		userId,
 		limit: 5,
 	});
-	const createMutation = useMutation(api.time_entries.create);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 
 	const handleQuickStart = (
 		project: NonNullable<typeof recentProjects>[number],
 	) => {
-		const wrappedMutation = withToast(
-			createMutation,
-			"Starting timer...",
-			"Timer started",
-			"Failed to start timer",
-		);
-		wrappedMutation({
+		createMutation({
 			userId,
 			name: project.lastEntryName,
 			projectId: project.projectId,
 			clientId: project.clientId,
 			categoryId: project.categoryId,
-		});
+		}).catch(() => toast.error("Failed to start timer"));
 	};
 
 	const handleGenericStart = () => {
-		const wrappedMutation = withToast(
-			createMutation,
-			"Starting timer...",
-			"Timer started",
-			"Failed to start timer",
-		);
-		wrappedMutation({ userId, name: "New Time Entry" });
+		createMutation({ userId, name: "New Time Entry" })
+			.catch(() => toast.error("Failed to start timer"));
 	};
 
 	if (recentProjects === undefined) {

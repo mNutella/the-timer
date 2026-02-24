@@ -3,6 +3,7 @@ import { useQuery } from "convex-helpers/react/cache";
 import { useEffect, useRef } from "react";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
 
 const userId = import.meta.env.VITE_USER_ID as Id<"users">;
@@ -30,8 +31,8 @@ export function useTrayDataBridge() {
 		isTauri ? { userId, limit: 5 } : "skip",
 	);
 
-	const stopMutation = useMutation(api.time_entries.stop);
-	const createMutation = useMutation(api.time_entries.create);
+	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 
 	// Keep refs for event callbacks
 	const runningTimerRef = useRef(runningTimer);

@@ -7,7 +7,12 @@ import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
+import {
+	optimisticDeleteCategory,
+	optimisticRenameCategory,
+} from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(app)/categories")({
 	component: CategoriesPage,
@@ -29,8 +34,8 @@ function CategoriesPage() {
 				: undefined,
 	});
 	const createCategory = useMutation(api.categories.create);
-	const updateCategory = useMutation(api.categories.update);
-	const deleteCategory = useMutation(api.categories.deleteOne);
+	const updateCategory = useMutation(api.categories.update).withOptimisticUpdate(optimisticRenameCategory);
+	const deleteCategory = useMutation(api.categories.deleteOne).withOptimisticUpdate(optimisticDeleteCategory);
 
 	return (
 		<EntityManagementTable
@@ -54,20 +59,12 @@ function CategoriesPage() {
 				)({ name, userId })
 			}
 			onUpdate={(id, name) =>
-				withToast(
-					updateCategory,
-					"Updating category...",
-					"Category updated",
-					"Failed to update category",
-				)({ id: id as Id<"categories">, userId, name })
+				updateCategory({ id: id as Id<"categories">, userId, name })
+					.catch(() => toast.error("Failed to update category"))
 			}
 			onDelete={(id) =>
-				withToast(
-					deleteCategory,
-					"Deleting category...",
-					"Category deleted",
-					"Failed to delete category",
-				)({ id: id as Id<"categories">, userId })
+				deleteCategory({ id: id as Id<"categories">, userId })
+					.catch(() => toast.error("Failed to delete category"))
 			}
 		/>
 	);

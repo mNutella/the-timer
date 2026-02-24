@@ -22,7 +22,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	optimisticDeleteProject,
+	optimisticUpdateProject,
+} from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(app)/projects")({
 	component: ProjectsPage,
@@ -60,33 +65,21 @@ function ProjectsPage() {
 				: undefined,
 	});
 	const createProject = useMutation(api.projects.create);
-	const updateProject = useMutation(api.projects.update);
-	const deleteProject = useMutation(api.projects.deleteOne);
+	const updateProject = useMutation(api.projects.update).withOptimisticUpdate(optimisticUpdateProject);
+	const deleteProject = useMutation(api.projects.deleteOne).withOptimisticUpdate(optimisticDeleteProject);
 
 	const handleStatusChange = (id: Id<"projects">, status: ProjectStatus) => {
-		withToast(
-			updateProject,
-			"Updating status...",
-			"Status updated",
-			"Failed to update status",
-		)({ id, userId, status });
+		updateProject({ id, userId, status })
+			.catch(() => toast.error("Failed to update status"));
 	};
 
 	const handleClientChange = (id: Id<"projects">, value: string) => {
 		if (value === "none") {
-			withToast(
-				updateProject,
-				"Updating client...",
-				"Client updated",
-				"Failed to update client",
-			)({ id, userId, clearClientId: true });
+			updateProject({ id, userId, clearClientId: true })
+				.catch(() => toast.error("Failed to update client"));
 		} else {
-			withToast(
-				updateProject,
-				"Updating client...",
-				"Client updated",
-				"Failed to update client",
-			)({ id, userId, clientId: value as Id<"clients"> });
+			updateProject({ id, userId, clientId: value as Id<"clients"> })
+				.catch(() => toast.error("Failed to update client"));
 		}
 	};
 
@@ -215,20 +208,12 @@ function ProjectsPage() {
 				)({ name, userId })
 			}
 			onUpdate={(id, name) =>
-				withToast(
-					updateProject,
-					"Updating project...",
-					"Project updated",
-					"Failed to update project",
-				)({ id: id as Id<"projects">, userId, name })
+				updateProject({ id: id as Id<"projects">, userId, name })
+					.catch(() => toast.error("Failed to update project"))
 			}
 			onDelete={(id) =>
-				withToast(
-					deleteProject,
-					"Deleting project...",
-					"Project deleted",
-					"Failed to delete project",
-				)({ id: id as Id<"projects">, userId })
+				deleteProject({ id: id as Id<"projects">, userId })
+					.catch(() => toast.error("Failed to delete project"))
 			}
 		/>
 	);
