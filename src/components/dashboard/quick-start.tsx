@@ -74,9 +74,9 @@ export function QuickStart() {
 								variant="outline"
 								size="sm"
 								onClick={() => handleQuickStart(project)}
-								className="h-auto w-full justify-start gap-1.5 py-2 hover:border-emerald-500/40 hover:bg-emerald-500/5"
+								className="h-auto w-full justify-start gap-1.5 py-2 hover:border-success/40 hover:bg-success/5"
 							>
-								<Play className="size-3 shrink-0 text-emerald-400" />
+								<Play className="size-3 shrink-0 text-success" />
 								<span className="truncate">{project.projectName}</span>
 								{project.clientName && (
 									<Badge variant="secondary" className="ml-auto shrink-0 text-xs">

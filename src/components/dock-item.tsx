@@ -29,7 +29,7 @@ export const DockNavItem = forwardRef<
 				<Link
 					to={href}
 					activeOptions={{ exact: href === "/" }}
-					className="group relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-white/10"
+					className="group relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-foreground/10"
 				>
 					<Icon className="size-4" />
 					<span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-primary scale-0 transition-transform group-[.active]:scale-100" />
@@ -54,7 +54,7 @@ export const DockActionItem = forwardRef<
 					type="button"
 					onClick={onClick}
 					className={cn(
-						"relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-white/10",
+						"relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-foreground/10",
 						className,
 					)}
 				>
@@ -78,7 +78,7 @@ export const DockUserItem = forwardRef<HTMLDivElement>(function DockUserItem(
 			<DropdownMenuTrigger asChild>
 				<div
 					ref={ref}
-					className="origin-bottom will-change-transform relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-white/10 cursor-pointer"
+					className="origin-bottom will-change-transform relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-foreground/10 cursor-pointer"
 				>
 					<Avatar className="size-7">
 						<AvatarFallback className="rounded-lg text-xs">

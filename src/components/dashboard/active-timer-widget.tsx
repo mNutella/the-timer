@@ -78,19 +78,19 @@ export function ActiveTimerWidget() {
 	return (
 		<div
 			className={cn(
-				"rounded-xl border border-emerald-500/30 bg-card p-5",
+				"rounded-xl border border-success/30 bg-card p-5",
 				"card-accent-green",
-				"shadow-[0_0_24px_-6px_oklch(0.72_0.17_160_/_0.15)]",
+				"shadow-[var(--glow-success)]",
 			)}
 		>
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
-					<div className="relative flex size-10 items-center justify-center rounded-lg bg-emerald-500/10">
-						<Timer className="size-5 text-emerald-400" />
-						<span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" />
+					<div className="relative flex size-10 items-center justify-center rounded-lg bg-success/10">
+						<Timer className="size-5 text-success" />
+						<span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-success motion-safe:animate-pulse" />
 					</div>
 					<div>
-						<p className="text-xs font-medium uppercase tracking-wider text-emerald-400">
+						<p className="text-xs font-medium uppercase tracking-wider text-success">
 							Recording
 						</p>
 						<p className="text-3xl font-semibold tabular-nums tracking-tight">

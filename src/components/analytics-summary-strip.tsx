@@ -30,8 +30,8 @@ export function AnalyticsSummaryStrip({
 				<div className="flex-1 grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-[1.4fr_1fr_1fr] @xl/main:divide-y-0 @xl/main:divide-x">
 					{/* Featured: Total Hours */}
 					<div className="flex items-center gap-4 py-4 pr-6">
-						<div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10">
-							<Clock className="size-5 text-emerald-400" />
+						<div className="flex size-11 items-center justify-center rounded-xl bg-success/10">
+							<Clock className="size-5 text-success" />
 						</div>
 						<div>
 							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

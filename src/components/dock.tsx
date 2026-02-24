@@ -120,7 +120,7 @@ function DesktopDock() {
 					icon={CirclePlus}
 					label="Start Timer"
 					onClick={startTimer}
-					className="text-emerald-400 hover:bg-emerald-500/20"
+					className="text-success hover:bg-success/20"
 				/>
 
 				<Separator orientation="vertical" className="mx-1 h-6" />
@@ -245,7 +245,7 @@ function MobileDock() {
 					icon={CirclePlus}
 					label="Timer"
 					onClick={startTimer}
-					className="text-emerald-400"
+					className="text-success"
 				/>
 				<MobileNavLink
 					icon={LayoutDashboard}

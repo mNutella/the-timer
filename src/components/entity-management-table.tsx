@@ -170,8 +170,8 @@ export function EntityManagementTable<T extends EntityBase>({
 					<div className="grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-2 @xl/main:divide-y-0 @xl/main:divide-x">
 						{/* Entity Count */}
 						<div className="flex items-center gap-4 px-4 py-4 lg:px-6">
-							<div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10">
-								<Icon className="size-5 text-emerald-400" />
+							<div className="flex size-11 items-center justify-center rounded-xl bg-success/10">
+								<Icon className="size-5 text-success" />
 							</div>
 							<div>
 								<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

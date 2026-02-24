@@ -112,12 +112,12 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 		<div
 			className={cn(
 				"group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent/50",
-				isRunning && "bg-emerald-500/5",
+				isRunning && "bg-success/5",
 			)}
 		>
 			{/* Left status indicator */}
 			<div className="flex w-1 self-stretch rounded-full">
-				{isRunning && <div className="w-full rounded-full bg-emerald-400" />}
+				{isRunning && <div className="w-full rounded-full bg-success" />}
 			</div>
 
 			{/* Entry name */}
@@ -140,8 +140,8 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 			{/* Duration & time */}
 			<div className="flex shrink-0 items-center gap-2">
 				{isRunning ? (
-					<span className="flex items-center gap-1.5 text-sm font-medium tabular-nums text-emerald-400">
-						<Circle className="size-2 fill-emerald-400 text-emerald-400 motion-safe:animate-pulse" />
+					<span className="flex items-center gap-1.5 text-sm font-medium tabular-nums text-success">
+						<Circle className="size-2 fill-success text-success motion-safe:animate-pulse" />
 						{elapsed}
 					</span>
 				) : (

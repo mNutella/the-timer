@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Monitor, PanelTop } from "lucide-react";
+import { Laptop, Monitor, Moon, PanelTop, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import {
 	Card,
@@ -10,6 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/(app)/settings")({
@@ -21,6 +26,7 @@ const isTauri =
 
 function SettingsPage() {
 	const { settings, updateSetting } = useSettings();
+	const { theme, setTheme } = useTheme();
 
 	return (
 		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -40,9 +46,42 @@ function SettingsPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-0">
+					<div className="flex items-center justify-between py-3">
+						<div className="flex items-center gap-3">
+							<Sun className="text-muted-foreground size-5" />
+							<div>
+								<p className="text-sm font-medium">Theme</p>
+								<p className="text-muted-foreground text-xs">
+									Choose light, dark, or match your system.
+								</p>
+							</div>
+						</div>
+						<ToggleGroup
+							type="single"
+							variant="outline"
+							size="sm"
+							value={theme}
+							onValueChange={(value) => {
+								if (value) setTheme(value);
+							}}
+						>
+							<ToggleGroupItem value="light" aria-label="Light theme">
+								<Sun className="size-4" />
+							</ToggleGroupItem>
+							<ToggleGroupItem value="dark" aria-label="Dark theme">
+								<Moon className="size-4" />
+							</ToggleGroupItem>
+							<ToggleGroupItem value="system" aria-label="System theme">
+								<Laptop className="size-4" />
+							</ToggleGroupItem>
+						</ToggleGroup>
+					</div>
+
+					<Separator />
+
 					{!isTauri && (
-						<p className="text-muted-foreground mb-4 text-sm">
-							These settings are only available in the desktop app.
+						<p className="text-muted-foreground my-4 text-sm">
+							The following settings are only available in the desktop app.
 						</p>
 					)}
 
