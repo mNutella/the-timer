@@ -5,8 +5,6 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
-
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 const isTauri =
 	typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -24,11 +22,11 @@ export function useTrayDataBridge() {
 
 	const runningTimer = useQuery(
 		api.time_entries.getRunningTimer,
-		isTauri ? { userId } : "skip",
+		isTauri ? {} : "skip",
 	);
 	const recentProjects = useQuery(
 		api.time_entries.getRecentProjects,
-		isTauri ? { userId, limit: 5 } : "skip",
+		isTauri ? { limit: 5 } : "skip",
 	);
 
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
@@ -101,9 +99,9 @@ export function useTrayDataBridge() {
 			listen("tray-toggle-timer", async () => {
 				const timer = runningTimerRef.current;
 				if (timer) {
-					await stopRef.current({ id: timer._id, userId });
+					await stopRef.current({ id: timer._id });
 				} else {
-					await createRef.current({ userId, name: "New Time Entry" });
+					await createRef.current({ name: "New Time Entry" });
 				}
 			}).then(addListener);
 
@@ -114,11 +112,10 @@ export function useTrayDataBridge() {
 
 				const timer = runningTimerRef.current;
 				if (timer) {
-					await stopRef.current({ id: timer._id, userId });
+					await stopRef.current({ id: timer._id });
 				}
 
 				await createRef.current({
-					userId,
 					name: entry.lastEntryName || "",
 					projectId: entry.projectId as Id<"projects"> | undefined,
 					clientId: entry.clientId

@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import {
 	getConstraintFilters,
 	getEntityIds,
@@ -91,7 +90,6 @@ export function TimeEntriesChartRadialStacked({
 	);
 
 	const rawData = useQuery(api.time_entries.getEntityBreakdown, {
-		userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		groupBy,
 		entityIds: entityIds.length > 0 ? entityIds : undefined,
 		constraintFilters,

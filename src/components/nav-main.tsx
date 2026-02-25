@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { CirclePlus, type LucideIcon } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import {
 	SidebarGroup,
 	SidebarGroupContent,
@@ -32,7 +31,6 @@ export function NavMain({
 
 	const startTimer = () => {
 		createTimerMutation({
-			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: "New Time Entry",
 		}).catch(() => toast.error("Failed to start timer"));
 	};

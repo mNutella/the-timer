@@ -3,12 +3,12 @@ import { v } from "convex/values";
 
 import { mutation, query } from "./functions";
 import * as Analytics from "./model/analytics";
+import { getRequiredUserId } from "./model/auth";
 import * as TimeEntries from "./model/time_entries";
 import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
 	args: {
-		userId: v.id("users"),
 		name: v.string(),
 		description: v.optional(v.string()),
 		notes: v.optional(v.string()),
@@ -19,20 +19,18 @@ export const create = mutation({
 		timeEntryId: v.optional(v.id("time_entries")),
 	},
 	handler: async (ctx, params) => {
-		const timeEntryId = await TimeEntries.create(ctx, params);
-
-		return timeEntryId;
+		const userId = await getRequiredUserId(ctx);
+		return TimeEntries.create(ctx, { ...params, userId });
 	},
 });
 
 export const stop = mutation({
 	args: {
 		id: v.id("time_entries"),
-		userId: v.id("users"),
 	},
-	handler: async (ctx, params) => {
-		const timeEntry = await TimeEntries.stop(ctx, params);
-
+	handler: async (ctx, { id }) => {
+		const userId = await getRequiredUserId(ctx);
+		const timeEntry = await TimeEntries.stop(ctx, { id, userId });
 		return timeEntry._id;
 	},
 });
@@ -40,7 +38,6 @@ export const stop = mutation({
 export const update = mutation({
 	args: {
 		id: v.id("time_entries"),
-		userId: v.id("users"),
 		name: v.optional(v.string()),
 		description: v.optional(v.string()),
 		notes: v.optional(v.string()),
@@ -53,30 +50,33 @@ export const update = mutation({
 		duration: v.optional(v.number()),
 	},
 	handler: async (ctx, params) => {
-		await TimeEntries.update(ctx, params);
+		const userId = await getRequiredUserId(ctx);
+		await TimeEntries.update(ctx, { ...params, userId });
 	},
 });
 
 export const deleteOne = mutation({
 	args: {
 		id: v.id("time_entries"),
-		userId: v.id("users"),
 	},
-	handler: async (ctx, params) => {
-		await TimeEntries.deleteOne(ctx, params);
+	handler: async (ctx, { id }) => {
+		const userId = await getRequiredUserId(ctx);
+		await TimeEntries.deleteOne(ctx, { id, userId });
 	},
 });
 
 export const updateClient = mutation({
 	args: {
 		timeEntryId: v.id("time_entries"),
-		userId: v.id("users"),
 		clientId: v.optional(v.id("clients")),
 		newClientName: v.optional(v.string()),
 	},
 	handler: async (ctx, params) => {
-		const timeEntry = await TimeEntries.updateClient(ctx, params);
-
+		const userId = await getRequiredUserId(ctx);
+		const timeEntry = await TimeEntries.updateClient(ctx, {
+			...params,
+			userId,
+		});
 		return timeEntry._id;
 	},
 });
@@ -84,13 +84,15 @@ export const updateClient = mutation({
 export const updateProject = mutation({
 	args: {
 		timeEntryId: v.id("time_entries"),
-		userId: v.id("users"),
 		projectId: v.optional(v.id("projects")),
 		newProjectName: v.optional(v.string()),
 	},
 	handler: async (ctx, params) => {
-		const timeEntry = await TimeEntries.updateProject(ctx, params);
-
+		const userId = await getRequiredUserId(ctx);
+		const timeEntry = await TimeEntries.updateProject(ctx, {
+			...params,
+			userId,
+		});
 		return timeEntry._id;
 	},
 });
@@ -98,13 +100,15 @@ export const updateProject = mutation({
 export const updateCategory = mutation({
 	args: {
 		timeEntryId: v.id("time_entries"),
-		userId: v.id("users"),
 		categoryId: v.optional(v.id("categories")),
 		newCategoryName: v.optional(v.string()),
 	},
 	handler: async (ctx, params) => {
-		const timeEntry = await TimeEntries.updateCategory(ctx, params);
-
+		const userId = await getRequiredUserId(ctx);
+		const timeEntry = await TimeEntries.updateCategory(ctx, {
+			...params,
+			userId,
+		});
 		return timeEntry._id;
 	},
 });
@@ -112,29 +116,28 @@ export const updateCategory = mutation({
 export const bulkDelete = mutation({
 	args: {
 		ids: v.array(v.id("time_entries")),
-		userId: v.id("users"),
 	},
-	handler: async (ctx, params) => {
-		await TimeEntries.bulkDelete(ctx, params);
+	handler: async (ctx, { ids }) => {
+		const userId = await getRequiredUserId(ctx);
+		await TimeEntries.bulkDelete(ctx, { ids, userId });
 	},
 });
 
 export const bulkUpdate = mutation({
 	args: {
 		ids: v.array(v.id("time_entries")),
-		userId: v.id("users"),
 		clientId: v.optional(v.id("clients")),
 		projectId: v.optional(v.id("projects")),
 		categoryId: v.optional(v.id("categories")),
 	},
 	handler: async (ctx, params) => {
-		await TimeEntries.bulkUpdate(ctx, params);
+		const userId = await getRequiredUserId(ctx);
+		await TimeEntries.bulkUpdate(ctx, { ...params, userId });
 	},
 });
 
 export const searchTimeEntries = query({
 	args: {
-		userId: v.id("users"),
 		filters: v.optional(
 			v.object({
 				name: v.optional(v.string()),
@@ -159,21 +162,19 @@ export const searchTimeEntries = query({
 		),
 		paginationOpts: paginationOptsValidator,
 	},
-	handler: async (ctx, { userId, filters, include, paginationOpts }) => {
-		const timeEntries = await TimeEntries.searchTimeEntries(ctx, {
+	handler: async (ctx, { filters, include, paginationOpts }) => {
+		const userId = await getRequiredUserId(ctx);
+		return TimeEntries.searchTimeEntries(ctx, {
 			userId,
 			filters,
 			include,
 			paginationOpts,
 		});
-
-		return timeEntries;
 	},
 });
 
 export const getDailyDurations = query({
 	args: {
-		userId: v.id("users"),
 		filters: v.optional(
 			v.object({
 				clientIds: v.optional(v.array(v.id("clients"))),
@@ -186,7 +187,8 @@ export const getDailyDurations = query({
 			}),
 		),
 	},
-	handler: async (ctx, { userId, filters }) => {
+	handler: async (ctx, { filters }) => {
+		const userId = await getRequiredUserId(ctx);
 		if (!filters?.dateRange) return [];
 		return Analytics.getDailyDurationTimeSeries(ctx, {
 			userId,
@@ -205,7 +207,6 @@ export const getDailyDurations = query({
 
 export const getDailyDurationBreakdown = query({
 	args: {
-		userId: v.id("users"),
 		groupBy: v.union(
 			v.literal("client"),
 			v.literal("project"),
@@ -226,8 +227,9 @@ export const getDailyDurationBreakdown = query({
 	},
 	handler: async (
 		ctx,
-		{ userId, groupBy, entityIds, constraintFilters, dateRange },
+		{ groupBy, entityIds, constraintFilters, dateRange },
 	) => {
+		const userId = await getRequiredUserId(ctx);
 		if (entityIds.length === 0) return [];
 		return Analytics.getDailyDurationBreakdownTimeSeries(ctx, {
 			userId,
@@ -250,7 +252,6 @@ export const getDailyDurationBreakdown = query({
 
 export const getEntityBreakdown = query({
 	args: {
-		userId: v.id("users"),
 		groupBy: v.union(
 			v.literal("client"),
 			v.literal("project"),
@@ -271,8 +272,9 @@ export const getEntityBreakdown = query({
 	},
 	handler: async (
 		ctx,
-		{ userId, groupBy, entityIds, constraintFilters, dateRange },
+		{ groupBy, entityIds, constraintFilters, dateRange },
 	) => {
+		const userId = await getRequiredUserId(ctx);
 		return Analytics.getEntityBreakdown(ctx, {
 			userId,
 			groupBy,
@@ -294,7 +296,6 @@ export const getEntityBreakdown = query({
 
 export const getCategoryBreakdown = query({
 	args: {
-		userId: v.id("users"),
 		clientIds: v.optional(v.array(v.id("clients"))),
 		projectIds: v.optional(v.array(v.id("projects"))),
 		categoryIds: v.optional(v.array(v.id("categories"))),
@@ -305,8 +306,9 @@ export const getCategoryBreakdown = query({
 	},
 	handler: async (
 		ctx,
-		{ userId, clientIds, projectIds, categoryIds, dateRange },
+		{ clientIds, projectIds, categoryIds, dateRange },
 	) => {
+		const userId = await getRequiredUserId(ctx);
 		return Analytics.getCategoryBreakdown(ctx, {
 			userId,
 			filters: {
@@ -324,7 +326,6 @@ export const getCategoryBreakdown = query({
 
 export const getTotalDuration = query({
 	args: {
-		userId: v.id("users"),
 		filters: v.optional(
 			v.object({
 				name: v.optional(v.string()),
@@ -338,7 +339,8 @@ export const getTotalDuration = query({
 			}),
 		),
 	},
-	handler: async (ctx, { userId, filters }) => {
+	handler: async (ctx, { filters }) => {
+		const userId = await getRequiredUserId(ctx);
 		const { startDate, endDate } = filters?.dateRange ?? {};
 		const dateRange = {
 			startDate: getStartOfDay(startDate ?? 0),
@@ -394,7 +396,6 @@ export const getTotalDuration = query({
 
 export const exportTimeEntries = query({
 	args: {
-		userId: v.id("users"),
 		filters: v.optional(
 			v.object({
 				name: v.optional(v.string()),
@@ -410,26 +411,26 @@ export const exportTimeEntries = query({
 			}),
 		),
 	},
-	handler: async (ctx, { userId, filters }) => {
+	handler: async (ctx, { filters }) => {
+		const userId = await getRequiredUserId(ctx);
 		return TimeEntries.getAllTimeEntries(ctx, { userId, filters });
 	},
 });
 
 export const getRunningTimer = query({
-	args: {
-		userId: v.id("users"),
-	},
-	handler: async (ctx, { userId }) => {
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getRequiredUserId(ctx);
 		return TimeEntries.getRunningTimer(ctx, { userId });
 	},
 });
 
 export const getRecentProjects = query({
 	args: {
-		userId: v.id("users"),
 		limit: v.optional(v.number()),
 	},
-	handler: async (ctx, { userId, limit }) => {
+	handler: async (ctx, { limit }) => {
+		const userId = await getRequiredUserId(ctx);
 		return TimeEntries.getRecentProjects(ctx, { userId, limit: limit ?? 5 });
 	},
 });

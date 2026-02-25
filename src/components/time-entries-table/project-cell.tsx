@@ -22,7 +22,6 @@ export function ProjectCell({
 			className={CELL_INPUT_CLASS}
 			apiQuery={api.projects.searchByName}
 			queryArgs={{
-				userId: import.meta.env.VITE_USER_ID as Id<"users">,
 				clientId,
 				query: "",
 				paginationOpts: { numItems: 10, cursor: null },

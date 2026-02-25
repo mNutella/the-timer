@@ -5,8 +5,6 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { optimisticCreateTimer, optimisticStopTimer, optimisticUpdateTimeEntry } from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
-
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 const isTauri =
 	typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -24,11 +22,11 @@ export function useIslandDataBridge() {
 
 	const runningTimer = useQuery(
 		api.time_entries.getRunningTimer,
-		enabled ? { userId } : "skip",
+		enabled ? {} : "skip",
 	);
 	const recentProjects = useQuery(
 		api.time_entries.getRecentProjects,
-		enabled ? { userId, limit: 4 } : "skip",
+		enabled ? { limit: 4 } : "skip",
 	);
 
 	// Mutations for island action events (executed in main window for optimistic updates)
@@ -118,7 +116,7 @@ export function useIslandDataBridge() {
 			if (cleaned) return;
 
 			listen<{ id: string }>("island-stop-timer", (event) => {
-				stopRef.current({ id: event.payload.id as Id<"time_entries">, userId });
+				stopRef.current({ id: event.payload.id as Id<"time_entries"> });
 			}).then(addListener);
 
 			listen<{
@@ -128,7 +126,6 @@ export function useIslandDataBridge() {
 				categoryId?: string;
 			}>("island-create-timer", (event) => {
 				createRef.current({
-					userId,
 					name: event.payload.name,
 					projectId: event.payload.projectId as Id<"projects"> | undefined,
 					clientId: event.payload.clientId as Id<"clients"> | undefined,
@@ -139,7 +136,6 @@ export function useIslandDataBridge() {
 			listen<{ id: string; name: string }>("island-update-name", (event) => {
 				updateRef.current({
 					id: event.payload.id as Id<"time_entries">,
-					userId,
 					name: event.payload.name,
 				});
 			}).then(addListener);

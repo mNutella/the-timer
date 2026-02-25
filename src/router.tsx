@@ -1,5 +1,6 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexReactClient } from "convex/react";
 import { ConvexQueryCacheProvider } from "convex-helpers/react/cache";
 import { ThemeProvider } from "next-themes";
 
@@ -25,11 +26,11 @@ export function createRouter() {
 				enableSystem
 				disableTransitionOnChange
 			>
-				<ConvexProvider client={convexQueryClient}>
+				<ConvexAuthProvider client={convexQueryClient}>
 					<ConvexQueryCacheProvider>
 						<SettingsProvider>{children}</SettingsProvider>
 					</ConvexQueryCacheProvider>
-				</ConvexProvider>
+				</ConvexAuthProvider>
 			</ThemeProvider>
 		),
 	});

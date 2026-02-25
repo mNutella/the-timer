@@ -18,6 +18,20 @@ export function createTest() {
 // biome-ignore lint/suspicious/noExplicitAny: convex-test ctx uses generic Id<string>
 type TestCtx = any;
 
+/**
+ * Seed a user and return an authenticated test accessor.
+ * The `subject` is set to `"userId|sessionId"` matching @convex-dev/auth's
+ * TOKEN_SUB_CLAIM_DIVIDER format so `getAuthUserId(ctx)` returns the userId.
+ */
+export async function authenticateAs(
+	t: ReturnType<typeof createTest>,
+	overrides: Partial<{ name: string; email: string }> = {},
+) {
+	const userId = await t.run(async (ctx) => seedUser(ctx, overrides));
+	const asUser = t.withIdentity({ subject: `${userId}|fake-session` });
+	return { userId, asUser };
+}
+
 export async function seedUser(
 	ctx: TestCtx,
 	overrides: Partial<{ name: string; email: string }> = {},
@@ -25,7 +39,6 @@ export async function seedUser(
 	return ctx.db.insert("users", {
 		name: overrides.name ?? "Test User",
 		email: overrides.email ?? `test-${Date.now()}@example.com`,
-		password_hash: "hashed",
 		updated_at: Date.now(),
 	});
 }

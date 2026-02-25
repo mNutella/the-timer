@@ -4,7 +4,6 @@ import * as React from "react";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +91,6 @@ export function ExportDialog({
 	const handleExport = async () => {
 		setExporting(true);
 		try {
-			const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 			const trimmedSearch = searchValue.trim();
 
 			const filters = {
@@ -110,7 +108,6 @@ export function ExportDialog({
 			};
 
 			const entries = await convex.query(api.time_entries.exportTimeEntries, {
-				userId,
 				filters,
 			});
 

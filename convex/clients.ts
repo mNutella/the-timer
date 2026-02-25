@@ -3,22 +3,22 @@ import { v } from "convex/values";
 
 import { timeEntriesTotalDurationByClientAndDateAggregate } from "./aggregates";
 import { mutation, query } from "./functions";
+import { getRequiredUserId } from "./model/auth";
 import * as Clients from "./model/clients";
 import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
 	args: {
 		name: v.string(),
-		userId: v.id("users"),
 	},
-	handler: async (ctx, params) => {
-		return Clients.create(ctx, params);
+	handler: async (ctx, { name }) => {
+		const userId = await getRequiredUserId(ctx);
+		return Clients.create(ctx, { name, userId });
 	},
 });
 
 export const list = query({
 	args: {
-		userId: v.id("users"),
 		dateRange: v.optional(
 			v.object({
 				startDate: v.number(),
@@ -26,7 +26,8 @@ export const list = query({
 			}),
 		),
 	},
-	handler: async (ctx, { userId, dateRange }) => {
+	handler: async (ctx, { dateRange }) => {
+		const userId = await getRequiredUserId(ctx);
 		const lowerDate = dateRange ? getStartOfDay(dateRange.startDate) : 0;
 		const upperDate = dateRange
 			? getEndOfDay(dateRange.endDate)
@@ -63,31 +64,31 @@ export const list = query({
 export const update = mutation({
 	args: {
 		id: v.id("clients"),
-		userId: v.id("users"),
 		name: v.string(),
 	},
-	handler: async (ctx, params) => {
-		await Clients.update(ctx, params);
+	handler: async (ctx, { id, name }) => {
+		const userId = await getRequiredUserId(ctx);
+		await Clients.update(ctx, { id, userId, name });
 	},
 });
 
 export const deleteOne = mutation({
 	args: {
 		id: v.id("clients"),
-		userId: v.id("users"),
 	},
-	handler: async (ctx, params) => {
-		await Clients.deleteOne(ctx, params);
+	handler: async (ctx, { id }) => {
+		const userId = await getRequiredUserId(ctx);
+		await Clients.deleteOne(ctx, { id, userId });
 	},
 });
 
 export const searchByName = query({
 	args: {
-		userId: v.id("users"),
 		query: v.string(),
 		paginationOpts: paginationOptsValidator,
 	},
-	handler: async (ctx, { userId, query, paginationOpts }) => {
+	handler: async (ctx, { query, paginationOpts }) => {
+		const userId = await getRequiredUserId(ctx);
 		const trimmedQuery = query.trim();
 
 		if (trimmedQuery === "") {

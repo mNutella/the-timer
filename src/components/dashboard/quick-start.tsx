@@ -2,17 +2,13 @@ import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { Play, Zap } from "lucide-react";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { optimisticCreateTimer } from "@/lib/optimistic-updates";
 import { toast } from "sonner";
 
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
-
 export function QuickStart() {
 	const recentProjects = useQuery(api.time_entries.getRecentProjects, {
-		userId,
 		limit: 5,
 	});
 	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
@@ -21,7 +17,6 @@ export function QuickStart() {
 		project: NonNullable<typeof recentProjects>[number],
 	) => {
 		createMutation({
-			userId,
 			name: project.lastEntryName,
 			projectId: project.projectId,
 			clientId: project.clientId,
@@ -30,7 +25,7 @@ export function QuickStart() {
 	};
 
 	const handleGenericStart = () => {
-		createMutation({ userId, name: "New Time Entry" })
+		createMutation({ name: "New Time Entry" })
 			.catch(() => toast.error("Failed to start timer"));
 	};
 

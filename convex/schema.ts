@@ -1,13 +1,24 @@
 import { v } from "convex/values";
-import { defineEnt, defineEntSchema, getEntDefinitions } from "convex-ents";
+import {
+	defineEnt,
+	defineEntSchema,
+	defineEntsFromTables,
+	getEntDefinitions,
+} from "convex-ents";
+import { authTables } from "@convex-dev/auth/server";
 
 const schema = defineEntSchema({
+	...defineEntsFromTables(authTables),
+
 	users: defineEnt({
-		name: v.string(),
-		password_hash: v.string(),
-		updated_at: v.number(),
+		name: v.optional(v.string()),
+		email: v.optional(v.string()),
+		image: v.optional(v.string()),
+		emailVerificationTime: v.optional(v.number()),
+		isAnonymous: v.optional(v.boolean()),
+		updated_at: v.optional(v.number()),
 	})
-		.field("email", v.string(), { unique: true })
+		.index("email", ["email"])
 		.edges("clients", { ref: true })
 		.edges("projects", { ref: true })
 		.edges("time_entries", { ref: true })

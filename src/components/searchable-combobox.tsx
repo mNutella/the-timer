@@ -1,6 +1,5 @@
 "use client";
 
-import type { Id } from "convex/_generated/dataModel";
 import type { FunctionReference, OptionalRestArgs } from "convex/server";
 import { Check, PlusCircle } from "lucide-react";
 import * as React from "react";
@@ -194,7 +193,6 @@ function SearchableComboboxContent<
 		apiQuery,
 		{
 			...(queryArgs as any),
-			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			query: search.trim().toLowerCase(),
 		},
 		{ initialNumItems: 7 },

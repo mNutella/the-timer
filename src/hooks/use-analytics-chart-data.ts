@@ -2,7 +2,6 @@ import { useQuery } from "convex-helpers/react/cache";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import {
 	getConstraintFilters,
 	getEntityIds,
@@ -84,7 +83,6 @@ export function useAnalyticsChartData(
 		api.time_entries.getDailyDurations,
 		stackDimension === null
 			? {
-					userId: import.meta.env.VITE_USER_ID as Id<"users">,
 					filters: {
 						dateRange: range,
 					},
@@ -97,7 +95,6 @@ export function useAnalyticsChartData(
 		api.time_entries.getDailyDurationBreakdown,
 		stackDimension !== null
 			? {
-					userId: import.meta.env.VITE_USER_ID as Id<"users">,
 					groupBy: stackDimension,
 					entityIds,
 					constraintFilters,

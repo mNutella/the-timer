@@ -2,11 +2,8 @@ import { useQuery } from "convex-helpers/react/cache";
 import { Clock, Hash, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { getEndOfDay, getStartOfDay } from "@/../convex/utils";
 import { formatDuration } from "@/lib/utils";
-
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 export function TodaySummaryCards({
 	entryCount,
@@ -19,7 +16,6 @@ export function TodaySummaryCards({
 	}, []);
 
 	const totalDuration = useQuery(api.time_entries.getTotalDuration, {
-		userId,
 		filters: { dateRange: todayRange },
 	});
 

@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import {
+	authenticateAs,
 	createTest,
 	seedCategory,
 	seedClient,
 	seedProject,
 	seedTimeEntry,
-	seedUser,
 } from "./setup.testing";
 
 const DAY1 = new Date("2024-01-15T12:00:00Z").getTime();
@@ -16,7 +16,7 @@ const DAY3 = new Date("2024-01-17T12:00:00Z").getTime();
 describe("searchTimeEntries", () => {
 	test("returns all entries for user when no filters are set", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedTimeEntry(ctx, userId, {
 				name: "Entry 1",
@@ -32,8 +32,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			paginationOpts: { numItems: 10, cursor: null },
 		});
 
@@ -42,8 +41,10 @@ describe("searchTimeEntries", () => {
 
 	test("does not return entries from other users", async () => {
 		const t = createTest();
-		const user1 = await t.run(async (ctx) => seedUser(ctx, { name: "User 1" }));
-		const user2 = await t.run(async (ctx) => seedUser(ctx, { name: "User 2" }));
+		const { userId: user1, asUser: asUser1 } = await authenticateAs(t, {
+			name: "User 1",
+		});
+		const { userId: user2 } = await authenticateAs(t, { name: "User 2" });
 		await t.run(async (ctx) => {
 			await seedTimeEntry(ctx, user1, {
 				name: "User1 entry",
@@ -59,8 +60,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId: user1,
+		const result = await asUser1.query(api.time_entries.searchTimeEntries, {
 			paginationOpts: { numItems: 10, cursor: null },
 		});
 
@@ -70,7 +70,7 @@ describe("searchTimeEntries", () => {
 
 	test("filters by single client", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const clientId = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Acme"),
 		);
@@ -90,8 +90,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			filters: { clientIds: [clientId] },
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -102,7 +101,7 @@ describe("searchTimeEntries", () => {
 
 	test("filters by multiple clients (OR logic)", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const client1 = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Alpha"),
 		);
@@ -134,8 +133,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			filters: { clientIds: [client1, client2] },
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -147,7 +145,7 @@ describe("searchTimeEntries", () => {
 
 	test("filters by single project", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const projectId = await t.run(async (ctx) =>
 			seedProject(ctx, userId, { name: "Website" }),
 		);
@@ -167,8 +165,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			filters: { projectIds: [projectId] },
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -179,7 +176,7 @@ describe("searchTimeEntries", () => {
 
 	test("filters by single category", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const categoryId = await t.run(async (ctx) =>
 			seedCategory(ctx, userId, "Development"),
 		);
@@ -199,8 +196,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			filters: { categoryIds: [categoryId] },
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -211,7 +207,7 @@ describe("searchTimeEntries", () => {
 
 	test("filters by date range", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedTimeEntry(ctx, userId, {
 				name: "Day 1",
@@ -233,8 +229,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			filters: {
 				dateRange: {
 					startDate: DAY1,
@@ -253,7 +248,7 @@ describe("searchTimeEntries", () => {
 
 	test("resolves client edge when include.client is true (default)", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const clientId = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Acme"),
 		);
@@ -267,8 +262,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			paginationOpts: { numItems: 10, cursor: null },
 		});
 
@@ -278,7 +272,7 @@ describe("searchTimeEntries", () => {
 
 	test("resolves project edge when include.project is true (default)", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const projectId = await t.run(async (ctx) =>
 			seedProject(ctx, userId, { name: "Website" }),
 		);
@@ -292,8 +286,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			paginationOpts: { numItems: 10, cursor: null },
 		});
 
@@ -303,7 +296,7 @@ describe("searchTimeEntries", () => {
 
 	test("returns null for unset client/project edges", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedTimeEntry(ctx, userId, {
 				name: "Bare entry",
@@ -313,8 +306,7 @@ describe("searchTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.searchTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.searchTimeEntries, {
 			paginationOpts: { numItems: 10, cursor: null },
 		});
 
@@ -326,7 +318,7 @@ describe("searchTimeEntries", () => {
 describe("exportTimeEntries", () => {
 	test("returns all matching entries (non-paginated) with resolved edges", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const clientId = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Export Client"),
 		);
@@ -346,9 +338,7 @@ describe("exportTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.exportTimeEntries, {
-			userId,
-		});
+		const result = await asUser.query(api.time_entries.exportTimeEntries, {});
 
 		expect(result).toHaveLength(2);
 		const withClient = result.find(
@@ -360,7 +350,7 @@ describe("exportTimeEntries", () => {
 
 	test("respects client filter", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const clientId = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Filter Client"),
 		);
@@ -380,8 +370,7 @@ describe("exportTimeEntries", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.exportTimeEntries, {
-			userId,
+		const result = await asUser.query(api.time_entries.exportTimeEntries, {
 			filters: { clientIds: [clientId] },
 		});
 
@@ -393,7 +382,7 @@ describe("exportTimeEntries", () => {
 describe("getRunningTimer", () => {
 	test("returns null when no timer is running", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedTimeEntry(ctx, userId, {
 				name: "Stopped",
@@ -403,14 +392,14 @@ describe("getRunningTimer", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.getRunningTimer, { userId });
+		const result = await asUser.query(api.time_entries.getRunningTimer, {});
 
 		expect(result).toBeNull();
 	});
 
 	test("returns the running timer with resolved edges", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const clientId = await t.run(async (ctx) =>
 			seedClient(ctx, userId, "Active Client"),
 		);
@@ -422,7 +411,7 @@ describe("getRunningTimer", () => {
 			});
 		});
 
-		const result = await t.query(api.time_entries.getRunningTimer, { userId });
+		const result = await asUser.query(api.time_entries.getRunningTimer, {});
 
 		expect(result).not.toBeNull();
 		expect(result!.name).toBe("Running");

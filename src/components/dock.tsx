@@ -14,7 +14,6 @@ import type { MouseEvent } from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import {
 	DockActionItem,
 	DockNavItem,
@@ -90,7 +89,6 @@ function useStartTimer() {
 
 	return useCallback(() => {
 		createTimerMutation({
-			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: "New Time Entry",
 		}).catch(() => toast.error("Failed to start timer"));
 	}, [createTimerMutation]);

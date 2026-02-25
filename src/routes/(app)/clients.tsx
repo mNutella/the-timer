@@ -14,17 +14,16 @@ import {
 import { withToast } from "@/lib/utils";
 import { toast } from "sonner";
 
+
 export const Route = createFileRoute("/(app)/clients")({
 	component: ClientsPage,
 });
 
 function ClientsPage() {
-	const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 	const [searchValue, setSearchValue] = useState("");
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
 	const clients = useQuery(api.clients.list, {
-		userId,
 		dateRange:
 			dateRange?.from && dateRange?.to
 				? {
@@ -65,14 +64,14 @@ function ClientsPage() {
 					"Creating client...",
 					"Client created",
 					"Failed to create client",
-				)({ name, userId })
+				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateClient({ id: id as Id<"clients">, userId, name })
+				updateClient({ id: id as Id<"clients">, name })
 					.catch(() => toast.error("Failed to update client"))
 			}
 			onDelete={(id) =>
-				deleteClient({ id: id as Id<"clients">, userId })
+				deleteClient({ id: id as Id<"clients"> })
 					.catch(() => toast.error("Failed to delete client"))
 			}
 		/>

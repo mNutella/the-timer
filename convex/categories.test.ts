@@ -1,20 +1,19 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import {
+	authenticateAs,
 	createTest,
 	seedCategory,
 	seedTimeEntry,
-	seedUser,
 } from "./setup.testing";
 
 describe("categories", () => {
 	test("creates a category", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 
-		const categoryId = await t.mutation(api.categories.create, {
+		const categoryId = await asUser.mutation(api.categories.create, {
 			name: "Development",
-			userId,
 		});
 
 		const category = await t.run(async (ctx) => ctx.db.get(categoryId));
@@ -25,36 +24,33 @@ describe("categories", () => {
 
 	test("throws on delete for wrong userId", async () => {
 		const t = createTest();
-		const userId1 = await t.run(async (ctx) =>
-			seedUser(ctx, { email: "u1@test.com" }),
-		);
-		const userId2 = await t.run(async (ctx) =>
-			seedUser(ctx, { email: "u2@test.com" }),
-		);
+		const { asUser: asUser1 } = await authenticateAs(t, {
+			email: "u1@test.com",
+		});
+		const { asUser: asUser2 } = await authenticateAs(t, {
+			email: "u2@test.com",
+		});
 
-		const categoryId = await t.mutation(api.categories.create, {
+		const categoryId = await asUser1.mutation(api.categories.create, {
 			name: "Category",
-			userId: userId1,
 		});
 
 		await expect(
-			t.mutation(api.categories.deleteOne, {
+			asUser2.mutation(api.categories.deleteOne, {
 				id: categoryId,
-				userId: userId2,
 			}),
 		).rejects.toThrow("does not belong to user");
 	});
 
 	test("searchByName returns all categories when query is empty", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedCategory(ctx, userId, "Development");
 			await seedCategory(ctx, userId, "Design");
 		});
 
-		const result = await t.query(api.categories.searchByName, {
-			userId,
+		const result = await asUser.query(api.categories.searchByName, {
 			query: "",
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -64,14 +60,13 @@ describe("categories", () => {
 
 	test("searchByName filters by name", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		await t.run(async (ctx) => {
 			await seedCategory(ctx, userId, "Development");
 			await seedCategory(ctx, userId, "Design");
 		});
 
-		const result = await t.query(api.categories.searchByName, {
-			userId,
+		const result = await asUser.query(api.categories.searchByName, {
 			query: "Development",
 			paginationOpts: { numItems: 10, cursor: null },
 		});
@@ -82,15 +77,13 @@ describe("categories", () => {
 
 	test("update changes category name", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
-		const categoryId = await t.mutation(api.categories.create, {
+		const { asUser } = await authenticateAs(t);
+		const categoryId = await asUser.mutation(api.categories.create, {
 			name: "Old Name",
-			userId,
 		});
 
-		await t.mutation(api.categories.update, {
+		await asUser.mutation(api.categories.update, {
 			id: categoryId,
-			userId,
 			name: "New Name",
 		});
 
@@ -100,7 +93,7 @@ describe("categories", () => {
 
 	test("cascade deletion nullifies categoryId on time_entries", async () => {
 		const t = createTest();
-		const userId = await t.run(async (ctx) => seedUser(ctx));
+		const { userId, asUser } = await authenticateAs(t);
 		const categoryId = await t.run(async (ctx) =>
 			seedCategory(ctx, userId, "To Delete"),
 		);
@@ -108,7 +101,7 @@ describe("categories", () => {
 			seedTimeEntry(ctx, userId, { categoryId, name: "Linked Entry" }),
 		);
 
-		await t.mutation(api.categories.deleteOne, { id: categoryId, userId });
+		await asUser.mutation(api.categories.deleteOne, { id: categoryId });
 
 		// Category should be gone
 		const category = await t.run(async (ctx) => ctx.db.get(categoryId));

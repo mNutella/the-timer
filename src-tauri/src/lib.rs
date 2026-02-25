@@ -1,4 +1,6 @@
+#[cfg(target_os = "macos")]
 mod island;
+#[cfg(desktop)]
 mod tray;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -25,18 +27,43 @@ pub(crate) fn set_activation_policy(accessory: bool) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_nspanel::init())
-        .setup(|app| {
-            tray::init(app.handle())?;
+        .plugin(tauri_plugin_deep_link::init());
+
+    #[cfg(target_os = "macos")]
+    let builder = builder.plugin(tauri_nspanel::init());
+
+    builder
+        .setup(|_app| {
+            #[cfg(desktop)]
+            tray::init(_app.handle())?;
+
+            // Show + focus main window when a deep link arrives (app may be in tray-only mode)
+            #[cfg(desktop)]
+            {
+                use tauri::Manager;
+                use tauri_plugin_deep_link::DeepLinkExt;
+
+                let handle = _app.handle().clone();
+                _app.deep_link().on_open_url(move |_event| {
+                    if let Some(window) = handle.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                        #[cfg(target_os = "macos")]
+                        set_activation_policy(false);
+                    }
+                });
+            }
+
             Ok(())
         })
         .on_window_event(|window, event| {
             // Hide main window on close instead of destroying it.
             // Also hide from Dock/Cmd+Tab so it behaves like a tray-only app.
+            #[cfg(desktop)]
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
                     api.prevent_close();
@@ -45,19 +72,31 @@ pub fn run() {
                     set_activation_policy(true);
                 }
             }
+            // Suppress unused variable warnings on mobile
+            #[cfg(mobile)]
+            { let _ = (window, event); }
         })
-        .invoke_handler(tauri::generate_handler![
-            greet,
-            island::window::create_island,
-            island::window::show_island,
-            island::window::hide_island,
-            island::window::toggle_island,
-            island::window::resize_island,
-            island::window::check_island_mouse,
-            island::window::focus_island,
-            island::window::unfocus_island,
-            island::window::destroy_island,
-        ])
+        .invoke_handler({
+            #[cfg(target_os = "macos")]
+            {
+                tauri::generate_handler![
+                    greet,
+                    island::window::create_island,
+                    island::window::show_island,
+                    island::window::hide_island,
+                    island::window::toggle_island,
+                    island::window::resize_island,
+                    island::window::check_island_mouse,
+                    island::window::focus_island,
+                    island::window::unfocus_island,
+                    island::window::destroy_island,
+                ]
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                tauri::generate_handler![greet]
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

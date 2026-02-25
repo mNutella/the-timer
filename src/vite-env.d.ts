@@ -2,9 +2,12 @@
 
 interface ImportMetaEnv {
 	readonly VITE_CONVEX_URL: string;
-	readonly VITE_USER_ID: string;
 }
 
 interface ImportMeta {
 	readonly env: ImportMetaEnv;
+}
+
+interface Window {
+	__TAURI_INTERNALS__?: unknown;
 }

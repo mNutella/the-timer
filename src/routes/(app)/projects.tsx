@@ -46,14 +46,12 @@ const statusVariant: Record<
 };
 
 function ProjectsPage() {
-	const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 	const [searchValue, setSearchValue] = useState("");
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 	const [clientFilter, setClientFilter] = useState<string>("all");
 
-	const clients = useQuery(api.clients.list, { userId });
+	const clients = useQuery(api.clients.list, {});
 	const projects = useQuery(api.projects.list, {
-		userId,
 		clientId:
 			clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined,
 		dateRange:
@@ -69,16 +67,16 @@ function ProjectsPage() {
 	const deleteProject = useMutation(api.projects.deleteOne).withOptimisticUpdate(optimisticDeleteProject);
 
 	const handleStatusChange = (id: Id<"projects">, status: ProjectStatus) => {
-		updateProject({ id, userId, status })
+		updateProject({ id, status })
 			.catch(() => toast.error("Failed to update status"));
 	};
 
 	const handleClientChange = (id: Id<"projects">, value: string) => {
 		if (value === "none") {
-			updateProject({ id, userId, clearClientId: true })
+			updateProject({ id, clearClientId: true })
 				.catch(() => toast.error("Failed to update client"));
 		} else {
-			updateProject({ id, userId, clientId: value as Id<"clients"> })
+			updateProject({ id, clientId: value as Id<"clients"> })
 				.catch(() => toast.error("Failed to update client"));
 		}
 	};
@@ -205,14 +203,14 @@ function ProjectsPage() {
 					"Creating project...",
 					"Project created",
 					"Failed to create project",
-				)({ name, userId })
+				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateProject({ id: id as Id<"projects">, userId, name })
+				updateProject({ id: id as Id<"projects">, name })
 					.catch(() => toast.error("Failed to update project"))
 			}
 			onDelete={(id) =>
-				deleteProject({ id: id as Id<"projects">, userId })
+				deleteProject({ id: id as Id<"projects"> })
 					.catch(() => toast.error("Failed to delete project"))
 			}
 		/>

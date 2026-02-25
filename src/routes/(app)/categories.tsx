@@ -14,17 +14,16 @@ import {
 import { withToast } from "@/lib/utils";
 import { toast } from "sonner";
 
+
 export const Route = createFileRoute("/(app)/categories")({
 	component: CategoriesPage,
 });
 
 function CategoriesPage() {
-	const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 	const [searchValue, setSearchValue] = useState("");
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
 	const categories = useQuery(api.categories.list, {
-		userId,
 		dateRange:
 			dateRange?.from && dateRange?.to
 				? {
@@ -56,14 +55,14 @@ function CategoriesPage() {
 					"Creating category...",
 					"Category created",
 					"Failed to create category",
-				)({ name, userId })
+				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateCategory({ id: id as Id<"categories">, userId, name })
+				updateCategory({ id: id as Id<"categories">, name })
 					.catch(() => toast.error("Failed to update category"))
 			}
 			onDelete={(id) =>
-				deleteCategory({ id: id as Id<"categories">, userId })
+				deleteCategory({ id: id as Id<"categories"> })
 					.catch(() => toast.error("Failed to delete category"))
 			}
 		/>

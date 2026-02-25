@@ -52,7 +52,6 @@ function stopEntryInSearchPages(
 function updateTimeEntryInCaches(
 	localStore: OptimisticLocalStore,
 	timeEntryId: Id<"time_entries">,
-	userId: Id<"users">,
 	patch: Record<string, unknown>,
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
@@ -69,16 +68,16 @@ function updateTimeEntryInCaches(
 		});
 	}
 
-	const runningTimer = localStore.getQuery(
+	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.getRunningTimer,
-		{ userId },
-	);
-	if (runningTimer && runningTimer._id === timeEntryId) {
-		localStore.setQuery(
-			api.time_entries.getRunningTimer,
-			{ userId },
-			{ ...runningTimer, ...patch },
-		);
+	)) {
+		if (value && value._id === timeEntryId) {
+			localStore.setQuery(
+				api.time_entries.getRunningTimer,
+				queryArgs,
+				{ ...value, ...patch },
+			);
+		}
 	}
 }
 
@@ -86,7 +85,6 @@ function updateTimeEntryInCaches(
 function deleteEntriesFromCaches(
 	localStore: OptimisticLocalStore,
 	idSet: Set<string>,
-	userId: Id<"users">,
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.searchTimeEntries,
@@ -101,12 +99,12 @@ function deleteEntriesFromCaches(
 		}
 	}
 
-	const runningTimer = localStore.getQuery(
+	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.getRunningTimer,
-		{ userId },
-	);
-	if (runningTimer && idSet.has(runningTimer._id)) {
-		localStore.setQuery(api.time_entries.getRunningTimer, { userId }, null);
+	)) {
+		if (value && idSet.has(value._id)) {
+			localStore.setQuery(api.time_entries.getRunningTimer, queryArgs, null);
+		}
 	}
 }
 
@@ -114,19 +112,16 @@ function deleteEntriesFromCaches(
 
 export function optimisticStopTimer(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"time_entries">; userId: Id<"users"> },
+	args: { id: Id<"time_entries"> },
 ) {
 	const now = Date.now();
-	const currentTimer = localStore.getQuery(api.time_entries.getRunningTimer, {
-		userId: args.userId,
-	});
-	// Clear running timer if it matches or if the cache hasn't loaded yet
-	if (!currentTimer || currentTimer._id === args.id) {
-		localStore.setQuery(
-			api.time_entries.getRunningTimer,
-			{ userId: args.userId },
-			null,
-		);
+
+	for (const { args: queryArgs, value } of localStore.getAllQueries(
+		api.time_entries.getRunningTimer,
+	)) {
+		if (!value || value._id === args.id) {
+			localStore.setQuery(api.time_entries.getRunningTimer, queryArgs, null);
+		}
 	}
 
 	stopEntryInSearchPages(localStore, args.id, now);
@@ -137,7 +132,6 @@ export function optimisticStopTimer(
 export function optimisticCreateTimer(
 	localStore: OptimisticLocalStore,
 	args: {
-		userId: Id<"users">;
 		name: string;
 		timeEntryId?: Id<"time_entries">;
 		clientId?: Id<"clients">;
@@ -167,23 +161,26 @@ export function optimisticCreateTimer(
 		}
 		// Also check running timer (source might be the currently running entry)
 		if (!source) {
-			const current = localStore.getQuery(
+			for (const { value } of localStore.getAllQueries(
 				api.time_entries.getRunningTimer,
-				{ userId: args.userId },
-			);
-			if (current && current._id === args.timeEntryId) {
-				source = current;
+			)) {
+				if (value && value._id === args.timeEntryId) {
+					source = value;
+					break;
+				}
 			}
 		}
 	}
 
 	// Stop old running timer in searchTimeEntries pages if present
-	const oldRunning = localStore.getQuery(
+	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.getRunningTimer,
-		{ userId: args.userId },
-	);
-	if (oldRunning) {
-		stopEntryInSearchPages(localStore, oldRunning._id, now);
+	)) {
+		if (value) {
+			stopEntryInSearchPages(localStore, value._id, now);
+		}
+		// Clear old running timer
+		localStore.setQuery(api.time_entries.getRunningTimer, queryArgs, null);
 	}
 
 	// Resolve entity references from cache when IDs are passed directly
@@ -244,12 +241,16 @@ export function optimisticCreateTimer(
 		tags: source?.tags ?? [],
 	};
 
-	// Set optimistic running timer
-	localStore.setQuery(
+	// Set optimistic running timer for all cached getRunningTimer queries
+	for (const { args: queryArgs } of localStore.getAllQueries(
 		api.time_entries.getRunningTimer,
-		{ userId: args.userId },
-		syntheticEntry,
-	);
+	)) {
+		localStore.setQuery(
+			api.time_entries.getRunningTimer,
+			queryArgs,
+			syntheticEntry,
+		);
+	}
 
 	// Add synthetic entry to first page of each searchTimeEntries query variant.
 	// Only target queries with cursor=null (first pages) to avoid duplicates
@@ -272,7 +273,7 @@ export function optimisticCreateTimer(
 
 export function optimisticRenameClient(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"clients">; userId: Id<"users">; name: string },
+	args: { id: Id<"clients">; name: string },
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.clients.list,
@@ -290,7 +291,7 @@ export function optimisticRenameClient(
 
 export function optimisticDeleteClient(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"clients">; userId: Id<"users"> },
+	args: { id: Id<"clients"> },
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.clients.list,
@@ -310,7 +311,6 @@ export function optimisticUpdateProject(
 	localStore: OptimisticLocalStore,
 	args: {
 		id: Id<"projects">;
-		userId: Id<"users">;
 		name?: string;
 		status?: "active" | "archived" | "completed";
 		clientId?: Id<"clients">;
@@ -345,7 +345,7 @@ export function optimisticUpdateProject(
 
 export function optimisticDeleteProject(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"projects">; userId: Id<"users"> },
+	args: { id: Id<"projects"> },
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.projects.list,
@@ -363,7 +363,7 @@ export function optimisticDeleteProject(
 
 export function optimisticRenameCategory(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"categories">; userId: Id<"users">; name: string },
+	args: { id: Id<"categories">; name: string },
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.categories.list,
@@ -381,7 +381,7 @@ export function optimisticRenameCategory(
 
 export function optimisticDeleteCategory(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"categories">; userId: Id<"users"> },
+	args: { id: Id<"categories"> },
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.categories.list,
@@ -401,7 +401,6 @@ export function optimisticUpdateTimeEntry(
 	localStore: OptimisticLocalStore,
 	args: {
 		id: Id<"time_entries">;
-		userId: Id<"users">;
 		name?: string;
 		notes?: string;
 		duration?: number;
@@ -416,7 +415,7 @@ export function optimisticUpdateTimeEntry(
 	if (args.startDate !== undefined) patch.start_time = args.startDate;
 	if (args.endDate !== undefined) patch.end_time = args.endDate;
 
-	updateTimeEntryInCaches(localStore, args.id, args.userId, patch);
+	updateTimeEntryInCaches(localStore, args.id, patch);
 }
 
 // ─── Time Entry: Update Client/Project/Category ─────────────────
@@ -425,13 +424,12 @@ export function optimisticUpdateTimeEntryClient(
 	localStore: OptimisticLocalStore,
 	args: {
 		timeEntryId: Id<"time_entries">;
-		userId: Id<"users">;
 		clientId?: Id<"clients">;
 		newClientName?: string;
 	},
 ) {
 	if (args.newClientName) return;
-	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
+	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		clientId: args.clientId,
 		client: args.clientId ? findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) : null,
 	});
@@ -441,13 +439,12 @@ export function optimisticUpdateTimeEntryProject(
 	localStore: OptimisticLocalStore,
 	args: {
 		timeEntryId: Id<"time_entries">;
-		userId: Id<"users">;
 		projectId?: Id<"projects">;
 		newProjectName?: string;
 	},
 ) {
 	if (args.newProjectName) return;
-	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
+	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		projectId: args.projectId,
 		project: args.projectId ? findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) : null,
 	});
@@ -457,13 +454,12 @@ export function optimisticUpdateTimeEntryCategory(
 	localStore: OptimisticLocalStore,
 	args: {
 		timeEntryId: Id<"time_entries">;
-		userId: Id<"users">;
 		categoryId?: Id<"categories">;
 		newCategoryName?: string;
 	},
 ) {
 	if (args.newCategoryName) return;
-	updateTimeEntryInCaches(localStore, args.timeEntryId, args.userId, {
+	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		categoryId: args.categoryId,
 		category: args.categoryId ? findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) : null,
 	});
@@ -475,7 +471,6 @@ export function optimisticBulkUpdateTimeEntries(
 	localStore: OptimisticLocalStore,
 	args: {
 		ids: Id<"time_entries">[];
-		userId: Id<"users">;
 		clientId?: Id<"clients">;
 		projectId?: Id<"projects">;
 		categoryId?: Id<"categories">;
@@ -521,16 +516,16 @@ export function optimisticBulkUpdateTimeEntries(
 
 export function optimisticDeleteTimeEntry(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"time_entries">; userId: Id<"users"> },
+	args: { id: Id<"time_entries"> },
 ) {
-	deleteEntriesFromCaches(localStore, new Set([args.id]), args.userId);
+	deleteEntriesFromCaches(localStore, new Set([args.id]));
 }
 
 // ─── Bulk Delete (paginated) ────────────────────────────────────
 
 export function optimisticBulkDeleteTimeEntries(
 	localStore: OptimisticLocalStore,
-	args: { ids: Id<"time_entries">[]; userId: Id<"users"> },
+	args: { ids: Id<"time_entries">[] },
 ) {
-	deleteEntriesFromCaches(localStore, new Set(args.ids), args.userId);
+	deleteEntriesFromCaches(localStore, new Set(args.ids));
 }

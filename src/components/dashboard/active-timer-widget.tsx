@@ -3,17 +3,14 @@ import { useQuery } from "convex-helpers/react/cache";
 import { Play, Square, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import { cn } from "@/lib/utils";
 
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
-
 export function ActiveTimerWidget() {
-	const runningTimer = useQuery(api.time_entries.getRunningTimer, { userId });
+	const runningTimer = useQuery(api.time_entries.getRunningTimer, {});
 	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
@@ -22,12 +19,12 @@ export function ActiveTimerWidget() {
 
 	const handleStop = () => {
 		if (!runningTimer) return;
-		stopMutation({ id: runningTimer._id, userId })
+		stopMutation({ id: runningTimer._id })
 			.catch(() => toast.error("Failed to stop timer"));
 	};
 
 	const handleStart = () => {
-		createMutation({ userId, name: "New Time Entry" })
+		createMutation({ name: "New Time Entry" })
 			.catch(() => toast.error("Failed to start timer"));
 	};
 

@@ -3,7 +3,6 @@ import { Circle, Clock, Play, Square } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
-import type { Id } from "@/../convex/_generated/dataModel";
 import { getEndOfDay, getStartOfDay } from "@/../convex/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,6 @@ import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import type { TimeEntry } from "@/lib/types";
 import { cn, formatDuration, formatTimeForInput } from "@/lib/utils";
-
-const userId = import.meta.env.VITE_USER_ID as Id<"users">;
 
 export function ActivityFeed({
 	onEntryCountChange,
@@ -29,7 +26,6 @@ export function ActivityFeed({
 	const { results, isLoading } = useStablePaginatedQuery<TimeEntry>(
 		api.time_entries.searchTimeEntries,
 		{
-			userId,
 			filters: { dateRange: todayRange },
 		},
 		{ initialNumItems: 10 },
@@ -95,7 +91,6 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 
 	const handleResume = () => {
 		createMutation({
-			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 			name: entry.name,
 			timeEntryId: entry._id,
 		}).catch(() => toast.error("Failed to resume timer"));
@@ -104,7 +99,6 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 	const handleStop = () => {
 		stopMutation({
 			id: entry._id,
-			userId: import.meta.env.VITE_USER_ID as Id<"users">,
 		}).catch(() => toast.error("Failed to stop timer"));
 	};
 
