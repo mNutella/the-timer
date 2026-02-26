@@ -58,7 +58,7 @@ export function CustomSelectTrigger<T extends SelectableItem>({
 					onClick={handleClear}
 					className="ml-2 p-1.5 hover:bg-muted-foreground/10 rounded-sm group outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 				>
-					<BrushCleaning className="h-4 w-4 shrink-0 group-hover:text-black" />
+					<BrushCleaning className="h-4 w-4 shrink-0 group-hover:text-primary-foreground" />
 				</button>
 			) : (
 				<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
