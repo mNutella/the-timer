@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EditTimerDialog } from "@/components/edit-timer-dialog";
 import { StartTimerDialog } from "@/components/start-timer-dialog";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import { optimisticStopTimer } from "@/lib/optimistic-updates";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 export function ActiveTimerWidget() {
 	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editOpen, setEditOpen] = useState(false);
 	const runningTimer = useQuery(api.time_entries.getRunningTimer, {});
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
@@ -71,47 +73,71 @@ export function ActiveTimerWidget() {
 	}
 
 	return (
-		<div
-			className={cn(
-				"rounded-xl border border-success/30 bg-card p-5",
-				"card-accent-green",
-				"shadow-[var(--glow-success)]",
-			)}
-		>
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<div className="relative flex size-10 items-center justify-center rounded-lg bg-success/10">
-						<Timer className="size-5 text-success" />
-						<span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-success motion-safe:animate-pulse" />
-					</div>
-					<div>
-						<p className="text-xs font-medium uppercase tracking-wider text-success">
-							Recording
-						</p>
-						<p className="text-3xl font-semibold tabular-nums tracking-tight">
-							{elapsed}
-						</p>
-						<div className="mt-1 flex items-center gap-2">
-							<span className="text-sm text-muted-foreground">
-								{runningTimer.name}
-							</span>
-							{runningTimer.client && (
-								<Badge variant="outline">{runningTimer.client.name}</Badge>
-							)}
-							{runningTimer.project && (
-								<Badge variant="secondary">{runningTimer.project.name}</Badge>
-							)}
-							{runningTimer.category && (
-								<Badge>{runningTimer.category.name}</Badge>
-							)}
+		<>
+			<div
+				role="button"
+				tabIndex={0}
+				onClick={() => setEditOpen(true)}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						setEditOpen(true);
+					}
+				}}
+				className={cn(
+					"rounded-xl border border-success/30 bg-card p-5",
+					"card-accent-green",
+					"shadow-[var(--glow-success)]",
+					"cursor-pointer transition-colors hover:bg-success/5",
+				)}
+			>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className="relative flex size-10 items-center justify-center rounded-lg bg-success/10">
+							<Timer className="size-5 text-success" />
+							<span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-success motion-safe:animate-pulse" />
+						</div>
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wider text-success">
+								Recording
+							</p>
+							<p className="text-3xl font-semibold tabular-nums tracking-tight">
+								{elapsed}
+							</p>
+							<div className="mt-1 flex items-center gap-2">
+								<span className="text-sm text-muted-foreground">
+									{runningTimer.name}
+								</span>
+								{runningTimer.client && (
+									<Badge variant="outline">{runningTimer.client.name}</Badge>
+								)}
+								{runningTimer.project && (
+									<Badge variant="secondary">{runningTimer.project.name}</Badge>
+								)}
+								{runningTimer.category && (
+									<Badge>{runningTimer.category.name}</Badge>
+								)}
+							</div>
 						</div>
 					</div>
+					<Button
+						onClick={(e) => {
+							e.stopPropagation();
+							handleStop();
+						}}
+						variant="destructive"
+						size="sm"
+					>
+						<Square className="mr-1 size-4" />
+						Stop
+					</Button>
 				</div>
-				<Button onClick={handleStop} variant="destructive" size="sm">
-					<Square className="mr-1 size-4" />
-					Stop
-				</Button>
 			</div>
-		</div>
+			<EditTimerDialog
+				open={editOpen}
+				onOpenChange={setEditOpen}
+				timer={runningTimer}
+			/>
+		</>
 	);
 }
