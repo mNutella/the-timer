@@ -20,6 +20,7 @@ import {
 	optimisticUpdateTimeEntryCategory,
 } from "@/lib/optimistic-updates";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
+import { parseDurationToMilliseconds } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface RunningTimer {
@@ -40,19 +41,29 @@ interface EditTimerDialogProps {
 	timer: RunningTimer;
 }
 
+function toSelectableItem(
+	entity: { _id: string; name: string } | null,
+): SelectableItem | undefined {
+	return entity ?? undefined;
+}
+
 export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogProps) {
 	const [name, setName] = useState(timer.name);
 	const [client, setClient] = useState<SelectableItem | undefined>(
-		timer.client ? { _id: timer.client._id, name: timer.client.name } : undefined,
+		toSelectableItem(timer.client),
 	);
 	const [project, setProject] = useState<SelectableItem | undefined>(
-		timer.project ? { _id: timer.project._id, name: timer.project.name } : undefined,
+		toSelectableItem(timer.project),
 	);
 	const [category, setCategory] = useState<SelectableItem | undefined>(
-		timer.category ? { _id: timer.category._id, name: timer.category.name } : undefined,
+		toSelectableItem(timer.category),
 	);
 
-	const elapsed = useLiveElapsedTime(timer.start_time ?? 0, true);
+	const [durationFocused, setDurationFocused] = useState(false);
+	const [durationEdited, setDurationEdited] = useState(false);
+	const [durationStr, setDurationStr] = useState("");
+
+	const elapsed = useLiveElapsedTime(timer.start_time ?? 0, !durationFocused && !durationEdited);
 
 	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
 	const updateClientMutation = useMutation(api.time_entries.updateClient).withOptimisticUpdate(optimisticUpdateTimeEntryClient);
@@ -62,39 +73,42 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 	const createProject = useMutation(api.projects.create);
 	const createCategory = useMutation(api.categories.create);
 
-	// Sync state when timer data changes externally
 	useEffect(() => {
+		if (!open) return;
 		setName(timer.name);
-		setClient(timer.client ? { _id: timer.client._id, name: timer.client.name } : undefined);
-		setProject(timer.project ? { _id: timer.project._id, name: timer.project.name } : undefined);
-		setCategory(timer.category ? { _id: timer.category._id, name: timer.category.name } : undefined);
-	}, [timer._id, timer.name, timer.client, timer.project, timer.category]);
+		setClient(toSelectableItem(timer.client));
+		setProject(toSelectableItem(timer.project));
+		setCategory(toSelectableItem(timer.category));
+		setDurationFocused(false);
+		setDurationEdited(false);
+		setDurationStr("");
+	}, [open, timer._id, timer.name, timer.client?._id, timer.project?._id, timer.category?._id]);
 
-	const handleCreateClient = async (name: string) => {
+	const handleCreateClient = async (entityName: string) => {
 		try {
-			const id = await createClient({ name });
-			setClient({ _id: id, name });
+			const id = await createClient({ name: entityName });
+			setClient({ _id: id, name: entityName });
 		} catch {
 			toast.error("Failed to create client");
 		}
 	};
 
-	const handleCreateProject = async (name: string) => {
+	const handleCreateProject = async (entityName: string) => {
 		try {
 			const id = await createProject({
-				name,
+				name: entityName,
 				clientId: client?._id as Id<"clients"> | undefined,
 			});
-			setProject({ _id: id, name });
+			setProject({ _id: id, name: entityName });
 		} catch {
 			toast.error("Failed to create project");
 		}
 	};
 
-	const handleCreateCategory = async (name: string) => {
+	const handleCreateCategory = async (entityName: string) => {
 		try {
-			const id = await createCategory({ name });
-			setCategory({ _id: id, name });
+			const id = await createCategory({ name: entityName });
+			setCategory({ _id: id, name: entityName });
 		} catch {
 			toast.error("Failed to create category");
 		}
@@ -103,27 +117,31 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 	const handleSave = () => {
 		const trimmedName = name.trim() || "New Time Entry";
 
-		// Update name if changed
-		if (trimmedName !== timer.name) {
-			updateMutation({ id: timer._id, name: trimmedName })
-				.catch(() => toast.error("Failed to update name"));
+		// Compute new start time from edited duration
+		const editedDurationMs = parseDurationToMilliseconds(durationStr);
+		const newStartTime = editedDurationMs > 0 ? Date.now() - editedDurationMs : null;
+		const startTimeChanged = newStartTime !== null && Math.abs(newStartTime - (timer.start_time ?? 0)) > 1000;
+
+		if (trimmedName !== timer.name || startTimeChanged) {
+			updateMutation({
+				id: timer._id,
+				name: trimmedName,
+				...(startTimeChanged && { startDate: newStartTime }),
+			}).catch(() => toast.error("Failed to update timer"));
 		}
 
-		// Update client if changed
 		const newClientId = client?._id as Id<"clients"> | undefined;
 		if (newClientId !== timer.clientId) {
 			updateClientMutation({ timeEntryId: timer._id, clientId: newClientId })
 				.catch(() => toast.error("Failed to update client"));
 		}
 
-		// Update project if changed
 		const newProjectId = project?._id as Id<"projects"> | undefined;
 		if (newProjectId !== timer.projectId) {
 			updateProjectMutation({ timeEntryId: timer._id, projectId: newProjectId })
 				.catch(() => toast.error("Failed to update project"));
 		}
 
-		// Update category if changed
 		const newCategoryId = category?._id as Id<"categories"> | undefined;
 		if (newCategoryId !== timer.categoryId) {
 			updateCategoryMutation({ timeEntryId: timer._id, categoryId: newCategoryId })
@@ -143,9 +161,26 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Edit Running Timer</DialogTitle>
-					<p className="text-2xl font-semibold tabular-nums text-success">{elapsed}</p>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+					<div className="flex flex-col gap-2">
+						<Label htmlFor="edit-timer-duration">Duration</Label>
+						<Input
+							id="edit-timer-duration"
+							value={durationFocused || durationEdited ? durationStr : elapsed}
+							onChange={(e) => {
+								setDurationStr(e.target.value);
+								setDurationEdited(true);
+							}}
+							onFocus={(e) => {
+								if (!durationEdited) setDurationStr(elapsed);
+								setDurationFocused(true);
+								e.target.select();
+							}}
+							onBlur={() => setDurationFocused(false)}
+							className="tabular-nums text-success font-semibold"
+						/>
+					</div>
 					<div className="flex flex-col gap-2">
 						<Label htmlFor="edit-timer-name">Name</Label>
 						<Input
