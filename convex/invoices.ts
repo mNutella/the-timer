@@ -46,7 +46,6 @@ export const create = mutation({
 		lineItems: v.array(lineItemValidator),
 		subtotal_cents: v.number(),
 		notes: v.optional(v.string()),
-		status: v.union(v.literal("draft"), v.literal("finalized")),
 	},
 	handler: async (ctx, params) => {
 		const userId = await getRequiredUserId(ctx);
@@ -59,7 +58,6 @@ export const update = mutation({
 		id: v.id("invoices"),
 		number: v.optional(v.string()),
 		notes: v.optional(v.string()),
-		status: v.optional(v.union(v.literal("draft"), v.literal("finalized"))),
 		lineItems: v.optional(v.array(lineItemValidator)),
 		subtotal_cents: v.optional(v.number()),
 	},

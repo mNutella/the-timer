@@ -273,14 +273,11 @@ export async function previewLineItems(
 	},
 ) {
 	// Fetch all time entries in range
-	let query = ctx.table("time_entries", "by_user_start_time", (q) =>
-		q.eq("userId", userId).gte("start_time", startDate),
-	);
-
-	// Filter to end date
-	const entries = await query.filter((q) =>
-		q.lte(q.field("start_time"), endDate),
-	);
+	const entries = await ctx
+		.table("time_entries", "by_user_start_time", (q) =>
+			q.eq("userId", userId).gte("start_time", startDate),
+		)
+		.filter((q) => q.lte(q.field("start_time"), endDate));
 
 	// Get user settings for default rate
 	const settings = await UserSettings.get(ctx, { userId });
@@ -389,7 +386,6 @@ export async function create(
 		lineItems,
 		subtotal_cents,
 		notes,
-		status,
 	}: {
 		userId: Id<"users">;
 		number?: string;
@@ -399,7 +395,6 @@ export async function create(
 		lineItems: LineItem[];
 		subtotal_cents: number;
 		notes?: string;
-		status: "draft" | "finalized";
 	},
 ) {
 	return ctx.table("invoices").insert({
@@ -411,7 +406,6 @@ export async function create(
 		line_items: lineItems,
 		subtotal_cents,
 		notes,
-		status,
 		updated_at: Date.now(),
 	});
 }
@@ -423,7 +417,6 @@ export async function update(
 		userId,
 		number: invoiceNumber,
 		notes,
-		status,
 		lineItems,
 		subtotal_cents,
 	}: {
@@ -431,7 +424,6 @@ export async function update(
 		userId: Id<"users">;
 		number?: string;
 		notes?: string;
-		status?: "draft" | "finalized";
 		lineItems?: LineItem[];
 		subtotal_cents?: number;
 	},
@@ -442,7 +434,6 @@ export async function update(
 	const updates: Record<string, unknown> = { updated_at: Date.now() };
 	if (invoiceNumber !== undefined) updates.number = invoiceNumber;
 	if (notes !== undefined) updates.notes = notes;
-	if (status !== undefined) updates.status = status;
 	if (lineItems !== undefined) updates.line_items = lineItems;
 	if (subtotal_cents !== undefined) updates.subtotal_cents = subtotal_cents;
 
@@ -496,30 +487,22 @@ export async function getLastEndDate(
 	ctx: QueryCtx,
 	{ userId, clientId }: { userId: Id<"users">; clientId?: Id<"clients"> },
 ) {
-	let invoices;
-	if (clientId) {
-		invoices = ctx.table("invoices", "by_user_and_client", (q) =>
-			q.eq("userId", userId).eq("clientId", clientId),
-		);
-	} else {
-		invoices = ctx.table("invoices", "by_user_and_end_date", (q) =>
-			q.eq("userId", userId),
-		);
-	}
+	const invoices = await ctx
+		.table("invoices", "by_user_and_end_date", (q) => q.eq("userId", userId))
+		.order("desc");
 
-	const finalizedInvoices = await invoices
-		.filter((q) => q.eq(q.field("status"), "finalized"))
-		.order("desc")
-		.first();
+	const match = clientId
+		? invoices.find((inv) => inv.clientId === clientId)
+		: invoices[0];
 
-	return finalizedInvoices?.end_date ?? null;
+	return match?.end_date ?? null;
 }
 
 export async function getUnbilledTotal(
 	ctx: QueryCtx,
 	{ userId }: { userId: Id<"users"> },
 ) {
-	// Find the latest finalized invoice end date
+	// Find the latest invoice end date
 	const lastEndDate = await getLastEndDate(ctx, { userId });
 	const sinceDate = lastEndDate ? lastEndDate + 1 : 0;
 

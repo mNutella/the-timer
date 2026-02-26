@@ -12,7 +12,6 @@ import {
 	Pencil,
 	Plus,
 	Receipt,
-	Save,
 	Trash2,
 	X,
 } from "lucide-react";
@@ -193,9 +192,7 @@ function InvoiceListView({
 								<p className="mt-0.5 text-xl font-semibold tabular-nums">
 									{invoices
 										? formatCents(
-												invoices
-													.filter((i) => i.status === "finalized")
-													.reduce((sum, i) => sum + i.subtotal_cents, 0),
+												invoices.reduce((sum, i) => sum + i.subtotal_cents, 0),
 											)
 										: "--"}
 								</p>
@@ -238,7 +235,6 @@ function InvoiceListView({
 										</TableHead>
 										<TableHead className="w-40">Client</TableHead>
 										<TableHead className="w-40">Period</TableHead>
-										<TableHead className="w-28">Status</TableHead>
 										<TableHead className="w-32 text-right">
 											Amount
 										</TableHead>
@@ -264,17 +260,6 @@ function InvoiceListView({
 												{new Date(
 													invoice.end_date,
 												).toLocaleDateString()}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant={
-														invoice.status === "finalized"
-															? "default"
-															: "secondary"
-													}
-												>
-													{invoice.status}
-												</Badge>
 											</TableCell>
 											<TableCell className="text-right font-medium tabular-nums">
 												{formatCents(invoice.subtotal_cents)}
@@ -561,7 +546,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 
 	const preview = useRealtimeQuery(
 		api.invoices.previewLineItems,
-		previewArgs === "skip" ? "skip" : previewArgs,
+		previewArgs,
 	);
 
 	// Actions
@@ -581,41 +566,33 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 			.catch(() => toast.error("Failed to copy"));
 	}, [preview]);
 
-	const handleSave = useCallback(
-		async (status: "draft" | "finalized") => {
-			if (!effectiveStart || !effectiveEnd || !preview) return;
-			try {
-				await createInvoice({
-					number: invoiceNumber || undefined,
-					clientId: selectedClientId,
-					startDate: effectiveStart,
-					endDate: effectiveEnd,
-					lineItems: preview.lineItems,
-					subtotal_cents: preview.subtotal_cents,
-					notes: notes || undefined,
-					status,
-				});
-				toast.success(
-					status === "finalized"
-						? "Invoice finalized"
-						: "Invoice saved as draft",
-				);
-				onBack();
-			} catch {
-				toast.error("Failed to save invoice");
-			}
-		},
-		[
-			effectiveStart,
-			effectiveEnd,
-			preview,
-			invoiceNumber,
-			selectedClientId,
-			notes,
-			createInvoice,
-			onBack,
-		],
-	);
+	const handleSave = useCallback(async () => {
+		if (!effectiveStart || !effectiveEnd || !preview?.lineItems.length) return;
+		try {
+			await createInvoice({
+				number: invoiceNumber || undefined,
+				clientId: selectedClientId,
+				startDate: effectiveStart,
+				endDate: effectiveEnd,
+				lineItems: preview.lineItems,
+				subtotal_cents: preview.subtotal_cents,
+				notes: notes || undefined,
+			});
+			toast.success("Invoice created");
+			onBack();
+		} catch {
+			toast.error("Failed to save invoice");
+		}
+	}, [
+		effectiveStart,
+		effectiveEnd,
+		preview,
+		invoiceNumber,
+		selectedClientId,
+		notes,
+		createInvoice,
+		onBack,
+	]);
 
 	return (
 		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -796,19 +773,11 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 						Copy for Stripe
 					</Button>
 					<Button
-						variant="outline"
-						onClick={() => handleSave("draft")}
-						disabled={!preview?.lineItems.length}
-					>
-						<Save className="size-4" />
-						Save Draft
-					</Button>
-					<Button
-						onClick={() => handleSave("finalized")}
+						onClick={handleSave}
 						disabled={!preview?.lineItems.length}
 					>
 						<Receipt className="size-4" />
-						Finalize
+						Create Invoice
 					</Button>
 				</div>
 			</div>

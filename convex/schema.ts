@@ -133,12 +133,10 @@ const schema = defineEntSchema({
 		),
 		subtotal_cents: v.number(),
 		notes: v.optional(v.string()),
-		status: v.union(v.literal("draft"), v.literal("finalized")),
 		updated_at: v.number(),
 	})
 		.edge("user")
 		.edge("client", { to: "clients", field: "clientId", optional: true })
-		.index("by_user_and_status", ["userId", "status"])
 		.index("by_user_and_end_date", ["userId", "end_date"])
 		.index("by_user_and_client", ["userId", "clientId"]),
 
