@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { RunningTimerBar } from "@/components/running-timer-bar";
 import {
 	SidebarInset,
 	SidebarProvider,
@@ -18,13 +19,14 @@ function RouteComponent() {
 	useTrayDataBridge();
 
 	return (
-		<SidebarProvider>
+		<SidebarProvider className="h-full !min-h-0">
 			<AppSidebar />
 			<SidebarInset>
 				<header className="flex h-10 shrink-0 items-center px-4 md:hidden">
 					<SidebarTrigger className="-ml-1" />
 				</header>
-				<main className="@container/main flex flex-1 flex-col gap-2 w-full px-4 lg:px-6">
+				<RunningTimerBar />
+				<main className="@container/main flex min-h-0 flex-1 flex-col gap-2 w-full overflow-y-auto px-4 lg:px-6">
 					<Outlet />
 				</main>
 			</SidebarInset>
