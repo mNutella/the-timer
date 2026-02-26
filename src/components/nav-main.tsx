@@ -1,7 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
 import { CirclePlus, type LucideIcon } from "lucide-react";
-import { api } from "@/../convex/_generated/api";
+import { useState } from "react";
 import {
 	SidebarGroup,
 	SidebarGroupContent,
@@ -10,8 +9,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { optimisticCreateTimer } from "@/lib/optimistic-updates";
-import { toast } from "sonner";
+import { StartTimerDialog } from "@/components/start-timer-dialog";
 
 export function NavMain({
 	items,
@@ -24,16 +22,8 @@ export function NavMain({
 	}[];
 	label?: string;
 }) {
-	const createTimerMutation = useMutation(
-		api.time_entries.create,
-	).withOptimisticUpdate(optimisticCreateTimer);
+	const [dialogOpen, setDialogOpen] = useState(false);
 	const { pathname } = useLocation();
-
-	const startTimer = () => {
-		createTimerMutation({
-			name: "New Time Entry",
-		}).catch(() => toast.error("Failed to start timer"));
-	};
 
 	return (
 		<SidebarGroup>
@@ -45,7 +35,7 @@ export function NavMain({
 							<SidebarMenuButton
 								tooltip="Start Timer"
 								className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-								onClick={startTimer}
+								onClick={() => setDialogOpen(true)}
 							>
 								<CirclePlus />
 								<span>Start Timer</span>
@@ -76,6 +66,7 @@ export function NavMain({
 					})}
 				</SidebarMenu>
 			</SidebarGroupContent>
+			<StartTimerDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 		</SidebarGroup>
 	);
 }

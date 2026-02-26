@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
 import {
 	BarChart3,
 	Briefcase,
@@ -9,21 +8,19 @@ import {
 	Settings,
 	Tag,
 } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import type { LucideIcon } from "lucide-react";
 
-import { api } from "@/../convex/_generated/api";
 import {
 	DockActionItem,
 	DockNavItem,
 	DockUserItem,
 } from "@/components/dock-item";
 import { Separator } from "@/components/ui/separator";
+import { StartTimerDialog } from "@/components/start-timer-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { optimisticCreateTimer } from "@/lib/optimistic-updates";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 function useDockMagnification() {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -84,20 +81,9 @@ function useDockMagnification() {
 	return { containerRef, itemRefs, onMouseMove, onMouseEnter, onMouseLeave };
 }
 
-function useStartTimer() {
-	const createTimerMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
-
-	return useCallback(() => {
-		createTimerMutation({
-			name: "New Time Entry",
-		}).catch(() => toast.error("Failed to start timer"));
-	}, [createTimerMutation]);
-}
-
-function DesktopDock() {
+function DesktopDock({ onStartTimer }: { onStartTimer: () => void }) {
 	const { containerRef, itemRefs, onMouseMove, onMouseEnter, onMouseLeave } =
 		useDockMagnification();
-	const startTimer = useStartTimer();
 
 	return (
 		<nav
@@ -117,7 +103,7 @@ function DesktopDock() {
 					}}
 					icon={CirclePlus}
 					label="Start Timer"
-					onClick={startTimer}
+					onClick={onStartTimer}
 					className="text-success hover:bg-success/20"
 				/>
 
@@ -230,9 +216,7 @@ function MobileNavButton({
 	);
 }
 
-function MobileDock() {
-	const startTimer = useStartTimer();
-
+function MobileDock({ onStartTimer }: { onStartTimer: () => void }) {
 	return (
 		<nav
 			aria-label="Main navigation"
@@ -242,7 +226,7 @@ function MobileDock() {
 				<MobileNavButton
 					icon={CirclePlus}
 					label="Timer"
-					onClick={startTimer}
+					onClick={onStartTimer}
 					className="text-success"
 				/>
 				<MobileNavLink
@@ -277,7 +261,17 @@ function MobileDock() {
 
 export function Dock() {
 	const isMobile = useIsMobile();
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const openDialog = useCallback(() => setDialogOpen(true), []);
 
-	if (isMobile) return <MobileDock />;
-	return <DesktopDock />;
+	return (
+		<>
+			{isMobile ? (
+				<MobileDock onStartTimer={openDialog} />
+			) : (
+				<DesktopDock onStartTimer={openDialog} />
+			)}
+			<StartTimerDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+		</>
+	);
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { Play, Square, Timer } from "lucide-react";
@@ -5,13 +6,14 @@ import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StartTimerDialog } from "@/components/start-timer-dialog";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
-import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
+import { optimisticStopTimer } from "@/lib/optimistic-updates";
 import { cn } from "@/lib/utils";
 
 export function ActiveTimerWidget() {
+	const [dialogOpen, setDialogOpen] = useState(false);
 	const runningTimer = useQuery(api.time_entries.getRunningTimer, {});
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
 	const isRunning = !!runningTimer;
@@ -21,11 +23,6 @@ export function ActiveTimerWidget() {
 		if (!runningTimer) return;
 		stopMutation({ id: runningTimer._id })
 			.catch(() => toast.error("Failed to stop timer"));
-	};
-
-	const handleStart = () => {
-		createMutation({ name: "New Time Entry" })
-			.catch(() => toast.error("Failed to start timer"));
 	};
 
 	if (runningTimer === undefined) {
@@ -63,11 +60,12 @@ export function ActiveTimerWidget() {
 							</p>
 						</div>
 					</div>
-					<Button onClick={handleStart} size="sm">
+					<Button onClick={() => setDialogOpen(true)} size="sm">
 						<Play className="mr-1 size-4" />
 						Start Timer
 					</Button>
 				</div>
+				<StartTimerDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 			</div>
 		);
 	}
