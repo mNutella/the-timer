@@ -273,8 +273,9 @@ export function optimisticCreateTimer(
 
 export function optimisticRenameClient(
 	localStore: OptimisticLocalStore,
-	args: { id: Id<"clients">; name: string },
+	args: { id: Id<"clients">; name?: string; hourly_rate_cents?: number; clearHourlyRate?: boolean },
 ) {
+	if (!args.name) return;
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.clients.list,
 	)) {
@@ -283,7 +284,7 @@ export function optimisticRenameClient(
 			api.clients.list,
 			queryArgs,
 			value.map((item) =>
-				item._id === args.id ? { ...item, name: args.name } : item,
+				item._id === args.id ? { ...item, name: args.name! } : item,
 			),
 		);
 	}
@@ -315,6 +316,8 @@ export function optimisticUpdateProject(
 		status?: "active" | "archived" | "completed";
 		clientId?: Id<"clients">;
 		clearClientId?: boolean;
+		hourly_rate_cents?: number;
+		clearHourlyRate?: boolean;
 	},
 ) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
@@ -406,6 +409,7 @@ export function optimisticUpdateTimeEntry(
 		duration?: number;
 		startDate?: number;
 		endDate?: number;
+		billable?: boolean;
 	},
 ) {
 	const patch: Record<string, unknown> = {};

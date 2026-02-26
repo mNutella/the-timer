@@ -7,6 +7,7 @@ import {
 import { Triggers } from "convex-helpers/server/triggers";
 import type { DataModel } from "./_generated/dataModel";
 import {
+	internalMutation as rawInternalMutation,
 	internalQuery as rawInternalQuery,
 	mutation as rawMutation,
 	query as rawQuery,
@@ -58,6 +59,14 @@ export const internalQuery = customQuery(
 
 export const mutation = customMutation(
 	rawMutation,
+	customCtx(async (ctx) => {
+		const wrapped = triggers.wrapDB(ctx);
+		return { db: wrapped.db, table: entsTableFactory(wrapped, entDefinitions) };
+	}),
+);
+
+export const internalMutation = customMutation(
+	rawInternalMutation,
 	customCtx(async (ctx) => {
 		const wrapped = triggers.wrapDB(ctx);
 		return { db: wrapped.db, table: entsTableFactory(wrapped, entDefinitions) };

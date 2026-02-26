@@ -8,7 +8,13 @@ export async function create(
 		name,
 		userId,
 		clientId,
-	}: { name: string; userId: Id<"users">; clientId?: Id<"clients"> },
+		hourly_rate_cents,
+	}: {
+		name: string;
+		userId: Id<"users">;
+		clientId?: Id<"clients">;
+		hourly_rate_cents?: number;
+	},
 ) {
 	// Check if user has access to client if clientId is provided
 	if (clientId) {
@@ -22,6 +28,7 @@ export async function create(
 		status: "active" as const,
 		updated_at: Date.now(),
 		clientId,
+		hourly_rate_cents,
 	};
 	const projectId = await ctx.table("projects").insert(projectData);
 
@@ -37,6 +44,7 @@ export async function update(
 		status,
 		clientId,
 		clearClientId,
+		hourly_rate_cents,
 	}: {
 		id: Id<"projects">;
 		userId: Id<"users">;
@@ -44,6 +52,7 @@ export async function update(
 		status?: "active" | "archived" | "completed";
 		clientId?: Id<"clients">;
 		clearClientId?: boolean;
+		hourly_rate_cents?: number | null;
 	},
 ) {
 	const project = await ctx.table("projects").getX(id);
@@ -56,6 +65,11 @@ export async function update(
 		updates.clientId = undefined;
 	} else if (clientId !== undefined) {
 		updates.clientId = clientId;
+	}
+	if (hourly_rate_cents === null) {
+		updates.hourly_rate_cents = undefined;
+	} else if (hourly_rate_cents !== undefined) {
+		updates.hourly_rate_cents = hourly_rate_cents;
 	}
 
 	await project.patch(updates);

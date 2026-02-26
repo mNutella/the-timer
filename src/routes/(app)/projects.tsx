@@ -8,6 +8,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -44,6 +45,78 @@ const statusVariant: Record<
 	archived: "secondary",
 	completed: "outline",
 };
+
+function ProjectRateCell({
+	projectId,
+	currentRate,
+	clientRate,
+}: { projectId: Id<"projects">; currentRate?: number; clientRate?: number }) {
+	const updateProject = useMutation(api.projects.update);
+	const [editing, setEditing] = useState(false);
+	const [value, setValue] = useState(
+		currentRate ? (currentRate / 100).toString() : "",
+	);
+
+	const effectiveRate = currentRate ?? clientRate;
+
+	if (editing) {
+		return (
+			<Input
+				autoFocus
+				type="number"
+				min="0"
+				step="0.01"
+				placeholder={clientRate ? (clientRate / 100).toFixed(2) : "0.00"}
+				value={value}
+				onChange={(e) => setValue(e.target.value)}
+				onBlur={() => {
+					setEditing(false);
+					const parsed = Number.parseFloat(value);
+					if (value === "" || value === "0") {
+						updateProject({ id: projectId, clearHourlyRate: true }).catch(
+							() => toast.error("Failed to update rate"),
+						);
+						return;
+					}
+					if (Number.isNaN(parsed) || parsed < 0) return;
+					updateProject({
+						id: projectId,
+						hourly_rate_cents: Math.round(parsed * 100),
+					}).catch(() => toast.error("Failed to update rate"));
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") e.currentTarget.blur();
+					if (e.key === "Escape") setEditing(false);
+				}}
+				className="h-7 w-24 text-right"
+			/>
+		);
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={() => {
+				setValue(currentRate ? (currentRate / 100).toString() : "");
+				setEditing(true);
+			}}
+			className="cursor-pointer text-sm text-muted-foreground hover:text-foreground hover:underline"
+		>
+			{effectiveRate ? (
+				<span>
+					${(effectiveRate / 100).toFixed(2)}/hr
+					{!currentRate && clientRate && (
+						<span className="ml-1 text-xs opacity-60">
+							(client)
+						</span>
+					)}
+				</span>
+			) : (
+				"—"
+			)}
+		</button>
+	);
+}
 
 function ProjectsPage() {
 	const [searchValue, setSearchValue] = useState("");
@@ -192,6 +265,22 @@ function ProjectsPage() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					),
+				},
+				{
+					header: "Rate",
+					className: "w-36",
+					render: (project) => {
+						const clientObj = project.clientId
+							? clients?.find((c) => c._id === project.clientId)
+							: null;
+						return (
+							<ProjectRateCell
+								projectId={project._id as Id<"projects">}
+								currentRate={project.hourly_rate_cents}
+								clientRate={clientObj?.hourly_rate_cents}
+							/>
+						);
+					},
 				},
 			]}
 			deleteDescription={(name) =>

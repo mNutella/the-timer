@@ -48,6 +48,7 @@ export const update = mutation({
 		startDate: v.optional(v.number()),
 		endDate: v.optional(v.number()),
 		duration: v.optional(v.number()),
+		billable: v.optional(v.boolean()),
 	},
 	handler: async (ctx, params) => {
 		const userId = await getRequiredUserId(ctx);

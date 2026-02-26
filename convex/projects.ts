@@ -11,10 +11,11 @@ export const create = mutation({
 	args: {
 		name: v.string(),
 		clientId: v.optional(v.id("clients")),
+		hourly_rate_cents: v.optional(v.number()),
 	},
-	handler: async (ctx, { name, clientId }) => {
+	handler: async (ctx, { name, clientId, hourly_rate_cents }) => {
 		const userId = await getRequiredUserId(ctx);
-		return Projects.create(ctx, { name, userId, clientId });
+		return Projects.create(ctx, { name, userId, clientId, hourly_rate_cents });
 	},
 });
 
@@ -82,10 +83,17 @@ export const update = mutation({
 		),
 		clientId: v.optional(v.id("clients")),
 		clearClientId: v.optional(v.boolean()),
+		hourly_rate_cents: v.optional(v.number()),
+		clearHourlyRate: v.optional(v.boolean()),
 	},
-	handler: async (ctx, { id, ...rest }) => {
+	handler: async (ctx, { id, clearHourlyRate, ...rest }) => {
 		const userId = await getRequiredUserId(ctx);
-		await Projects.update(ctx, { id, userId, ...rest });
+		await Projects.update(ctx, {
+			id,
+			userId,
+			...rest,
+			hourly_rate_cents: clearHourlyRate ? null : rest.hourly_rate_cents,
+		});
 	},
 });
 

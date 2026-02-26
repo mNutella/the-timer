@@ -4,11 +4,16 @@ import { assertOwnership } from "./helpers";
 
 export async function create(
 	ctx: MutationCtx,
-	{ name, userId }: { name: string; userId: Id<"users"> },
+	{
+		name,
+		userId,
+		hourly_rate_cents,
+	}: { name: string; userId: Id<"users">; hourly_rate_cents?: number },
 ) {
 	const clientId = await ctx.table("clients").insert({
 		name,
 		userId,
+		hourly_rate_cents,
 		updated_at: Date.now(),
 	});
 
@@ -21,12 +26,26 @@ export async function update(
 		id,
 		userId,
 		name,
-	}: { id: Id<"clients">; userId: Id<"users">; name: string },
+		hourly_rate_cents,
+	}: {
+		id: Id<"clients">;
+		userId: Id<"users">;
+		name?: string;
+		hourly_rate_cents?: number | null;
+	},
 ) {
 	const client = await ctx.table("clients").getX(id);
 	assertOwnership(client, userId, "Client");
 
-	await client.patch({ name, updated_at: Date.now() });
+	const updates: Record<string, unknown> = { updated_at: Date.now() };
+	if (name !== undefined) updates.name = name;
+	if (hourly_rate_cents === null) {
+		updates.hourly_rate_cents = undefined;
+	} else if (hourly_rate_cents !== undefined) {
+		updates.hourly_rate_cents = hourly_rate_cents;
+	}
+
+	await client.patch(updates);
 }
 
 export async function deleteOne(

@@ -4,6 +4,7 @@ import { ActiveTimerWidget } from "@/components/dashboard/active-timer-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { QuickStart } from "@/components/dashboard/quick-start";
 import { TodaySummaryCards } from "@/components/dashboard/today-summary-cards";
+import { UnbilledSummaryCard } from "@/components/dashboard/unbilled-summary-card";
 import { WidgetErrorBoundary } from "@/components/dashboard/widget-error-boundary";
 
 export const Route = createFileRoute("/(app)/")({
@@ -23,6 +24,11 @@ function Index() {
 			<div className="px-4 lg:px-6">
 				<WidgetErrorBoundary fallbackLabel="Stats unavailable">
 					<TodaySummaryCards entryCount={entryCount} />
+				</WidgetErrorBoundary>
+			</div>
+			<div className="px-4 lg:px-6">
+				<WidgetErrorBoundary fallbackLabel="Billing unavailable">
+					<UnbilledSummaryCard />
 				</WidgetErrorBoundary>
 			</div>
 			{/* Asymmetric 2-column: Quick Start (narrow) + Activity Feed (wide) */}

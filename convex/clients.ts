@@ -10,10 +10,11 @@ import { getEndOfDay, getStartOfDay } from "./utils";
 export const create = mutation({
 	args: {
 		name: v.string(),
+		hourly_rate_cents: v.optional(v.number()),
 	},
-	handler: async (ctx, { name }) => {
+	handler: async (ctx, { name, hourly_rate_cents }) => {
 		const userId = await getRequiredUserId(ctx);
-		return Clients.create(ctx, { name, userId });
+		return Clients.create(ctx, { name, userId, hourly_rate_cents });
 	},
 });
 
@@ -64,11 +65,18 @@ export const list = query({
 export const update = mutation({
 	args: {
 		id: v.id("clients"),
-		name: v.string(),
+		name: v.optional(v.string()),
+		hourly_rate_cents: v.optional(v.number()),
+		clearHourlyRate: v.optional(v.boolean()),
 	},
-	handler: async (ctx, { id, name }) => {
+	handler: async (ctx, { id, name, hourly_rate_cents, clearHourlyRate }) => {
 		const userId = await getRequiredUserId(ctx);
-		await Clients.update(ctx, { id, userId, name });
+		await Clients.update(ctx, {
+			id,
+			userId,
+			name,
+			hourly_rate_cents: clearHourlyRate ? null : hourly_rate_cents,
+		});
 	},
 });
 

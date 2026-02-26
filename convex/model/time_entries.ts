@@ -70,6 +70,7 @@ interface UpdateTimeEntryParams {
 	startDate?: number;
 	endDate?: number;
 	duration?: number;
+	billable?: boolean;
 }
 
 interface StopTimeEntryParams {
@@ -198,6 +199,7 @@ export async function update(
 		startDate,
 		endDate,
 		duration,
+		billable,
 	}: UpdateTimeEntryParams,
 ) {
 	const timeEntry = await ctx.table("time_entries").getX(id);
@@ -212,6 +214,7 @@ export async function update(
 		clientId,
 		projectId,
 		categoryId,
+		billable,
 	});
 
 	if (duration || startDate || endDate) {

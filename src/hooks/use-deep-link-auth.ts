@@ -3,6 +3,12 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { onOpenUrl, getCurrent } from "@tauri-apps/plugin-deep-link";
 
 const PENDING_CODE_KEY = "__pendingOAuthCode";
+// Track last processed code to avoid replaying stale URLs from getCurrent().
+// Tauri's getCurrent() never clears its buffer — it returns the same URL on
+// every call until a new deep link overwrites it. This key lets us safely call
+// getCurrent() from multiple paths (cold start, focus fallback) without
+// reprocessing an already-consumed code.
+const LAST_CODE_KEY = "__lastOAuthCode";
 
 /**
  * Handles OAuth deep-link callbacks (universaltimer://callback?code=...).
@@ -28,20 +34,16 @@ export function useDeepLinkAuth() {
       return;
     }
 
-    // Listen for deep link URLs
     let unlisten: (() => void) | undefined;
-    let handled = false;
 
-    const handleUrls = (urls: string[]) => {
-      if (handled) return;
-
+    const processUrls = (urls: string[]) => {
+      const lastCode = sessionStorage.getItem(LAST_CODE_KEY);
       for (const urlString of urls) {
         try {
           const url = new URL(urlString);
           const code = url.searchParams.get("code");
-          if (code) {
-            handled = true;
-            // Store code and reload — signIn runs on next mount
+          if (code && code !== lastCode) {
+            sessionStorage.setItem(LAST_CODE_KEY, code);
             sessionStorage.setItem(PENDING_CODE_KEY, code);
             window.location.reload();
             return;
@@ -52,18 +54,36 @@ export function useDeepLinkAuth() {
       }
     };
 
+    const checkCurrent = () => {
+      getCurrent()
+        .then((urls) => {
+          if (urls) processUrls(urls);
+        })
+        .catch(() => {});
+    };
+
     // Cold-start: app was launched by the deep link
-    getCurrent()
-      .then((urls) => { if (urls) handleUrls(urls); })
-      .catch(() => {});
+    checkCurrent();
 
     // Warm: app is already running when deep link fires
-    onOpenUrl(handleUrls)
-      .then((fn) => { unlisten = fn; })
+    onOpenUrl(processUrls)
+      .then((fn) => {
+        unlisten = fn;
+      })
       .catch(() => {});
+
+    // Fallback: when app gains focus after a deep link activation, the
+    // onOpenUrl event may not fire reliably (e.g. after webview reload or
+    // effect re-runs from auth state changes). Polling getCurrent() on
+    // focus is safe because LAST_CODE_KEY deduplicates stale URLs.
+    const onFocus = () => {
+      checkCurrent();
+    };
+    window.addEventListener("focus", onFocus);
 
     return () => {
       unlisten?.();
+      window.removeEventListener("focus", onFocus);
     };
   }, [signIn]);
 }

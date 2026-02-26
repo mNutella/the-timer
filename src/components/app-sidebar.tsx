@@ -4,6 +4,7 @@ import {
 	Briefcase,
 	Folder,
 	LayoutDashboard,
+	Receipt,
 	Settings,
 	Tag,
 	Timer,
@@ -52,6 +53,11 @@ const data = {
 			title: "Categories",
 			url: "/categories",
 			icon: Tag,
+		},
+		{
+			title: "Invoices",
+			url: "/invoices",
+			icon: Receipt,
 		},
 	],
 	navSecondary: [
