@@ -19,8 +19,8 @@ build
 target
 *.local
 
-# Convex generated
-_generated
+# Convex codegen (root-level duplicate; convex/_generated/ is tracked)
+/_generated
 
 # Environment variables
 .env
@@ -41,6 +41,7 @@ coverage
 
 # Cache directories
 .cache
+.tanstack
 .parcel-cache
 .next
 .nuxt
@@ -73,3 +74,6 @@ coverage
 .agents/
 .claude/
 .playwright-mcp/
+CLAUDE.md
+tasks/
+docs/
