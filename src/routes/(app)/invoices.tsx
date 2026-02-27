@@ -544,13 +544,11 @@ function InvoiceDetailView({
 	if (!invoice) {
 		return (
 			<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-				<div className="px-4 lg:px-6">
-					<div className="flex items-center gap-3">
-						<Button variant="ghost" size="icon" onClick={onBack}>
-							<ArrowLeft className="size-4" />
-						</Button>
-						<p className="text-sm text-muted-foreground">Loading...</p>
-					</div>
+				<div className="flex items-center gap-3">
+					<Button variant="ghost" size="icon" onClick={onBack}>
+						<ArrowLeft className="size-4" />
+					</Button>
+					<p className="text-sm text-muted-foreground">Loading...</p>
 				</div>
 			</div>
 		);
@@ -564,128 +562,126 @@ function InvoiceDetailView({
 
 	return (
 		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-			<div className="px-4 lg:px-6">
-				{/* Header */}
-				<div className="flex items-center gap-3">
-					<Button variant="ghost" size="icon" onClick={onBack}>
-						<ArrowLeft className="size-4" />
-					</Button>
+			{/* Header */}
+			<div className="flex items-center gap-3">
+				<Button variant="ghost" size="icon" onClick={onBack}>
+					<ArrowLeft className="size-4" />
+				</Button>
+				<div>
+					<h1 className="text-2xl font-semibold tracking-tight">
+						{displayNumber}
+					</h1>
+					<p className="mt-1 text-sm text-muted-foreground">
+						{invoice.clientName ?? "All Clients"} &middot;{" "}
+						{formatDate(invoice.start_date)} – {formatDate(invoice.end_date)}
+					</p>
+				</div>
+			</div>
+
+			{/* Meta */}
+			<Card>
+				<CardContent className="grid grid-cols-2 gap-4 py-4 lg:grid-cols-4">
 					<div>
-						<h1 className="text-2xl font-semibold tracking-tight">
-							{displayNumber}
-						</h1>
-						<p className="mt-1 text-sm text-muted-foreground">
-							{invoice.clientName ?? "All Clients"} &middot;{" "}
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Invoice #
+						</p>
+						<p className="mt-1 text-sm font-medium">{displayNumber}</p>
+					</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Client
+						</p>
+						<p className="mt-1 text-sm font-medium">
+							{invoice.clientName ?? "All Clients"}
+						</p>
+					</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Period
+						</p>
+						<p className="mt-1 text-sm font-medium">
 							{formatDate(invoice.start_date)} – {formatDate(invoice.end_date)}
 						</p>
 					</div>
-				</div>
+					<div>
+						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							Total
+						</p>
+						<p className="mt-1 text-sm font-semibold">
+							{formatCents(invoice.subtotal_cents)}
+						</p>
+					</div>
+				</CardContent>
+			</Card>
 
-				{/* Meta */}
-				<Card className="mt-4">
-					<CardContent className="grid grid-cols-2 gap-4 py-4 lg:grid-cols-4">
-						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Invoice #
-							</p>
-							<p className="mt-1 text-sm font-medium">{displayNumber}</p>
-						</div>
-						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Client
-							</p>
-							<p className="mt-1 text-sm font-medium">
-								{invoice.clientName ?? "All Clients"}
-							</p>
-						</div>
-						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Period
-							</p>
-							<p className="mt-1 text-sm font-medium">
-								{formatDate(invoice.start_date)} – {formatDate(invoice.end_date)}
-							</p>
-						</div>
-						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Total
-							</p>
-							<p className="mt-1 text-sm font-semibold">
-								{formatCents(invoice.subtotal_cents)}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Line Items */}
-				<Card className="mt-4">
-					<CardHeader>
-						<CardTitle className="text-base">Line Items</CardTitle>
-					</CardHeader>
-					<CardContent className="p-0">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="pl-4 lg:pl-6">
-										Description
-									</TableHead>
-									<TableHead className="w-28">Duration</TableHead>
-									<TableHead className="w-28 text-right">Rate</TableHead>
-									<TableHead className="w-32 pr-4 text-right lg:pr-6">
-										Amount
-									</TableHead>
+			{/* Line Items */}
+			<Card>
+				<CardHeader>
+					<CardTitle className="text-base">Line Items</CardTitle>
+				</CardHeader>
+				<CardContent className="p-0">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead className="pl-4 lg:pl-6">
+									Description
+								</TableHead>
+								<TableHead className="w-28">Duration</TableHead>
+								<TableHead className="w-28 text-right">Rate</TableHead>
+								<TableHead className="w-32 pr-4 text-right lg:pr-6">
+									Amount
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{invoice.line_items.map((item, idx) => (
+								<TableRow key={`${item.group_key ?? idx}`}>
+									<TableCell className="pl-4 lg:pl-6">
+										{item.label}
+									</TableCell>
+									<TableCell className="tabular-nums text-muted-foreground">
+										{formatDuration(item.duration_ms)}
+									</TableCell>
+									<TableCell className="text-right tabular-nums text-muted-foreground">
+										{item.rate_cents > 0
+											? `${formatCents(item.rate_cents)}/hr`
+											: "—"}
+									</TableCell>
+									<TableCell className="pr-4 text-right font-medium tabular-nums lg:pr-6">
+										{formatCents(item.amount_cents)}
+									</TableCell>
 								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{invoice.line_items.map((item, idx) => (
-									<TableRow key={`${item.group_key ?? idx}`}>
-										<TableCell className="pl-4 lg:pl-6">
-											{item.label}
-										</TableCell>
-										<TableCell className="tabular-nums text-muted-foreground">
-											{formatDuration(item.duration_ms)}
-										</TableCell>
-										<TableCell className="text-right tabular-nums text-muted-foreground">
-											{item.rate_cents > 0
-												? `${formatCents(item.rate_cents)}/hr`
-												: "—"}
-										</TableCell>
-										<TableCell className="pr-4 text-right font-medium tabular-nums lg:pr-6">
-											{formatCents(item.amount_cents)}
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+							))}
+						</TableBody>
+					</Table>
 
-						<Separator />
-						<div className="flex items-center justify-between px-4 py-3 lg:px-6">
-							<span className="text-sm text-muted-foreground">
-								{invoice.line_items.length}{" "}
-								{invoice.line_items.length === 1 ? "item" : "items"} /{" "}
-								{formatDuration(totalDurationMs)}
-							</span>
-							<span className="text-lg font-semibold tabular-nums">
-								{formatCents(invoice.subtotal_cents)}
-							</span>
-						</div>
+					<Separator />
+					<div className="flex items-center justify-between px-4 py-3 lg:px-6">
+						<span className="text-sm text-muted-foreground">
+							{invoice.line_items.length}{" "}
+							{invoice.line_items.length === 1 ? "item" : "items"} /{" "}
+							{formatDuration(totalDurationMs)}
+						</span>
+						<span className="text-lg font-semibold tabular-nums">
+							{formatCents(invoice.subtotal_cents)}
+						</span>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Notes */}
+			{invoice.notes && (
+				<Card>
+					<CardHeader>
+						<CardTitle className="text-base">Notes</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<p className="whitespace-pre-wrap text-sm text-muted-foreground">
+							{invoice.notes}
+						</p>
 					</CardContent>
 				</Card>
-
-				{/* Notes */}
-				{invoice.notes && (
-					<Card className="mt-4">
-						<CardHeader>
-							<CardTitle className="text-base">Notes</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="whitespace-pre-wrap text-sm text-muted-foreground">
-								{invoice.notes}
-							</p>
-						</CardContent>
-					</Card>
-				)}
-			</div>
+			)}
 		</div>
 	);
 }

@@ -169,7 +169,7 @@ export default function TimelineView({
 	const isCurrentWeek = isSameDay(weekStart, getWeekStart(today));
 
 	return (
-		<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 pb-2">
+		<div className="flex flex-col flex-1 min-h-0 pb-2">
 			{/* Week navigation */}
 			<div className="flex items-center gap-2 py-2">
 				<Button variant="outline" size="sm" onClick={goToToday} disabled={isCurrentWeek}>

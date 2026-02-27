@@ -45,7 +45,7 @@ export function RunningTimerBar() {
 					}
 				}}
 				className={cn(
-					"mx-4 mt-2 flex shrink-0 items-center justify-between rounded-lg border border-success/30 bg-success/5 px-4 py-2.5",
+					"mx-4 lg:mx-6 mt-2 flex shrink-0 items-center justify-between rounded-lg border border-success/30 bg-success/5 px-4 py-2.5",
 					"cursor-pointer transition-colors hover:bg-success/10",
 					"animate-in slide-in-from-top-2 fade-in duration-300",
 				)}

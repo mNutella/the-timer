@@ -67,7 +67,7 @@ function Analytics() {
 
 	return (
 		<div className="flex flex-col h-dvh overflow-hidden">
-			<div className="shrink-0 px-4 lg:px-6 pt-3 pb-2">
+			<div className="shrink-0 pt-3 pb-2">
 				<div className="flex items-center justify-start gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
 					<Separator orientation="vertical" className="mx-1 h-5" />
@@ -134,7 +134,7 @@ function Analytics() {
 				</div>
 			</div>
 			<Tabs defaultValue="table" className="flex flex-col flex-1 min-h-0">
-				<div className="px-4 lg:px-6">
+				<div>
 					<TabsList>
 						<TabsTrigger value="table">
 							<Table2 className="size-3.5" />

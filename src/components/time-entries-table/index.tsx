@@ -398,7 +398,7 @@ export default function TimeEntriesTable({
 				filterByCategories={filterByCategories}
 				filterByTimeRange={filterByTimeRange}
 			/>
-			<div className="flex flex-col flex-1 min-h-0 px-4 lg:px-6 pb-2">
+			<div className="flex flex-col flex-1 min-h-0 pb-2">
 				<div className="rounded-lg border flex-1 min-h-0 overflow-hidden">
 					<div className="shrink-0 flex items-center gap-2 bg-card border-b border-border py-2 px-4">
 						<BulkActionsBar
