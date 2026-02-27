@@ -597,6 +597,106 @@ describe("time_entries", () => {
 		});
 	});
 
+	describe("getRecentProjects", () => {
+		test("returns empty when no entries have projects", async () => {
+			const t = createTest();
+			const { asUser } = await authenticateAs(t);
+
+			// Create entry without project
+			await asUser.mutation(api.time_entries.create, {
+				name: "No project entry",
+			});
+
+			const result = await asUser.query(api.time_entries.getRecentProjects, {});
+			expect(result).toHaveLength(0);
+		});
+
+		test("deduplicates projects from recent entries", async () => {
+			const t = createTest();
+			const { userId, asUser } = await authenticateAs(t);
+			const clientId = await t.run(async (ctx) =>
+				seedClient(ctx, userId, "Acme"),
+			);
+			const projectId = await t.run(async (ctx) =>
+				seedProject(ctx, userId, { clientId, name: "Alpha" }),
+			);
+
+			// Two entries with the same project
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, {
+					name: "Task 1",
+					projectId,
+					clientId,
+				}),
+			);
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, {
+					name: "Task 2",
+					projectId,
+					clientId,
+				}),
+			);
+
+			const result = await asUser.query(api.time_entries.getRecentProjects, {});
+			expect(result).toHaveLength(1);
+			expect(result[0].projectName).toBe("Alpha");
+		});
+
+		test("respects limit parameter", async () => {
+			const t = createTest();
+			const { userId, asUser } = await authenticateAs(t);
+			const clientId = await t.run(async (ctx) =>
+				seedClient(ctx, userId, "Acme"),
+			);
+
+			const p1 = await t.run(async (ctx) =>
+				seedProject(ctx, userId, { clientId, name: "Project 1" }),
+			);
+			const p2 = await t.run(async (ctx) =>
+				seedProject(ctx, userId, { clientId, name: "Project 2" }),
+			);
+			const p3 = await t.run(async (ctx) =>
+				seedProject(ctx, userId, { clientId, name: "Project 3" }),
+			);
+
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, { projectId: p1, clientId }),
+			);
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, { projectId: p2, clientId }),
+			);
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, { projectId: p3, clientId }),
+			);
+
+			const result = await asUser.query(api.time_entries.getRecentProjects, {
+				limit: 2,
+			});
+			expect(result).toHaveLength(2);
+		});
+
+		test("includes client info for project", async () => {
+			const t = createTest();
+			const { userId, asUser } = await authenticateAs(t);
+			const clientId = await t.run(async (ctx) =>
+				seedClient(ctx, userId, "Acme Corp"),
+			);
+			const projectId = await t.run(async (ctx) =>
+				seedProject(ctx, userId, { clientId, name: "Main Project" }),
+			);
+
+			await t.run(async (ctx) =>
+				seedTimeEntry(ctx, userId, { projectId, clientId }),
+			);
+
+			const result = await asUser.query(api.time_entries.getRecentProjects, {});
+			expect(result).toHaveLength(1);
+			expect(result[0].projectName).toBe("Main Project");
+			expect(result[0].clientName).toBe("Acme Corp");
+			expect(result[0].clientId).toBe(clientId);
+		});
+	});
+
 	describe("getRunningTimer", () => {
 		test("returns running timer with resolved edges", async () => {
 			const t = createTest();

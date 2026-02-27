@@ -47,10 +47,12 @@ export async function seedClient(
 	ctx: TestCtx,
 	userId: Id<"users">,
 	name = "Test Client",
+	opts: { hourly_rate_cents?: number } = {},
 ): Promise<Id<"clients">> {
 	return ctx.db.insert("clients", {
 		name,
 		userId,
+		hourly_rate_cents: opts.hourly_rate_cents,
 		updated_at: Date.now(),
 	});
 }
@@ -58,12 +60,13 @@ export async function seedClient(
 export async function seedProject(
 	ctx: TestCtx,
 	userId: Id<"users">,
-	opts: { name?: string; clientId?: Id<"clients"> } = {},
+	opts: { name?: string; clientId?: Id<"clients">; hourly_rate_cents?: number } = {},
 ): Promise<Id<"projects">> {
 	return ctx.db.insert("projects", {
 		name: opts.name ?? "Test Project",
 		userId,
 		clientId: opts.clientId,
+		hourly_rate_cents: opts.hourly_rate_cents,
 		status: "active",
 		updated_at: Date.now(),
 	});
@@ -92,6 +95,7 @@ export async function seedTimeEntry(
 		clientId: Id<"clients">;
 		projectId: Id<"projects">;
 		categoryId: Id<"categories">;
+		billable: boolean;
 	}> = {},
 ): Promise<Id<"time_entries">> {
 	return ctx.db.insert("time_entries", {
@@ -103,6 +107,55 @@ export async function seedTimeEntry(
 		clientId: overrides.clientId,
 		projectId: overrides.projectId,
 		categoryId: overrides.categoryId,
+		billable: overrides.billable,
+		updated_at: Date.now(),
+	});
+}
+
+export async function seedInvoice(
+	ctx: TestCtx,
+	userId: Id<"users">,
+	overrides: Partial<{
+		number: string;
+		clientId: Id<"clients">;
+		start_date: number;
+		end_date: number;
+		line_items: Array<{
+			label: string;
+			duration_ms: number;
+			rate_cents: number;
+			amount_cents: number;
+			group_key?: string;
+		}>;
+		subtotal_cents: number;
+		notes: string;
+	}> = {},
+): Promise<Id<"invoices">> {
+	return ctx.db.insert("invoices", {
+		userId,
+		number: overrides.number,
+		clientId: overrides.clientId,
+		start_date: overrides.start_date ?? 1700000000000,
+		end_date: overrides.end_date ?? 1700100000000,
+		line_items: overrides.line_items ?? [],
+		subtotal_cents: overrides.subtotal_cents ?? 0,
+		notes: overrides.notes,
+		updated_at: Date.now(),
+	});
+}
+
+export async function seedUserSettings(
+	ctx: TestCtx,
+	userId: Id<"users">,
+	overrides: Partial<{
+		default_hourly_rate: number;
+		default_currency: string;
+	}> = {},
+): Promise<Id<"user_settings">> {
+	return ctx.db.insert("user_settings", {
+		userId,
+		default_hourly_rate: overrides.default_hourly_rate,
+		default_currency: overrides.default_currency ?? "USD",
 		updated_at: Date.now(),
 	});
 }
