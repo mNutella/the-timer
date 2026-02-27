@@ -4,7 +4,9 @@ import { useQuery } from "convex-helpers/react/cache";
 import {
 	ArrowLeft,
 	Calendar as CalendarIcon,
+	ChevronDown,
 	ChevronRight,
+	ChevronUp,
 	ClipboardCopy,
 	DollarSign,
 	Hash,
@@ -32,13 +34,14 @@ import {
 } from "@/components/ui/tooltip";
 import {
 	Card,
+	CardAction,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Label } from "@/components/ui/label";
 import {
 	Popover,
@@ -182,8 +185,8 @@ function InvoiceListView({
 	const deleteInvoice = useMutation(api.invoices.deleteOne);
 
 	return (
-		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-			<div className="px-4 lg:px-6">
+		<div className="flex flex-col flex-1 min-h-0 gap-4 py-4 md:gap-6 md:py-6">
+			<div className="shrink-0">
 				<div className="flex items-center justify-between">
 					<div>
 						<h1 className="text-2xl font-semibold tracking-tight">
@@ -234,10 +237,12 @@ function InvoiceListView({
 						</div>
 					</div>
 				</div>
+			</div>
 
 				{/* Invoice Table */}
-				<Card className="mt-4">
-					<CardContent className="p-0">
+				<Card className="mt-4 md:mt-6 flex flex-col flex-1 min-h-0 overflow-hidden">
+					<CardContent className="p-0 flex flex-col flex-1 min-h-0">
+						<div className="flex-1 min-h-0 overflow-y-auto">
 						{invoices?.length === 0 && (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div className="flex size-12 items-center justify-center rounded-xl bg-muted">
@@ -262,7 +267,7 @@ function InvoiceListView({
 
 						{invoices && invoices.length > 0 && (
 							<Table>
-								<TableHeader>
+								<TableHeader className="bg-card sticky top-0 z-10">
 									<TableRow>
 										<TableHead className="pl-4 lg:pl-6">
 											Invoice
@@ -324,9 +329,9 @@ function InvoiceListView({
 								</TableBody>
 							</Table>
 						)}
+						</div>
 					</CardContent>
 				</Card>
-			</div>
 		</div>
 	);
 }
@@ -479,7 +484,7 @@ function LineItemsPreview({ data }: { data: PreviewData | undefined }) {
 	return (
 		<div>
 			<Table>
-				<TableHeader>
+				<TableHeader className="bg-card sticky top-0 z-10">
 					<TableRow>
 						<TableHead className="pl-4 lg:pl-6">
 							Description
@@ -719,6 +724,8 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 	const [mergeEntries, setMergeEntries] = useState(true);
 	const [includeDateRange, setIncludeDateRange] = useState(true);
 	const [includeDuration, setIncludeDuration] = useState(true);
+	const [periodOpen, setPeriodOpen] = useState(true);
+	const [groupingOpen, setGroupingOpen] = useState(true);
 
 	// Invoice number — auto-generate, editable
 	const invoiceCount = useQuery(api.invoices.list, {});
@@ -813,8 +820,8 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 	]);
 
 	return (
-		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-			<div className="px-4 lg:px-6">
+		<div className="flex flex-1 min-h-0 flex-col py-4 md:py-6">
+			<div className="shrink-0">
 				{/* Header */}
 				<div className="flex items-center gap-3">
 					<Button variant="ghost" size="icon" onClick={onBack}>
@@ -834,8 +841,19 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 				<Card className="mt-4">
 					<CardHeader>
 						<CardTitle className="text-base">Period & Scope</CardTitle>
+						<CardAction>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="size-7 text-muted-foreground"
+								onClick={() => setPeriodOpen(!periodOpen)}
+								aria-label={periodOpen ? "Collapse" : "Expand"}
+							>
+								{periodOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+							</Button>
+						</CardAction>
 					</CardHeader>
-					<CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					{periodOpen && <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 						{/* Start Date */}
 						<DatePickerButton
 							label="Start Date"
@@ -917,7 +935,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 								</Button>
 							)}
 						</div>
-					</CardContent>
+					</CardContent>}
 				</Card>
 
 				{/* Grouping */}
@@ -927,8 +945,19 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 						<CardDescription>
 							Choose how to group time entries into line items.
 						</CardDescription>
+						<CardAction>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="size-7 text-muted-foreground"
+								onClick={() => setGroupingOpen(!groupingOpen)}
+								aria-label={groupingOpen ? "Collapse" : "Expand"}
+							>
+								{groupingOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+							</Button>
+						</CardAction>
 					</CardHeader>
-					<CardContent>
+					{groupingOpen && <CardContent>
 						<GroupingControls
 							rules={groupingRules}
 							onRulesChange={setGroupingRules}
@@ -939,70 +968,63 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 							includeDuration={includeDuration}
 							onDurationToggle={setIncludeDuration}
 						/>
-					</CardContent>
+					</CardContent>}
 				</Card>
+			</div>
 
-				{/* Preview */}
-				<Card className="mt-4">
-					<CardHeader>
-						<CardTitle className="text-base">
-							Line Items Preview
-						</CardTitle>
-						{effectiveStart && effectiveEnd && (
-							<CardDescription>
-								{new Date(effectiveStart).toLocaleDateString()} -{" "}
-								{new Date(effectiveEnd).toLocaleDateString()}
-							</CardDescription>
-						)}
-					</CardHeader>
-					<CardContent className="p-0">
-						{!effectiveStart || !effectiveEnd ? (
-							<div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-								Select a date range to preview line items.
-							</div>
-						) : (
-							<LineItemsPreview
-								key={`${mergeEntries}-${groupingRules.join(",")}`}
-								data={preview ?? undefined}
-							/>
-						)}
-					</CardContent>
-				</Card>
+			{/* Preview — fills remaining height */}
+			<Card className="mt-4 flex min-h-0 flex-1 flex-col">
+				<CardHeader className="shrink-0">
+					<CardTitle className="text-base">
+						Line Items Preview
+					</CardTitle>
+					{effectiveStart && effectiveEnd && (
+						<CardDescription>
+							{new Date(effectiveStart).toLocaleDateString()} -{" "}
+							{new Date(effectiveEnd).toLocaleDateString()}
+						</CardDescription>
+					)}
+				</CardHeader>
+				<CardContent className="min-h-0 flex-1 overflow-y-auto p-0">
+					{!effectiveStart || !effectiveEnd ? (
+						<div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+							Select a date range to preview line items.
+						</div>
+					) : (
+						<LineItemsPreview
+							key={`${mergeEntries}-${groupingRules.join(",")}`}
+							data={preview ?? undefined}
+						/>
+					)}
+				</CardContent>
 
-				{/* Notes */}
-				<Card className="mt-4">
-					<CardHeader>
-						<CardTitle className="text-base">Notes</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<Textarea
-							placeholder="Optional notes for this invoice..."
+				{/* Notes & Actions */}
+				<div className="shrink-0 border-t px-4 py-2">
+					<div className="flex items-center gap-3">
+						<Input
+							placeholder="Optional notes..."
 							value={notes}
 							onChange={(e) => setNotes(e.target.value)}
-							rows={3}
+							className="h-9 flex-1"
 						/>
-					</CardContent>
-				</Card>
-
-				{/* Actions */}
-				<div className="mt-4 flex items-center justify-end gap-2">
-					<Button
-						variant="outline"
-						onClick={handleCopyToClipboard}
-						disabled={!preview?.lineItems.length}
-					>
-						<ClipboardCopy className="size-4" />
-						Copy for Stripe
-					</Button>
-					<Button
-						onClick={handleSave}
-						disabled={!preview?.lineItems.length}
-					>
-						<Receipt className="size-4" />
-						Create Invoice
-					</Button>
+						<Button
+							variant="outline"
+							onClick={handleCopyToClipboard}
+							disabled={!preview?.lineItems.length}
+						>
+							<ClipboardCopy className="size-4" />
+							Copy for Stripe
+						</Button>
+						<Button
+							onClick={handleSave}
+							disabled={!preview?.lineItems.length}
+						>
+							<Receipt className="size-4" />
+							Create Invoice
+						</Button>
+					</div>
 				</div>
-			</div>
+			</Card>
 		</div>
 	);
 }
