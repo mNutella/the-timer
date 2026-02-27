@@ -1,3 +1,4 @@
+import { CalendarDays, Table2 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 
@@ -11,8 +12,15 @@ import {
 	TimeRangeFilter,
 	TimerEntrySearch,
 } from "@/components/time-entry-filters";
+import TimelineView from "@/components/timeline-view";
 import { TimeEntriesChartRadialStacked } from "@/components/timer-entries-chart-radial-stacked";
 import { Separator } from "@/components/ui/separator";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/components/ui/tabs";
 import { useAnalyticsChartData } from "@/hooks/use-analytics-chart-data";
 import { useFilters } from "@/hooks/use-filters";
 
@@ -125,15 +133,38 @@ function Analytics() {
 					/>
 				</div>
 			</div>
-			<div className="flex flex-col flex-1 min-h-0">
-				<TimeEntriesTable
-					searchValue={debouncedSearchValue}
-					filterByClients={filterByClients}
-					filterByProjects={filterByProjects}
-					filterByCategories={filterByCategories}
-					filterByTimeRange={filterByTimeRange}
-				/>
-			</div>
+			<Tabs defaultValue="table" className="flex flex-col flex-1 min-h-0">
+				<div className="px-4 lg:px-6">
+					<TabsList>
+						<TabsTrigger value="table">
+							<Table2 className="size-3.5" />
+							Table
+						</TabsTrigger>
+						<TabsTrigger value="timeline">
+							<CalendarDays className="size-3.5" />
+							Timeline
+						</TabsTrigger>
+					</TabsList>
+				</div>
+				<TabsContent value="table" className="flex flex-col flex-1 min-h-0">
+					<TimeEntriesTable
+						searchValue={debouncedSearchValue}
+						filterByClients={filterByClients}
+						filterByProjects={filterByProjects}
+						filterByCategories={filterByCategories}
+						filterByTimeRange={filterByTimeRange}
+					/>
+				</TabsContent>
+				<TabsContent value="timeline" className="flex flex-col flex-1 min-h-0">
+					<TimelineView
+						searchValue={debouncedSearchValue}
+						filterByClients={filterByClients}
+						filterByProjects={filterByProjects}
+						filterByCategories={filterByCategories}
+						filterByTimeRange={filterByTimeRange}
+					/>
+				</TabsContent>
+			</Tabs>
 		</div>
 	);
 }
