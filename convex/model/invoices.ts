@@ -1,6 +1,7 @@
 import { omit } from "convex-helpers";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../types";
+import { getEndOfDay, getStartOfDay } from "../utils";
 import { assertOwnership } from "./helpers";
 import { buildRateCaches, isBillable, resolveRateFromCaches } from "./rates";
 import * as UserSettings from "./user_settings";
@@ -272,12 +273,12 @@ export async function previewLineItems(
 		includeDuration: boolean;
 	},
 ) {
-	// Fetch all time entries in range
+	// Fetch all time entries in range (normalize to full days)
 	const entries = await ctx
 		.table("time_entries", "by_user_start_time", (q) =>
-			q.eq("userId", userId).gte("start_time", startDate),
+			q.eq("userId", userId).gte("start_time", getStartOfDay(startDate)),
 		)
-		.filter((q) => q.lte(q.field("start_time"), endDate));
+		.filter((q) => q.lte(q.field("start_time"), getEndOfDay(endDate)));
 
 	// Get user settings for default rate
 	const settings = await UserSettings.get(ctx, { userId });
