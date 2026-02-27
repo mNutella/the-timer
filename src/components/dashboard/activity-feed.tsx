@@ -33,11 +33,10 @@ export function ActivityFeed({
 
 	// Report entry count to parent for summary cards
 	const count = results?.length ?? 0;
+
 	useEffect(() => {
-		if (onEntryCountChange && results) {
-			onEntryCountChange(count);
-		}
-	}, [onEntryCountChange, results, count]);
+		onEntryCountChange?.(count);
+	}, [count, onEntryCountChange]);
 
 	// Reverse to show most recent first (searchTimeEntries with startDate returns ascending)
 	const entries = results ? [...results].reverse() : [];

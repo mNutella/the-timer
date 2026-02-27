@@ -4,6 +4,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { AppErrorBoundary } from "@/components/app-error-boundary";
+import { loadSettings } from "@/lib/settings";
 import { createRouter } from "@/router";
 import "./globals.css";
 
@@ -22,7 +23,7 @@ if (!rootElement.innerHTML) {
 }
 
 // Create the Dynamic Island overlay after the main window is ready (unless disabled in settings)
-const storedSettings = JSON.parse(localStorage.getItem("app-settings") || "{}");
+const storedSettings = loadSettings();
 if (storedSettings.enableIsland !== false) {
 	invoke("create_island").catch(console.error);
 }

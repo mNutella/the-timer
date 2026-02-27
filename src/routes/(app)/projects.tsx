@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { FolderKanban } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -124,6 +124,7 @@ function ProjectsPage() {
 	const [clientFilter, setClientFilter] = useState<string>("all");
 
 	const clients = useQuery(api.clients.list, {});
+	const clientMap = useMemo(() => new Map(clients?.map(c => [c._id, c]) ?? []), [clients]);
 	const projects = useQuery(api.projects.list, {
 		clientId:
 			clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined,
@@ -271,7 +272,7 @@ function ProjectsPage() {
 					className: "w-36",
 					render: (project) => {
 						const clientObj = project.clientId
-							? clients?.find((c) => c._id === project.clientId)
+							? clientMap.get(project.clientId) ?? null
 							: null;
 						return (
 							<ProjectRateCell

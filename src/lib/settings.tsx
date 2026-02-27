@@ -18,7 +18,7 @@ const defaults: AppSettings = {
 	enableTrayTimer: true,
 };
 
-function loadSettings(): AppSettings {
+export function loadSettings(): AppSettings {
 	try {
 		const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 		return { ...defaults, ...stored };

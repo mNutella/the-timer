@@ -25,11 +25,15 @@ export function TimeEntryCell({
 	const updateName = useUpdateTimeEntryName(timeEntryId);
 	const isSubmittingRef = React.useRef(false);
 	const inputRef = React.useRef<HTMLInputElement>(null);
+	const prevTimeEntryNameRef = React.useRef(timeEntryName);
 
-	React.useEffect(() => {
-		setValue(timeEntryName);
-		isSubmittingRef.current = false;
-	}, [timeEntryName]);
+	if (prevTimeEntryNameRef.current !== timeEntryName) {
+		prevTimeEntryNameRef.current = timeEntryName;
+		if (!isFocused) {
+			setValue(timeEntryName);
+			isSubmittingRef.current = false;
+		}
+	}
 
 	const isDirty = isFocused && value !== timeEntryName;
 

@@ -1,5 +1,5 @@
 import { Clock2Icon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -104,10 +104,10 @@ export default function TimeEntriesStartEndCalendar({
 	onApplyClick,
 }: TimeEntriesStartEndCalendarProps) {
 	const [open, setOpen] = useState(false);
-	const [initialRange, setInitialRange] = useState<DateRange>({
+	const initialRange: DateRange = {
 		from: new Date(startTime),
 		to: endTime ? new Date(endTime) : undefined,
-	});
+	};
 	const [currentRange, setCurrentRange] = useState<DateRange>({
 		from: new Date(startTime),
 		to: endTime ? new Date(endTime) : undefined,
@@ -115,17 +115,19 @@ export default function TimeEntriesStartEndCalendar({
 	const [isRangeChanged, setIsRangeChanged] = useState(false);
 	const [isConfirmed, setIsConfirmed] = useState(false);
 
-	useEffect(() => {
-		setInitialRange({
+	const prevStartTimeRef = useRef(startTime);
+	const prevEndTimeRef = useRef(endTime);
+
+	if (prevStartTimeRef.current !== startTime || prevEndTimeRef.current !== endTime) {
+		prevStartTimeRef.current = startTime;
+		prevEndTimeRef.current = endTime;
+		setCurrentRange({
 			from: new Date(startTime),
 			to: endTime ? new Date(endTime) : undefined,
 		});
-
-		return () => {
-			setIsRangeChanged(false);
-			setIsConfirmed(false);
-		};
-	}, [startTime, endTime]);
+		setIsRangeChanged(false);
+		setIsConfirmed(false);
+	}
 
 	const handleOpenChange = (open: boolean) => {
 		if (!open && !isConfirmed) {

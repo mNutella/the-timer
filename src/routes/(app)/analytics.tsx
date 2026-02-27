@@ -1,9 +1,8 @@
 import { CalendarDays, Table2 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { Suspense, lazy, useCallback, useState } from "react";
 
 import { AnalyticsSummaryStrip } from "@/components/analytics-summary-strip";
-import { TimeEntriesChartBarInteractive } from "@/components/time-entries-chart-bar";
 import TimeEntriesTable from "@/components/time-entries-table";
 import {
 	CategoryFilter,
@@ -12,8 +11,6 @@ import {
 	TimeRangeFilter,
 	TimerEntrySearch,
 } from "@/components/time-entry-filters";
-import TimelineView from "@/components/timeline-view";
-import { TimeEntriesChartRadialStacked } from "@/components/timer-entries-chart-radial-stacked";
 import { Separator } from "@/components/ui/separator";
 import {
 	Tabs,
@@ -23,6 +20,18 @@ import {
 } from "@/components/ui/tabs";
 import { useAnalyticsChartData } from "@/hooks/use-analytics-chart-data";
 import { useFilters } from "@/hooks/use-filters";
+
+const TimeEntriesChartBarInteractive = lazy(() =>
+	import("@/components/time-entries-chart-bar").then((m) => ({
+		default: m.TimeEntriesChartBarInteractive,
+	})),
+);
+const TimeEntriesChartRadialStacked = lazy(() =>
+	import("@/components/timer-entries-chart-radial-stacked").then((m) => ({
+		default: m.TimeEntriesChartRadialStacked,
+	})),
+);
+const TimelineView = lazy(() => import("@/components/timeline-view"));
 
 const CHARTS_EXPANDED_KEY = "analytics-charts-expanded";
 
@@ -101,28 +110,30 @@ function Analytics() {
 					style={{ gridTemplateRows: chartsExpanded ? "1fr" : "0fr" }}
 				>
 					<div className="overflow-hidden min-h-0">
-						<div className="grid grid-cols-4 gap-4 mt-4">
-							<div className="col-span-3">
-								<TimeEntriesChartBarInteractive
-									chartData={chartData.chartData}
-									chartConfig={chartData.chartConfig}
-									entityKeys={chartData.entityKeys}
-									totalHours={chartData.totalHours}
-									clientFilter={filterByClients}
-									projectFilter={filterByProjects}
-									categoryFilter={filterByCategories}
-									dateRange={filterByTimeRange}
-								/>
+						<Suspense fallback={null}>
+							<div className="grid grid-cols-4 gap-4 mt-4">
+								<div className="col-span-3">
+									<TimeEntriesChartBarInteractive
+										chartData={chartData.chartData}
+										chartConfig={chartData.chartConfig}
+										entityKeys={chartData.entityKeys}
+										totalHours={chartData.totalHours}
+										clientFilter={filterByClients}
+										projectFilter={filterByProjects}
+										categoryFilter={filterByCategories}
+										dateRange={filterByTimeRange}
+									/>
+								</div>
+								<div className="col-span-1">
+									<TimeEntriesChartRadialStacked
+										clientFilter={filterByClients}
+										projectFilter={filterByProjects}
+										categoryFilter={filterByCategories}
+										dateRange={filterByTimeRange}
+									/>
+								</div>
 							</div>
-							<div className="col-span-1">
-								<TimeEntriesChartRadialStacked
-									clientFilter={filterByClients}
-									projectFilter={filterByProjects}
-									categoryFilter={filterByCategories}
-									dateRange={filterByTimeRange}
-								/>
-							</div>
-						</div>
+						</Suspense>
 					</div>
 				</div>
 				<div className="mt-4">
@@ -156,13 +167,15 @@ function Analytics() {
 					/>
 				</TabsContent>
 				<TabsContent value="timeline" className="flex flex-col flex-1 min-h-0">
-					<TimelineView
-						searchValue={debouncedSearchValue}
-						filterByClients={filterByClients}
-						filterByProjects={filterByProjects}
-						filterByCategories={filterByCategories}
-						filterByTimeRange={filterByTimeRange}
-					/>
+					<Suspense fallback={null}>
+						<TimelineView
+							searchValue={debouncedSearchValue}
+							filterByClients={filterByClients}
+							filterByProjects={filterByProjects}
+							filterByCategories={filterByCategories}
+							filterByTimeRange={filterByTimeRange}
+						/>
+					</Suspense>
 				</TabsContent>
 			</Tabs>
 		</div>

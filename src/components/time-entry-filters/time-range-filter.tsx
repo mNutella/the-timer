@@ -69,8 +69,9 @@ export function TimeRangeFilter({
 	);
 	const itemSelected = Boolean(timeRange?.from && timeRange?.to);
 
-	const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
+	const handleClear = (e: React.PointerEvent<HTMLSpanElement>) => {
 		e.stopPropagation();
+		e.preventDefault();
 		setTimeRange(undefined);
 		onChange(undefined);
 	};
@@ -112,13 +113,14 @@ export function TimeRangeFilter({
 						)}
 					</div>
 					{itemSelected ? (
-						<button
-							type="button"
-							onClick={handleClear}
+						<span
+							role="button"
+							tabIndex={0}
+							onPointerDown={handleClear}
 							className="ml-2 p-1.5 hover:bg-muted-foreground/10 rounded-sm group outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 						>
 							<BrushCleaning className="h-4 w-4 shrink-0 group-hover:text-primary-foreground" />
-						</button>
+						</span>
 					) : (
 						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					)}

@@ -124,9 +124,10 @@ export function TimeEntriesChartRadialStacked({
 		};
 	}, [rawData]);
 
-	const filterDescription = useMemo(
-		() => getFilterDescription(clientFilter, projectFilter, categoryFilter),
-		[clientFilter, projectFilter, categoryFilter],
+	const filterDescription = getFilterDescription(
+		clientFilter,
+		projectFilter,
+		categoryFilter,
 	);
 
 	const dimensionLabel =

@@ -849,7 +849,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 							</Button>
 						</CardAction>
 					</CardHeader>
-					{periodOpen && <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					{periodOpen ? <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 						{/* Start Date */}
 						<DatePickerButton
 							label="Start Date"
@@ -931,7 +931,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 								</Button>
 							)}
 						</div>
-					</CardContent>}
+					</CardContent> : null}
 				</Card>
 
 				{/* Grouping */}
@@ -953,7 +953,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 							</Button>
 						</CardAction>
 					</CardHeader>
-					{groupingOpen && <CardContent>
+					{groupingOpen ? <CardContent>
 						<GroupingControls
 							rules={groupingRules}
 							onRulesChange={setGroupingRules}
@@ -964,7 +964,7 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 							includeDuration={includeDuration}
 							onDurationToggle={setIncludeDuration}
 						/>
-					</CardContent>}
+					</CardContent> : null}
 				</Card>
 			</div>
 

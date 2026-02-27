@@ -416,22 +416,25 @@ function Layer({
   style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
-  const [visible, setVisible] = useState(active);
+  const [delayedVisible, setDelayedVisible] = useState(active);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!delay) return;
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (active && delay) {
+    if (active) {
       // Delay fade-in
-      timerRef.current = window.setTimeout(() => setVisible(true), delay);
+      timerRef.current = window.setTimeout(() => setDelayedVisible(true), delay);
     } else {
-      // Immediate: fade-out or no-delay fade-in
-      setVisible(active);
+      setDelayedVisible(false);
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [active, delay]);
+
+  // Non-delayed layers track `active` directly; delayed layers use the deferred flag
+  const visible = (active && delay) ? delayedVisible : active;
 
   return (
     <div

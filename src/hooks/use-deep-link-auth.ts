@@ -34,6 +34,7 @@ export function useDeepLinkAuth() {
       return;
     }
 
+    let cleaned = false;
     let unlisten: (() => void) | undefined;
 
     const processUrls = (urls: string[]) => {
@@ -68,6 +69,10 @@ export function useDeepLinkAuth() {
     // Warm: app is already running when deep link fires
     onOpenUrl(processUrls)
       .then((fn) => {
+        if (cleaned) {
+          fn();
+          return;
+        }
         unlisten = fn;
       })
       .catch(() => {});
@@ -82,6 +87,7 @@ export function useDeepLinkAuth() {
     window.addEventListener("focus", onFocus);
 
     return () => {
+      cleaned = true;
       unlisten?.();
       window.removeEventListener("focus", onFocus);
     };

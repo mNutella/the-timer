@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -90,9 +89,10 @@ export function TimeEntriesChartBarInteractive({
 	categoryFilter,
 	dateRange,
 }: TimeEntriesChartBarInteractiveProps) {
-	const filterDescription = useMemo(
-		() => getFilterDescription(clientFilter, projectFilter, categoryFilter),
-		[clientFilter, projectFilter, categoryFilter],
+	const filterDescription = getFilterDescription(
+		clientFilter,
+		projectFilter,
+		categoryFilter,
 	);
 
 	const dateLabel =
