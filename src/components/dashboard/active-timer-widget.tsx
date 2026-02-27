@@ -21,7 +21,8 @@ export function ActiveTimerWidget() {
 	const isRunning = !!runningTimer;
 	const elapsed = useLiveElapsedTime(runningTimer?.start_time ?? 0, isRunning);
 
-	const handleStop = () => {
+	const handleStop = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		if (!runningTimer) return;
 		stopMutation({ id: runningTimer._id })
 			.catch(() => toast.error("Failed to stop timer"));
@@ -31,13 +32,9 @@ export function ActiveTimerWidget() {
 		return (
 			<div className="rounded-xl border border-border bg-card p-5">
 				<div className="flex items-center gap-3">
-					<div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-						<Timer className="size-5 text-muted-foreground" />
-					</div>
+					<TimerIcon />
 					<div>
-						<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-							Active Timer
-						</p>
+						<TimerLabel />
 						<p className="text-2xl font-semibold tabular-nums">--:--:--</p>
 					</div>
 				</div>
@@ -50,13 +47,9 @@ export function ActiveTimerWidget() {
 			<div className="rounded-xl border border-border bg-card p-5">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-3">
-						<div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-							<Timer className="size-5 text-muted-foreground" />
-						</div>
+						<TimerIcon />
 						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Active Timer
-							</p>
+							<TimerLabel />
 							<p className="text-lg text-muted-foreground">
 								No active timer
 							</p>
@@ -72,16 +65,18 @@ export function ActiveTimerWidget() {
 		);
 	}
 
+	const openEditDialog = () => setEditOpen(true);
+
 	return (
 		<>
 			<div
 				role="button"
 				tabIndex={0}
-				onClick={() => setEditOpen(true)}
+				onClick={openEditDialog}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
-						setEditOpen(true);
+						openEditDialog();
 					}
 				}}
 				className={cn(
@@ -121,10 +116,7 @@ export function ActiveTimerWidget() {
 						</div>
 					</div>
 					<Button
-						onClick={(e) => {
-							e.stopPropagation();
-							handleStop();
-						}}
+						onClick={handleStop}
 						variant="destructive"
 						size="sm"
 					>
@@ -139,5 +131,21 @@ export function ActiveTimerWidget() {
 				timer={runningTimer}
 			/>
 		</>
+	);
+}
+
+function TimerIcon() {
+	return (
+		<div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+			<Timer className="size-5 text-muted-foreground" />
+		</div>
+	);
+}
+
+function TimerLabel() {
+	return (
+		<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+			Active Timer
+		</p>
 	);
 }

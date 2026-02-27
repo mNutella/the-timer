@@ -147,8 +147,8 @@ export function EntityManagementTable<T extends EntityBase>({
 		entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1);
 
 	return (
-		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-			<div className="px-4 lg:px-6">
+		<div className="flex flex-col flex-1 min-h-0 gap-4 py-4 md:gap-6 md:py-6">
+			<div className="shrink-0">
 				{/* Page Header */}
 				<div className="flex items-center justify-between">
 					<div>
@@ -199,12 +199,13 @@ export function EntityManagementTable<T extends EntityBase>({
 						</div>
 					</div>
 				</div>
+			</div>
 
 				{/* Card-wrapped Table */}
-				<Card className="mt-4">
-					<CardContent className="p-0">
+				<Card className="mt-4 md:mt-6 flex flex-col flex-1 min-h-0 overflow-hidden">
+					<CardContent className="p-0 flex flex-col flex-1 min-h-0">
 						{/* Filter Bar */}
-						<div className="flex items-center gap-2 px-4 py-3 lg:px-6">
+						<div className="shrink-0 flex items-center gap-2 px-4 py-3 lg:px-6">
 							<div className="relative flex-1 max-w-sm">
 								<Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 								<Input
@@ -224,8 +225,9 @@ export function EntityManagementTable<T extends EntityBase>({
 							<TimeRangeFilter value={dateRange} onChange={onDateRangeChange} />
 						</div>
 
-						<Separator />
+						<Separator className="shrink-0" />
 
+						<div className="flex-1 min-h-0 overflow-y-auto">
 						{/* Empty state: no entities exist */}
 						{data?.length === 0 && (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
@@ -265,7 +267,7 @@ export function EntityManagementTable<T extends EntityBase>({
 						{/* Table */}
 						{filteredData && filteredData.length > 0 && (
 							<Table>
-								<TableHeader>
+								<TableHeader className="bg-card sticky top-0 z-10">
 									<TableRow>
 										<TableHead className="pl-4 lg:pl-6">Name</TableHead>
 										{extraColumns.map((col) => (
@@ -342,9 +344,9 @@ export function EntityManagementTable<T extends EntityBase>({
 								</TableBody>
 							</Table>
 						)}
+						</div>
 					</CardContent>
 				</Card>
-			</div>
 
 			{/* Add Dialog */}
 			<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

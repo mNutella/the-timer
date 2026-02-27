@@ -28,19 +28,20 @@ export function RunningTimerBar() {
 			.catch(() => toast.error("Failed to stop timer"));
 	};
 
-	// Dashboard has its own ActiveTimerWidget
 	if (!runningTimer || pathname === "/") return null;
+
+	const openEditDialog = () => setEditOpen(true);
 
 	return (
 		<>
 			<div
 				role="button"
 				tabIndex={0}
-				onClick={() => setEditOpen(true)}
+				onClick={openEditDialog}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
-						setEditOpen(true);
+						openEditDialog();
 					}
 				}}
 				className={cn(
