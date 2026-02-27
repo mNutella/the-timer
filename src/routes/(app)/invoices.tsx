@@ -15,14 +15,21 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import type * as React from "react";
+import { useCallback, useMemo, useState } from "react";
+import type { DayButton } from "react-day-picker";
 import { toast } from "sonner";
 
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
 	Card,
 	CardContent,
@@ -92,16 +99,39 @@ function formatDate(ms: number): string {
 	});
 }
 
+function BilledDayButton(props: React.ComponentProps<typeof DayButton>) {
+	if (props.modifiers.billed) {
+		return (
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<div>
+						<CalendarDayButton
+							{...props}
+							className={cn(props.className, "bg-primary/10 text-primary/60 rounded-md")}
+						/>
+					</div>
+				</TooltipTrigger>
+				<TooltipContent side="bottom" className="z-[60]">
+					Already billed
+				</TooltipContent>
+			</Tooltip>
+		);
+	}
+	return <CalendarDayButton {...props} />;
+}
+
 function DatePickerButton({
 	label,
 	value,
 	onChange,
 	hint,
+	modifiers,
 }: {
 	label: string;
 	value: Date | undefined;
 	onChange: (date: Date | undefined) => void;
 	hint?: string;
+	modifiers?: React.ComponentProps<typeof Calendar>["modifiers"];
 }) {
 	const [open, setOpen] = useState(false);
 
@@ -131,6 +161,9 @@ function DatePickerButton({
 						}}
 						className="bg-transparent p-3"
 						captionLayout="dropdown"
+						modifiers={modifiers}
+						components={modifiers ? { DayButton: BilledDayButton } : undefined}
+						classNames={modifiers ? { today: "text-accent-foreground rounded-md" } : undefined}
 					/>
 				</PopoverContent>
 			</Popover>
@@ -143,7 +176,8 @@ function DatePickerButton({
 
 function InvoiceListView({
 	onCreateNew,
-}: { onCreateNew: () => void }) {
+	onViewInvoice,
+}: { onCreateNew: () => void; onViewInvoice: (id: Id<"invoices">) => void }) {
 	const invoices = useQuery(api.invoices.list, {});
 	const deleteInvoice = useMutation(api.invoices.deleteOne);
 
@@ -245,7 +279,11 @@ function InvoiceListView({
 								</TableHeader>
 								<TableBody>
 									{invoices.map((invoice) => (
-										<TableRow key={invoice._id}>
+										<TableRow
+										key={invoice._id}
+										className="cursor-pointer"
+										onClick={() => onViewInvoice(invoice._id as Id<"invoices">)}
+									>
 											<TableCell className="pl-4 font-medium lg:pl-6">
 												{invoice.number || `INV-${invoice._id.slice(-6)}`}
 											</TableCell>
@@ -269,13 +307,14 @@ function InvoiceListView({
 													size="icon"
 													variant="ghost"
 													className="size-7 text-destructive hover:text-destructive"
-													onClick={() =>
+													onClick={(e) => {
+														e.stopPropagation();
 														deleteInvoice({
 															id: invoice._id as Id<"invoices">,
 														}).catch(() =>
 															toast.error("Failed to delete"),
-														)
-													}
+														);
+													}}
 												>
 													<Trash2 className="size-3.5" />
 												</Button>
@@ -489,14 +528,181 @@ function LineItemsPreview({ data }: { data: PreviewData | undefined }) {
 	);
 }
 
+// ─── Invoice Detail View ──────────────────────────────────────────
+
+function InvoiceDetailView({
+	invoiceId,
+	onBack,
+}: { invoiceId: Id<"invoices">; onBack: () => void }) {
+	const invoice = useQuery(api.invoices.getById, { id: invoiceId });
+
+	if (!invoice) {
+		return (
+			<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+				<div className="px-4 lg:px-6">
+					<div className="flex items-center gap-3">
+						<Button variant="ghost" size="icon" onClick={onBack}>
+							<ArrowLeft className="size-4" />
+						</Button>
+						<p className="text-sm text-muted-foreground">Loading...</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	const displayNumber = invoice.number || `INV-${invoice._id.slice(-6)}`;
+	const totalDurationMs = invoice.line_items.reduce(
+		(sum, item) => sum + item.duration_ms,
+		0,
+	);
+
+	return (
+		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+			<div className="px-4 lg:px-6">
+				{/* Header */}
+				<div className="flex items-center gap-3">
+					<Button variant="ghost" size="icon" onClick={onBack}>
+						<ArrowLeft className="size-4" />
+					</Button>
+					<div>
+						<h1 className="text-2xl font-semibold tracking-tight">
+							{displayNumber}
+						</h1>
+						<p className="mt-1 text-sm text-muted-foreground">
+							{invoice.clientName ?? "All Clients"} &middot;{" "}
+							{formatDate(invoice.start_date)} – {formatDate(invoice.end_date)}
+						</p>
+					</div>
+				</div>
+
+				{/* Meta */}
+				<Card className="mt-4">
+					<CardContent className="grid grid-cols-2 gap-4 py-4 lg:grid-cols-4">
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								Invoice #
+							</p>
+							<p className="mt-1 text-sm font-medium">{displayNumber}</p>
+						</div>
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								Client
+							</p>
+							<p className="mt-1 text-sm font-medium">
+								{invoice.clientName ?? "All Clients"}
+							</p>
+						</div>
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								Period
+							</p>
+							<p className="mt-1 text-sm font-medium">
+								{formatDate(invoice.start_date)} – {formatDate(invoice.end_date)}
+							</p>
+						</div>
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								Total
+							</p>
+							<p className="mt-1 text-sm font-semibold">
+								{formatCents(invoice.subtotal_cents)}
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Line Items */}
+				<Card className="mt-4">
+					<CardHeader>
+						<CardTitle className="text-base">Line Items</CardTitle>
+					</CardHeader>
+					<CardContent className="p-0">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead className="pl-4 lg:pl-6">
+										Description
+									</TableHead>
+									<TableHead className="w-28">Duration</TableHead>
+									<TableHead className="w-28 text-right">Rate</TableHead>
+									<TableHead className="w-32 pr-4 text-right lg:pr-6">
+										Amount
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{invoice.line_items.map((item, idx) => (
+									<TableRow key={`${item.group_key ?? idx}`}>
+										<TableCell className="pl-4 lg:pl-6">
+											{item.label}
+										</TableCell>
+										<TableCell className="tabular-nums text-muted-foreground">
+											{formatDuration(item.duration_ms)}
+										</TableCell>
+										<TableCell className="text-right tabular-nums text-muted-foreground">
+											{item.rate_cents > 0
+												? `${formatCents(item.rate_cents)}/hr`
+												: "—"}
+										</TableCell>
+										<TableCell className="pr-4 text-right font-medium tabular-nums lg:pr-6">
+											{formatCents(item.amount_cents)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+
+						<Separator />
+						<div className="flex items-center justify-between px-4 py-3 lg:px-6">
+							<span className="text-sm text-muted-foreground">
+								{invoice.line_items.length}{" "}
+								{invoice.line_items.length === 1 ? "item" : "items"} /{" "}
+								{formatDuration(totalDurationMs)}
+							</span>
+							<span className="text-lg font-semibold tabular-nums">
+								{formatCents(invoice.subtotal_cents)}
+							</span>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Notes */}
+				{invoice.notes && (
+					<Card className="mt-4">
+						<CardHeader>
+							<CardTitle className="text-base">Notes</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="whitespace-pre-wrap text-sm text-muted-foreground">
+								{invoice.notes}
+							</p>
+						</CardContent>
+					</Card>
+				)}
+			</div>
+		</div>
+	);
+}
+
 // ─── Invoice Creation View ────────────────────────────────────────
 
 function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 	const clients = useQuery(api.clients.list, {});
 
-	// Date range
-	const lastEndDate = useQuery(api.invoices.getLastEndDate, {});
-	const defaultStart = lastEndDate ? new Date(lastEndDate + 1) : undefined;
+	// Client filter (defined first so getLastEndDate can use it)
+	const [clientFilter, setClientFilter] = useState<string>("all");
+	const selectedClientId =
+		clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined;
+
+	// Date range — suggested start reacts to client filter
+	const lastEndDate = useQuery(api.invoices.getLastEndDate, selectedClientId ? { clientId: selectedClientId } : {});
+	const defaultStart = (() => {
+		if (!lastEndDate) return undefined;
+		const d = new Date(lastEndDate);
+		d.setDate(d.getDate() + 1);
+		return d;
+	})();
 	const [startDate, setStartDate] = useState<Date | undefined>(undefined);
 	const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
@@ -504,11 +710,6 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 	const effectiveStartDate = startDate ?? defaultStart;
 	const effectiveStart = effectiveStartDate?.getTime();
 	const effectiveEnd = endDate?.getTime();
-
-	// Client filter
-	const [clientFilter, setClientFilter] = useState<string>("all");
-	const selectedClientId =
-		clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined;
 
 	// Grouping
 	const [groupingRules, setGroupingRules] = useState<GroupByDimension[]>([
@@ -527,6 +728,23 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 	const [invoiceNumberOverride, setInvoiceNumberOverride] = useState("");
 	const [editingNumber, setEditingNumber] = useState(false);
 	const invoiceNumber = invoiceNumberOverride || autoNumber;
+
+	// Billed-day highlighting — show which days are already covered by invoices
+	// Uses a matcher function (not date ranges) so each day is individually matched,
+	// avoiding react-day-picker's range styling that strips border-radius on middle days.
+	const billedDayModifiers = useMemo(() => {
+		if (!invoiceCount?.length) return undefined;
+		const ranges = invoiceCount
+			.filter((inv) => !selectedClientId || inv.clientId === selectedClientId)
+			.map((inv) => ({ from: inv.start_date, to: inv.end_date }));
+		if (ranges.length === 0) return undefined;
+		const matcher = (date: Date) => {
+			const t = date.getTime();
+			return ranges.some((r) => t >= r.from && t <= r.to);
+		};
+		return { billed: matcher };
+	}, [invoiceCount, selectedClientId]);
+
 
 	const [notes, setNotes] = useState("");
 
@@ -628,6 +846,8 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 									? "Suggested from last invoice"
 									: undefined
 							}
+							modifiers={billedDayModifiers}
+
 						/>
 
 						{/* End Date */}
@@ -635,6 +855,8 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 							label="End Date"
 							value={endDate}
 							onChange={setEndDate}
+							modifiers={billedDayModifiers}
+
 						/>
 
 						{/* Client Filter */}
@@ -788,11 +1010,30 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 // ─── Main Page ────────────────────────────────────────────────────
 
 function InvoicesPage() {
-	const [view, setView] = useState<"list" | "create">("list");
+	const [view, setView] = useState<"list" | "create" | "detail">("list");
+	const [selectedInvoiceId, setSelectedInvoiceId] =
+		useState<Id<"invoices"> | null>(null);
+
+	if (view === "detail" && selectedInvoiceId) {
+		return (
+			<InvoiceDetailView
+				invoiceId={selectedInvoiceId}
+				onBack={() => setView("list")}
+			/>
+		);
+	}
 
 	if (view === "create") {
 		return <InvoiceCreateView onBack={() => setView("list")} />;
 	}
 
-	return <InvoiceListView onCreateNew={() => setView("create")} />;
+	return (
+		<InvoiceListView
+			onCreateNew={() => setView("create")}
+			onViewInvoice={(id) => {
+				setSelectedInvoiceId(id);
+				setView("detail");
+			}}
+		/>
+	);
 }
