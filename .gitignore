@@ -68,3 +68,8 @@ coverage
 
 # Thumbnails
 ._*
+
+# AI / tooling
+.agents/
+.claude/
+.playwright-mcp/

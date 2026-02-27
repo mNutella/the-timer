@@ -3,12 +3,6 @@ mod island;
 #[cfg(desktop)]
 mod tray;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 /// Set macOS activation policy.
 /// 0 = Regular (shows in Dock + Cmd+Tab), 1 = Accessory (hidden from both).
 #[cfg(target_os = "macos")]
@@ -80,7 +74,6 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 tauri::generate_handler![
-                    greet,
                     island::window::create_island,
                     island::window::show_island,
                     island::window::hide_island,
@@ -94,7 +87,7 @@ pub fn run() {
             }
             #[cfg(not(target_os = "macos"))]
             {
-                tauri::generate_handler![greet]
+                tauri::generate_handler![]
             }
         })
         .run(tauri::generate_context!())

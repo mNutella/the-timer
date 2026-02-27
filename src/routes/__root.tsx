@@ -1,5 +1,4 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import {
 	Authenticated,
 	Unauthenticated,
@@ -7,9 +6,18 @@ import {
 } from "convex/react";
 import type { ConvexReactClient } from "convex/react";
 import { Loader2 } from "lucide-react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "@/components/login-page";
 import { useDeepLinkAuth } from "@/hooks/use-deep-link-auth";
+
+const RouterDevtools = import.meta.env.DEV
+	? lazy(() =>
+			import("@tanstack/react-router-devtools").then((m) => ({
+				default: m.TanStackRouterDevtools,
+			})),
+		)
+	: () => null;
 
 export const Route = createRootRouteWithContext<{
 	convexQueryClient: ConvexReactClient;
@@ -49,7 +57,9 @@ function RootComponent() {
 				<AppContent />
 			</Authenticated>
 			<Toaster position="top-center" />
-			<TanStackRouterDevtools position="bottom-right" />
+			<Suspense>
+				<RouterDevtools position="bottom-right" />
+			</Suspense>
 		</>
 	);
 }

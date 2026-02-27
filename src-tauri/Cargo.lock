@@ -3759,7 +3759,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-convex"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 dependencies = [
  "objc2 0.6.1",
  "objc2-app-kit",
