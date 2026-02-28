@@ -262,6 +262,7 @@ export default function TimeEntriesTable({
 	const {
 		results: initialData,
 		loadMore,
+		isLoading,
 		status,
 	} = useTimeEntries(
 		searchValue,
@@ -458,7 +459,10 @@ export default function TimeEntriesTable({
 								))}
 							</TableHeader>
 							<TableBody
-								className="w-full grid relative"
+								className={cn(
+									"w-full grid relative transition-opacity duration-200",
+									isLoading && initialData.length > 0 && "opacity-50",
+								)}
 								style={{
 									height: rowVirtualizer.getVirtualItems().length
 										? `${rowVirtualizer.getTotalSize()}px`

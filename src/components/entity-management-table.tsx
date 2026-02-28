@@ -2,7 +2,7 @@
 
 import { Clock, Inbox, Pencil, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
 import { TimeRangeFilter } from "@/components/time-entry-filters";
@@ -37,7 +37,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { formatDuration } from "@/lib/utils";
+import { cn, formatDuration } from "@/lib/utils";
 
 interface EntityBase {
 	_id: string;
@@ -109,6 +109,14 @@ export function EntityManagementTable<T extends EntityBase>({
 		const query = searchValue.toLowerCase();
 		return data.filter((item) => item.name.toLowerCase().includes(query));
 	}, [data, searchValue]);
+
+	// Keep previous filtered data to show as stale while refetching
+	const prevFilteredDataRef = useRef<T[] | undefined>(undefined);
+	if (filteredData !== undefined) {
+		prevFilteredDataRef.current = filteredData;
+	}
+	const displayData = filteredData ?? prevFilteredDataRef.current;
+	const isStale = data === undefined && (displayData?.length ?? 0) > 0;
 
 	const totalHours = useMemo(() => {
 		if (!data) return 0;
@@ -265,7 +273,7 @@ export function EntityManagementTable<T extends EntityBase>({
 						)}
 
 						{/* Table */}
-						{filteredData && filteredData.length > 0 && (
+						{displayData && displayData.length > 0 && (
 							<Table>
 								<TableHeader className="bg-card sticky top-0 z-10">
 									<TableRow>
@@ -281,8 +289,13 @@ export function EntityManagementTable<T extends EntityBase>({
 										</TableHead>
 									</TableRow>
 								</TableHeader>
-								<TableBody>
-									{filteredData.map((entity) => (
+								<TableBody
+									className={cn(
+										"transition-opacity duration-200",
+										isStale && "opacity-50",
+									)}
+								>
+									{displayData.map((entity) => (
 										<TableRow key={entity._id}>
 											<TableCell className="pl-4 lg:pl-6">
 												{editingId === entity._id ? (
