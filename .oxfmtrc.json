@@ -1,0 +1,16 @@
+{
+	"useTabs": true,
+	"singleQuote": false,
+	"printWidth": 100,
+	"semi": true,
+	"trailingComma": "all",
+	"bracketSpacing": true,
+	"arrowParens": "always",
+	"endOfLine": "lf",
+	"sortImports": {
+		"internalPattern": ["~/", "@/"]
+	},
+	"sortTailwindcss": {
+		"stylesheet": "src/globals.css"
+	}
+}

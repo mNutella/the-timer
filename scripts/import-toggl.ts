@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 interface ParsedEntry {
 	description: string;
@@ -95,9 +95,7 @@ function main() {
 
 	// Print summary
 	const clients = new Set(entries.map((e) => e.project));
-	const projects = new Set(
-		entries.filter((e) => e.tag).map((e) => `${e.project}::${e.tag}`),
-	);
+	const projects = new Set(entries.filter((e) => e.tag).map((e) => `${e.project}::${e.tag}`));
 
 	console.log(`\nToggl Import Summary:`);
 	console.log(`  Clients: ${clients.size} (${[...clients].join(", ")})`);
@@ -110,11 +108,10 @@ function main() {
 	console.log("Running convex mutation...");
 
 	try {
-		const result = execFileSync(
-			"npx",
-			["convex", "run", "import_toggl:importTogglData", args],
-			{ cwd: process.cwd(), encoding: "utf-8" },
-		);
+		const result = execFileSync("npx", ["convex", "run", "import_toggl:importTogglData", args], {
+			cwd: process.cwd(),
+			encoding: "utf-8",
+		});
 		console.log("Result:", result.trim());
 		console.log("\nImport complete!");
 	} catch (err: unknown) {

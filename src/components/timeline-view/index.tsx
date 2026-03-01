@@ -1,3 +1,4 @@
+import { useQuery } from "convex/react";
 import {
 	startOfWeek,
 	endOfWeek,
@@ -11,10 +12,11 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { useQuery } from "convex/react";
+
 import { api } from "@/../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import type { Category, Client, Project } from "@/lib/types";
+
 import DayColumn from "./day-column";
 import {
 	buildColorMap,
@@ -89,15 +91,9 @@ export default function TimelineView({
 	const entries = useQuery(api.time_entries.exportTimeEntries, {
 		filters: {
 			name: searchValue || undefined,
-			clientIds: filterByClients.length
-				? filterByClients.map((c) => c._id)
-				: undefined,
-			projectIds: filterByProjects.length
-				? filterByProjects.map((p) => p._id)
-				: undefined,
-			categoryIds: filterByCategories.length
-				? filterByCategories.map((c) => c._id)
-				: undefined,
+			clientIds: filterByClients.length ? filterByClients.map((c) => c._id) : undefined,
+			projectIds: filterByProjects.length ? filterByProjects.map((p) => p._id) : undefined,
+			categoryIds: filterByCategories.length ? filterByCategories.map((c) => c._id) : undefined,
 			dateRange: {
 				startDate: weekStart.getTime(),
 				endDate: weekEnd.getTime(),
@@ -112,10 +108,7 @@ export default function TimelineView({
 	);
 
 	// Group entries by day
-	const entriesByDay = useMemo(
-		() => groupEntriesByDay(entries ?? []),
-		[entries],
-	);
+	const entriesByDay = useMemo(() => groupEntriesByDay(entries ?? []), [entries]);
 
 	// Position entries per day
 	const positionedByDay = useMemo(() => {
@@ -125,23 +118,14 @@ export default function TimelineView({
 			const dayEntries = entriesByDay.get(key) ?? [];
 			const dayStartMs = startOfDay(day).getTime();
 			const dayEndMs = endOfDay(day).getTime();
-			map.set(
-				key,
-				positionEntries(dayEntries, dayStartMs, dayEndMs, dimension, colorMap, now),
-			);
+			map.set(key, positionEntries(dayEntries, dayStartMs, dayEndMs, dimension, colorMap, now));
 		}
 		return map;
 	}, [days, entriesByDay, dimension, colorMap, now]);
 
 	// Navigation
-	const goToPrevWeek = useCallback(
-		() => setWeekStart((w) => subWeeks(w, 1)),
-		[],
-	);
-	const goToNextWeek = useCallback(
-		() => setWeekStart((w) => addWeeks(w, 1)),
-		[],
-	);
+	const goToPrevWeek = useCallback(() => setWeekStart((w) => subWeeks(w, 1)), []);
+	const goToNextWeek = useCallback(() => setWeekStart((w) => addWeeks(w, 1)), []);
 	const goToToday = useCallback(() => setWeekStart(getWeekStart(new Date())), []);
 
 	// Auto-scroll to current hour on mount
@@ -169,7 +153,7 @@ export default function TimelineView({
 	const isCurrentWeek = isSameDay(weekStart, getWeekStart(today));
 
 	return (
-		<div className="flex flex-col flex-1 min-h-0 pb-2">
+		<div className="flex min-h-0 flex-1 flex-col pb-2">
 			{/* Week navigation */}
 			<div className="flex items-center gap-2 py-2">
 				<Button variant="outline" size="sm" onClick={goToToday} disabled={isCurrentWeek}>
@@ -181,14 +165,12 @@ export default function TimelineView({
 				<Button variant="ghost" size="icon" className="size-7" onClick={goToNextWeek}>
 					<ChevronRight className="size-4" />
 				</Button>
-				<span className="text-sm font-medium">
-					{formatWeekLabel(weekStart, weekEnd)}
-				</span>
+				<span className="text-sm font-medium">{formatWeekLabel(weekStart, weekEnd)}</span>
 			</div>
 
 			{/* Grid */}
-			<div className="flex-1 min-h-0 rounded-lg border overflow-hidden">
-				<div ref={scrollRef} className="h-full overflow-y-auto overflow-x-auto">
+			<div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
+				<div ref={scrollRef} className="h-full overflow-x-auto overflow-y-auto">
 					<div
 						className="grid min-w-[900px]"
 						style={{
@@ -196,7 +178,7 @@ export default function TimelineView({
 						}}
 					>
 						{/* Header row: gutter + day headers */}
-						<div className="sticky top-0 z-20 bg-background border-b border-r" />
+						<div className="sticky top-0 z-20 border-r border-b bg-background" />
 						{days.map((day) => {
 							const isToday_ = isSameDay(day, today);
 							const dayLabel = day.toLocaleDateString("en-US", {
@@ -205,15 +187,15 @@ export default function TimelineView({
 							return (
 								<div
 									key={day.toISOString()}
-									className={`sticky top-0 z-20 flex flex-col items-center py-1.5 border-b border-r bg-background text-xs ${isToday_ ? "bg-primary/5" : ""}`}
+									className={`sticky top-0 z-20 flex flex-col items-center border-r border-b bg-background py-1.5 text-xs ${isToday_ ? "bg-primary/5" : ""}`}
 								>
 									<span
-										className={`uppercase text-[10px] font-medium ${isToday_ ? "text-primary" : "text-muted-foreground"}`}
+										className={`text-[10px] font-medium uppercase ${isToday_ ? "text-primary" : "text-muted-foreground"}`}
 									>
 										{dayLabel}
 									</span>
 									<span
-										className={`text-sm font-semibold leading-tight ${isToday_ ? "text-primary" : ""}`}
+										className={`text-sm leading-tight font-semibold ${isToday_ ? "text-primary" : ""}`}
 									>
 										{day.getDate()}
 									</span>
@@ -222,19 +204,14 @@ export default function TimelineView({
 						})}
 
 						{/* Body row: hour gutter + day columns */}
-						<div
-							className="relative border-r"
-							style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
-						>
+						<div className="relative border-r" style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}>
 							{Array.from({ length: TOTAL_HOURS }, (_, i) => (
 								<div
 									key={i}
 									className="absolute right-0 left-0 flex items-start justify-end pr-2 text-[10px] text-muted-foreground"
 									style={{ top: `${i * HOUR_HEIGHT}px` }}
 								>
-									<span className="-translate-y-1/2">
-										{formatHourLabel(DAY_START_HOUR + i)}
-									</span>
+									<span className="-translate-y-1/2">{formatHourLabel(DAY_START_HOUR + i)}</span>
 								</div>
 							))}
 						</div>
@@ -256,10 +233,8 @@ export default function TimelineView({
 
 			{/* Empty state */}
 			{entries && entries.length === 0 && (
-				<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-					<p className="text-sm text-muted-foreground">
-						No time entries this week
-					</p>
+				<div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+					<p className="text-sm text-muted-foreground">No time entries this week</p>
 				</div>
 			)}
 		</div>

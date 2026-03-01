@@ -1,6 +1,7 @@
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { SearchableCombobox } from "@/components/searchable-combobox";
+
 import type { Client } from "../../lib/types";
 import { CELL_INPUT_CLASS, useUpdateTimeEntryClient } from "./hooks";
 

@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from "react";
+
 import { cn } from "@/lib/utils";
+
 import EntryEditPopover from "./entry-edit-popover";
 import type { PositionedEntry } from "./layout";
 import { DAY_END_HOUR, DAY_START_HOUR, HOUR_HEIGHT } from "./layout";
@@ -13,17 +15,11 @@ interface DayColumnProps {
 	now: number;
 }
 
-export default function DayColumn({
-	isToday,
-	positioned,
-	now,
-}: DayColumnProps) {
+export default function DayColumn({ isToday, positioned, now }: DayColumnProps) {
 	const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 	const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-	const selectedPositioned = positioned.find(
-		(p) => p.entry._id === selectedEntryId,
-	);
+	const selectedPositioned = positioned.find((p) => p.entry._id === selectedEntryId);
 
 	const handleBlockClick = useCallback((entryId: string) => {
 		setSelectedEntryId((prev) => (prev === entryId ? null : entryId));
@@ -40,24 +36,19 @@ export default function DayColumn({
 	// Current time indicator position
 	const nowDate = new Date(now);
 	const currentHourOffset =
-		nowDate.getHours() +
-		nowDate.getMinutes() / 60 +
-		nowDate.getSeconds() / 3600;
+		nowDate.getHours() + nowDate.getMinutes() / 60 + nowDate.getSeconds() / 3600;
 	const nowTop = currentHourOffset * HOUR_HEIGHT;
 
 	return (
 		<div
-			className={cn(
-				"relative border-r min-w-0",
-				isToday && "bg-primary/[0.02]",
-			)}
+			className={cn("relative border-r min-w-0", isToday && "bg-primary/[0.02]")}
 			style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
 		>
 			{/* Hour grid lines */}
 			{Array.from({ length: TOTAL_HOURS }, (_, i) => (
 				<div
 					key={i}
-					className="absolute left-0 right-0 border-t border-border/40"
+					className="absolute right-0 left-0 border-t border-border/40"
 					style={{ top: `${i * HOUR_HEIGHT}px` }}
 				/>
 			))}
@@ -66,7 +57,7 @@ export default function DayColumn({
 			{Array.from({ length: TOTAL_HOURS }, (_, i) => (
 				<div
 					key={`half-${i}`}
-					className="absolute left-0 right-0 border-t border-border/20 border-dashed"
+					className="absolute right-0 left-0 border-t border-dashed border-border/20"
 					style={{ top: `${(i + 0.5) * HOUR_HEIGHT}px` }}
 				/>
 			))}
@@ -86,12 +77,12 @@ export default function DayColumn({
 			{/* Current time indicator */}
 			{isToday && (
 				<div
-					className="absolute left-0 right-0 z-30 pointer-events-none"
+					className="pointer-events-none absolute right-0 left-0 z-30"
 					style={{ top: `${nowTop}px` }}
 				>
 					<div className="relative flex items-center">
 						<div className="absolute -left-1 size-2 rounded-full bg-red-500" />
-						<div className="w-full h-px bg-red-500" />
+						<div className="h-px w-full bg-red-500" />
 					</div>
 				</div>
 			)}

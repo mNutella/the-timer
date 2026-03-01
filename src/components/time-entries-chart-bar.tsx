@@ -2,14 +2,9 @@
 
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
 import type { Id } from "@/../convex/_generated/dataModel";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -89,11 +84,7 @@ export function TimeEntriesChartBarInteractive({
 	categoryFilter,
 	dateRange,
 }: TimeEntriesChartBarInteractiveProps) {
-	const filterDescription = getFilterDescription(
-		clientFilter,
-		projectFilter,
-		categoryFilter,
-	);
+	const filterDescription = getFilterDescription(clientFilter, projectFilter, categoryFilter);
 
 	const dateLabel =
 		dateRange?.from && dateRange?.to
@@ -101,7 +92,7 @@ export function TimeEntriesChartBarInteractive({
 			: "Last 3 months";
 
 	return (
-		<Card className="py-0 h-full">
+		<Card className="h-full py-0">
 			<CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
 				<div className="flex flex-1 flex-col justify-center gap-1 px-6 py-2">
 					<CardTitle>Daily Time Tracked</CardTitle>
@@ -109,7 +100,7 @@ export function TimeEntriesChartBarInteractive({
 				</div>
 				<div className="flex">
 					<div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-2 sm:border-t-0 sm:border-l sm:px-8">
-						<span className="text-muted-foreground text-xs">Total Hours</span>
+						<span className="text-xs text-muted-foreground">Total Hours</span>
 						<span className="text-lg leading-none font-bold sm:text-2xl">
 							{totalHours.toFixed(1)}h
 						</span>
@@ -117,10 +108,7 @@ export function TimeEntriesChartBarInteractive({
 				</div>
 			</CardHeader>
 			<CardContent className="px-2 sm:px-4 sm:py-3">
-				<ChartContainer
-					config={chartConfig}
-					className="aspect-auto h-[240px] w-full"
-				>
+				<ChartContainer config={chartConfig} className="aspect-auto h-[240px] w-full">
 					<BarChart
 						accessibilityLayer
 						data={chartData}
@@ -175,9 +163,7 @@ export function TimeEntriesChartBarInteractive({
 										dataKey={key}
 										stackId="a"
 										fill={CHART_COLORS[i % CHART_COLORS.length]}
-										radius={
-											i === entityKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
-										}
+										radius={i === entityKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
 									/>
 								))}
 								<ChartLegend content={<ChartLegendContent />} />

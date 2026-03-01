@@ -29,24 +29,21 @@ export const list = query({
 	handler: async (ctx, { dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		const lowerDate = dateRange ? getStartOfDay(dateRange.startDate) : 0;
-		const upperDate = dateRange
-			? getEndOfDay(dateRange.endDate)
-			: Number.MAX_SAFE_INTEGER;
+		const upperDate = dateRange ? getEndOfDay(dateRange.endDate) : Number.MAX_SAFE_INTEGER;
 
 		const categories = await ctx
 			.table("categories", "userId", (q) => q.eq("userId", userId))
 			.map(async (category) => {
-				const totalDuration =
-					await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
-						namespace: userId,
-						bounds: {
-							lower: { key: [category._id, lowerDate], inclusive: true },
-							upper: {
-								key: [category._id, upperDate],
-								inclusive: true,
-							},
+				const totalDuration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
+					namespace: userId,
+					bounds: {
+						lower: { key: [category._id, lowerDate], inclusive: true },
+						upper: {
+							key: [category._id, upperDate],
+							inclusive: true,
 						},
-					});
+					},
+				});
 
 				return {
 					...category.doc(),
@@ -97,9 +94,7 @@ export const searchByName = query({
 
 		const categories = await ctx
 			.table("categories")
-			.search("name", (q) =>
-				q.search("name", trimmedQuery).eq("userId", userId),
-			)
+			.search("name", (q) => q.search("name", trimmedQuery).eq("userId", userId))
 			.paginate(paginationOpts);
 
 		return categories;

@@ -1,4 +1,5 @@
 import { expect, test, describe } from "vitest";
+
 import { api } from "./_generated/api";
 import {
 	authenticateAs,
@@ -51,12 +52,8 @@ describe("time_entries", () => {
 		test("copies metadata from existing entry (resume)", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
-			const projectId = await t.run(async (ctx) =>
-				seedProject(ctx, userId, { clientId }),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
+			const projectId = await t.run(async (ctx) => seedProject(ctx, userId, { clientId }));
 
 			const originalId = await asUser.mutation(api.time_entries.create, {
 				name: "Original task",
@@ -150,9 +147,9 @@ describe("time_entries", () => {
 				name: "Timer",
 			});
 
-			await expect(
-				asUser2.mutation(api.time_entries.stop, { id: entryId }),
-			).rejects.toThrow("does not belong to user");
+			await expect(asUser2.mutation(api.time_entries.stop, { id: entryId })).rejects.toThrow(
+				"does not belong to user",
+			);
 		});
 	});
 
@@ -287,9 +284,7 @@ describe("time_entries", () => {
 		test("sets clientId", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -307,12 +302,8 @@ describe("time_entries", () => {
 		test("clears projectId when project belongs to old client", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientA = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Client A"),
-			);
-			const clientB = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Client B"),
-			);
+			const clientA = await t.run(async (ctx) => seedClient(ctx, userId, "Client A"));
+			const clientB = await t.run(async (ctx) => seedClient(ctx, userId, "Client B"));
 			const projectA = await t.run(async (ctx) =>
 				seedProject(ctx, userId, { clientId: clientA, name: "Project A" }),
 			);
@@ -337,9 +328,7 @@ describe("time_entries", () => {
 		test("preserves projectId when project belongs to new client", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientA = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Client A"),
-			);
+			const clientA = await t.run(async (ctx) => seedClient(ctx, userId, "Client A"));
 			const projectA = await t.run(async (ctx) =>
 				seedProject(ctx, userId, { clientId: clientA, name: "Project A" }),
 			);
@@ -377,18 +366,14 @@ describe("time_entries", () => {
 			const entry = await t.run(async (ctx) => ctx.db.get(entryId));
 			expect(entry!.clientId).toBeDefined();
 
-			const client = await t.run(async (ctx) =>
-				ctx.db.get(entry!.clientId!),
-			);
+			const client = await t.run(async (ctx) => ctx.db.get(entry!.clientId!));
 			expect(client!.name).toBe("Brand New Client");
 		});
 
 		test("deduplicates client name case-insensitively", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const existingClientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme Corp"),
-			);
+			const existingClientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme Corp"));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -406,9 +391,7 @@ describe("time_entries", () => {
 		test("throws if both clientId and newClientName", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -428,9 +411,7 @@ describe("time_entries", () => {
 		test("sets projectId", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const projectId = await t.run(async (ctx) =>
-				seedProject(ctx, userId),
-			);
+			const projectId = await t.run(async (ctx) => seedProject(ctx, userId));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -448,9 +429,7 @@ describe("time_entries", () => {
 		test("creates new project with newProjectName (inherits clientId)", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -465,9 +444,7 @@ describe("time_entries", () => {
 			const entry = await t.run(async (ctx) => ctx.db.get(entryId));
 			expect(entry!.projectId).toBeDefined();
 
-			const project = await t.run(async (ctx) =>
-				ctx.db.get(entry!.projectId!),
-			);
+			const project = await t.run(async (ctx) => ctx.db.get(entry!.projectId!));
 			expect(project!.name).toBe("New Project");
 			expect(project!.clientId).toBe(clientId);
 		});
@@ -477,9 +454,7 @@ describe("time_entries", () => {
 		test("sets categoryId", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const categoryId = await t.run(async (ctx) =>
-				seedCategory(ctx, userId, "Development"),
-			);
+			const categoryId = await t.run(async (ctx) => seedCategory(ctx, userId, "Development"));
 
 			const entryId = await asUser.mutation(api.time_entries.create, {
 				name: "Timer",
@@ -510,9 +485,7 @@ describe("time_entries", () => {
 			const entry = await t.run(async (ctx) => ctx.db.get(entryId));
 			expect(entry!.categoryId).toBeDefined();
 
-			const category = await t.run(async (ctx) =>
-				ctx.db.get(entry!.categoryId!),
-			);
+			const category = await t.run(async (ctx) => ctx.db.get(entry!.categoryId!));
 			expect(category!.name).toBe("Design");
 		});
 	});
@@ -522,15 +495,9 @@ describe("time_entries", () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
 
-			const id1 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { name: "Entry 1" }),
-			);
-			const id2 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { name: "Entry 2" }),
-			);
-			const id3 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { name: "Entry 3" }),
-			);
+			const id1 = await t.run(async (ctx) => seedTimeEntry(ctx, userId, { name: "Entry 1" }));
+			const id2 = await t.run(async (ctx) => seedTimeEntry(ctx, userId, { name: "Entry 2" }));
+			const id3 = await t.run(async (ctx) => seedTimeEntry(ctx, userId, { name: "Entry 3" }));
 
 			await asUser.mutation(api.time_entries.bulkDelete, {
 				ids: [id1, id2],
@@ -554,12 +521,8 @@ describe("time_entries", () => {
 				email: "u2@test.com",
 			});
 
-			const id1 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId1, { name: "User1 entry" }),
-			);
-			const id2 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId2, { name: "User2 entry" }),
-			);
+			const id1 = await t.run(async (ctx) => seedTimeEntry(ctx, userId1, { name: "User1 entry" }));
+			const id2 = await t.run(async (ctx) => seedTimeEntry(ctx, userId2, { name: "User2 entry" }));
 
 			await expect(
 				asUser1.mutation(api.time_entries.bulkDelete, {
@@ -573,16 +536,10 @@ describe("time_entries", () => {
 		test("updates fields on multiple entries", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
-			const id1 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { name: "Entry 1" }),
-			);
-			const id2 = await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { name: "Entry 2" }),
-			);
+			const id1 = await t.run(async (ctx) => seedTimeEntry(ctx, userId, { name: "Entry 1" }));
+			const id2 = await t.run(async (ctx) => seedTimeEntry(ctx, userId, { name: "Entry 2" }));
 
 			await asUser.mutation(api.time_entries.bulkUpdate, {
 				ids: [id1, id2],
@@ -614,9 +571,7 @@ describe("time_entries", () => {
 		test("deduplicates projects from recent entries", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 			const projectId = await t.run(async (ctx) =>
 				seedProject(ctx, userId, { clientId, name: "Alpha" }),
 			);
@@ -645,9 +600,7 @@ describe("time_entries", () => {
 		test("respects limit parameter", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			const p1 = await t.run(async (ctx) =>
 				seedProject(ctx, userId, { clientId, name: "Project 1" }),
@@ -659,15 +612,9 @@ describe("time_entries", () => {
 				seedProject(ctx, userId, { clientId, name: "Project 3" }),
 			);
 
-			await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { projectId: p1, clientId }),
-			);
-			await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { projectId: p2, clientId }),
-			);
-			await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { projectId: p3, clientId }),
-			);
+			await t.run(async (ctx) => seedTimeEntry(ctx, userId, { projectId: p1, clientId }));
+			await t.run(async (ctx) => seedTimeEntry(ctx, userId, { projectId: p2, clientId }));
+			await t.run(async (ctx) => seedTimeEntry(ctx, userId, { projectId: p3, clientId }));
 
 			const result = await asUser.query(api.time_entries.getRecentProjects, {
 				limit: 2,
@@ -678,16 +625,12 @@ describe("time_entries", () => {
 		test("includes client info for project", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme Corp"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme Corp"));
 			const projectId = await t.run(async (ctx) =>
 				seedProject(ctx, userId, { clientId, name: "Main Project" }),
 			);
 
-			await t.run(async (ctx) =>
-				seedTimeEntry(ctx, userId, { projectId, clientId }),
-			);
+			await t.run(async (ctx) => seedTimeEntry(ctx, userId, { projectId, clientId }));
 
 			const result = await asUser.query(api.time_entries.getRecentProjects, {});
 			expect(result).toHaveLength(1);
@@ -701,9 +644,7 @@ describe("time_entries", () => {
 		test("returns running timer with resolved edges", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			await asUser.mutation(api.time_entries.create, {
 				name: "Running",

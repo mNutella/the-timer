@@ -1,7 +1,10 @@
-import { useState } from "react";
 import { useMutation } from "convex/react";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { SearchableCombobox, type SelectableItem } from "@/components/searchable-combobox";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,9 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SearchableCombobox, type SelectableItem } from "@/components/searchable-combobox";
 import { optimisticCreateTimer } from "@/lib/optimistic-updates";
-import { toast } from "sonner";
 
 interface StartTimerDialogProps {
 	open: boolean;
@@ -27,7 +28,9 @@ export function StartTimerDialog({ open, onOpenChange }: StartTimerDialogProps) 
 	const [project, setProject] = useState<SelectableItem | undefined>();
 	const [category, setCategory] = useState<SelectableItem | undefined>();
 
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(
+		optimisticCreateTimer,
+	);
 	const createClient = useMutation(api.clients.create);
 	const createProject = useMutation(api.projects.create);
 	const createCategory = useMutation(api.categories.create);

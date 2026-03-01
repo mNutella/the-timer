@@ -4,17 +4,10 @@ import { ChevronsUpDown } from "lucide-react";
 import type * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandInput,
-	CommandList,
-} from "@/components/ui/command";
+import { Command, CommandInput, CommandList } from "@/components/ui/command";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { ComboboxProvider, useComboboxContext } from "./hooks";
 
 function Combobox<T>({
@@ -29,13 +22,8 @@ function Combobox<T>({
 	onPopoverOpenChange?: (open: boolean) => void;
 }) {
 	return (
-		<ComboboxProvider
-			selectedItems={selectedItems}
-			onValueChange={onValueChange}
-		>
-			<ComboboxView onPopoverOpenChange={onPopoverOpenChange}>
-				{children}
-			</ComboboxView>
+		<ComboboxProvider selectedItems={selectedItems} onValueChange={onValueChange}>
+			<ComboboxView onPopoverOpenChange={onPopoverOpenChange}>{children}</ComboboxView>
 		</ComboboxProvider>
 	);
 }
@@ -88,9 +76,7 @@ function ComboboxTrigger({
 				className={className}
 			>
 				{children}
-				{showChevron && (
-					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-				)}
+				{showChevron && <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
 			</Button>
 		</Trigger>
 	);
@@ -100,11 +86,7 @@ function ComboboxContent({ children }: { children: React.ReactNode }) {
 	const { isMobile } = useComboboxContext();
 	const Content = isMobile ? DrawerContent : PopoverContent;
 
-	const content = (
-		<Command shouldFilter={false}>
-			{children}
-		</Command>
-	);
+	const content = <Command shouldFilter={false}>{children}</Command>;
 
 	return (
 		<Content className="w-[200px] p-0">
@@ -121,10 +103,4 @@ function ComboboxList({ children }: { children: React.ReactNode }) {
 	return <CommandList>{children}</CommandList>;
 }
 
-export {
-	Combobox,
-	ComboboxContent,
-	ComboboxInput,
-	ComboboxList,
-	ComboboxTrigger,
-};
+export { Combobox, ComboboxContent, ComboboxInput, ComboboxList, ComboboxTrigger };

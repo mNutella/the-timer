@@ -1,5 +1,6 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -31,12 +32,9 @@ export class AppErrorBoundary extends Component<Props, State> {
 							<AlertTriangle className="size-7 text-destructive" />
 						</div>
 						<div className="flex flex-col gap-2">
-							<h1 className="text-lg font-semibold text-foreground">
-								Something went wrong
-							</h1>
+							<h1 className="text-lg font-semibold text-foreground">Something went wrong</h1>
 							<p className="text-sm text-muted-foreground">
-								The app encountered an unexpected error. Reloading usually fixes
-								this.
+								The app encountered an unexpected error. Reloading usually fixes this.
 							</p>
 							{import.meta.env.DEV && this.state.error && (
 								<pre className="mt-2 max-h-32 overflow-auto rounded-lg bg-muted p-3 text-left text-xs text-muted-foreground">

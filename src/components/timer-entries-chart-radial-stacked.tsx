@@ -4,19 +4,14 @@ import { useQuery } from "convex-helpers/react/cache";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
+
 import { api } from "@/../convex/_generated/api";
 import {
 	getConstraintFilters,
 	getEntityIds,
 	getStackDimension,
 } from "@/components/time-entries-chart-bar";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -66,12 +61,7 @@ export function TimeEntriesChartRadialStacked({
 	const entityIds = useMemo(
 		() =>
 			stackDimension
-				? getEntityIds(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
+				? getEntityIds(stackDimension, clientFilter, projectFilter, categoryFilter)
 				: [],
 		[stackDimension, clientFilter, projectFilter, categoryFilter],
 	);
@@ -79,12 +69,7 @@ export function TimeEntriesChartRadialStacked({
 	const constraintFilters = useMemo(
 		() =>
 			stackDimension
-				? getConstraintFilters(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
+				? getConstraintFilters(stackDimension, clientFilter, projectFilter, categoryFilter)
 				: undefined,
 		[stackDimension, clientFilter, projectFilter, categoryFilter],
 	);
@@ -124,18 +109,10 @@ export function TimeEntriesChartRadialStacked({
 		};
 	}, [rawData]);
 
-	const filterDescription = getFilterDescription(
-		clientFilter,
-		projectFilter,
-		categoryFilter,
-	);
+	const filterDescription = getFilterDescription(clientFilter, projectFilter, categoryFilter);
 
 	const dimensionLabel =
-		groupBy === "client"
-			? "Client"
-			: groupBy === "project"
-				? "Project"
-				: "Category";
+		groupBy === "client" ? "Client" : groupBy === "project" ? "Project" : "Category";
 
 	const dateLabel =
 		dateRange?.from && dateRange?.to
@@ -143,22 +120,14 @@ export function TimeEntriesChartRadialStacked({
 			: "Last 3 months";
 
 	return (
-		<Card className="flex flex-col h-full">
+		<Card className="flex h-full flex-col">
 			<CardHeader className="items-center py-2 pb-0">
 				<CardTitle>Time by {dimensionLabel}</CardTitle>
 				<CardDescription>{dateLabel}</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-1 items-center justify-center p-2">
-				<ChartContainer
-					config={chartConfig}
-					className="mx-auto aspect-square w-full max-w-[240px]"
-				>
-					<RadialBarChart
-						data={chartData}
-						endAngle={360}
-						innerRadius={70}
-						outerRadius={115}
-					>
+				<ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[240px]">
+					<RadialBarChart data={chartData} endAngle={360} innerRadius={70} outerRadius={115}>
 						<ChartTooltip
 							cursor={false}
 							content={

@@ -1,11 +1,6 @@
-import { v } from "convex/values";
-import {
-	defineEnt,
-	defineEntSchema,
-	defineEntsFromTables,
-	getEntDefinitions,
-} from "convex-ents";
 import { authTables } from "@convex-dev/auth/server";
+import { defineEnt, defineEntSchema, defineEntsFromTables, getEntDefinitions } from "convex-ents";
+import { v } from "convex/values";
 
 const schema = defineEntSchema({
 	...defineEntsFromTables(authTables),
@@ -44,11 +39,7 @@ const schema = defineEntSchema({
 
 	projects: defineEnt({
 		name: v.string(),
-		status: v.union(
-			v.literal("active"),
-			v.literal("archived"),
-			v.literal("completed"),
-		),
+		status: v.union(v.literal("active"), v.literal("archived"), v.literal("completed")),
 		hourly_rate_cents: v.optional(v.number()),
 		updated_at: v.number(),
 	})

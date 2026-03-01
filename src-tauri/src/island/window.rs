@@ -51,8 +51,7 @@ unsafe fn set_can_become_key(obj: *const objc2::runtime::AnyObject, can_become: 
 
     let cls = object_getClass(obj);
 
-    type CanBecomeKeyFn =
-        extern "C-unwind" fn(*const objc2::runtime::AnyObject, Sel) -> Bool;
+    type CanBecomeKeyFn = extern "C-unwind" fn(*const objc2::runtime::AnyObject, Sel) -> Bool;
     let func: CanBecomeKeyFn = if can_become { yes } else { no };
     let imp: Imp = core::mem::transmute(func);
 
@@ -86,7 +85,11 @@ fn do_create_island(app: &AppHandle) -> Result<(), String> {
 
     println!(
         "[island] Creating island: x={}, y={}, has_notch={}, notch_width={}, screen_width={}",
-        initial_layout.x, initial_layout.y, layout.has_notch, layout.notch_width, layout.screen_width
+        initial_layout.x,
+        initial_layout.y,
+        layout.has_notch,
+        layout.notch_width,
+        layout.screen_width
     );
 
     // Pass notch info to the frontend via query params
@@ -96,23 +99,19 @@ fn do_create_island(app: &AppHandle) -> Result<(), String> {
     );
 
     // Create a regular webview window first
-    let window = WebviewWindowBuilder::new(
-        app,
-        ISLAND_LABEL,
-        WebviewUrl::App(url.into()),
-    )
-    .title("Island")
-    .inner_size(initial_width, initial_height)
-    .position(initial_layout.x, initial_layout.y)
-    .decorations(false)
-    .transparent(true)
-    .shadow(false)
-    .always_on_top(true)
-    .visible(false)
-    .focused(false)
-    .skip_taskbar(true)
-    .build()
-    .map_err(|e| format!("Failed to create island window: {e}"))?;
+    let window = WebviewWindowBuilder::new(app, ISLAND_LABEL, WebviewUrl::App(url.into()))
+        .title("Island")
+        .inner_size(initial_width, initial_height)
+        .position(initial_layout.x, initial_layout.y)
+        .decorations(false)
+        .transparent(true)
+        .shadow(false)
+        .always_on_top(true)
+        .visible(false)
+        .focused(false)
+        .skip_taskbar(true)
+        .build()
+        .map_err(|e| format!("Failed to create island window: {e}"))?;
 
     // Convert to NSPanel for non-focus-stealing behavior
     let panel = tauri_nspanel::WebviewWindowExt::to_panel::<IslandPanel>(&window)
@@ -157,8 +156,7 @@ fn do_create_island(app: &AppHandle) -> Result<(), String> {
         let content_view: *const objc2::runtime::AnyObject =
             objc2::msg_send![ns_panel, contentView];
         let _: () = objc2::msg_send![content_view, setWantsLayer: true];
-        let layer: *const objc2::runtime::AnyObject =
-            objc2::msg_send![content_view, layer];
+        let layer: *const objc2::runtime::AnyObject = objc2::msg_send![content_view, layer];
         let _: () = objc2::msg_send![layer, setMasksToBounds: true];
 
         if layout.has_notch {
@@ -236,8 +234,8 @@ pub fn resize_island(app: AppHandle, width: f64, height: f64) -> Result<(), Stri
 
     // NSPanel frame: origin is bottom-left in screen coords.
     // We need to convert our top-left (x, y=0) to bottom-left origin.
-    use objc2_foundation::NSRect;
     use objc2_foundation::NSPoint;
+    use objc2_foundation::NSRect;
     use objc2_foundation::NSSize;
 
     let screen_frame = {
@@ -246,7 +244,10 @@ pub fn resize_island(app: AppHandle, width: f64, height: f64) -> Result<(), Stri
         let mtm = unsafe { MainThreadMarker::new_unchecked() };
         NSScreen::mainScreen(mtm)
             .map(|s| s.frame())
-            .unwrap_or(NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(1440.0, 900.0)))
+            .unwrap_or(NSRect::new(
+                NSPoint::new(0.0, 0.0),
+                NSSize::new(1440.0, 900.0),
+            ))
     };
 
     let ns_y = screen_frame.size.height - y - height;

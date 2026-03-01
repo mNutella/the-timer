@@ -2,7 +2,6 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { LogOut, MoreVertical } from "lucide-react";
 
-import { api } from "../../convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -18,6 +17,8 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+
+import { api } from "../../convex/_generated/api";
 
 export function NavUser() {
 	const { signOut } = useAuthActions();
@@ -45,15 +46,11 @@ export function NavUser() {
 						>
 							<Avatar className="h-8 w-8 rounded-lg grayscale">
 								<AvatarImage src={image} alt={name} />
-								<AvatarFallback className="rounded-lg">
-									{initials}
-								</AvatarFallback>
+								<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-medium">{name}</span>
-								<span className="text-muted-foreground truncate text-xs">
-									{email}
-								</span>
+								<span className="truncate text-xs text-muted-foreground">{email}</span>
 							</div>
 							<MoreVertical className="ml-auto size-4" />
 						</SidebarMenuButton>
@@ -68,15 +65,11 @@ export function NavUser() {
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar className="h-8 w-8 rounded-lg">
 									<AvatarImage src={image} alt={name} />
-									<AvatarFallback className="rounded-lg">
-										{initials}
-									</AvatarFallback>
+									<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-medium">{name}</span>
-									<span className="text-muted-foreground truncate text-xs">
-										{email}
-									</span>
+									<span className="truncate text-xs text-muted-foreground">{email}</span>
 								</div>
 							</div>
 						</DropdownMenuLabel>

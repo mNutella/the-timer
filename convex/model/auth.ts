@@ -1,4 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
+
 import type { QueryCtx, MutationCtx } from "../types";
 
 export async function getRequiredUserId(ctx: QueryCtx | MutationCtx) {

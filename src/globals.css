@@ -71,7 +71,7 @@
 	--secondary-foreground: oklch(0.88 0.006 270);
 	--muted: oklch(0.22 0.008 270);
 	--muted-foreground: oklch(0.55 0.01 270);
-	--accent: oklch(0.20 0.008 270);
+	--accent: oklch(0.2 0.008 270);
 	--accent-foreground: oklch(0.93 0.006 270);
 	--destructive: oklch(0.65 0.2 25);
 	--success: oklch(0.72 0.17 160);
@@ -81,21 +81,21 @@
 	--ring: oklch(0.72 0.17 160);
 	--chart-1: oklch(0.72 0.17 160);
 	--chart-2: oklch(0.65 0.15 200);
-	--chart-3: oklch(0.70 0.12 250);
+	--chart-3: oklch(0.7 0.12 250);
 	--chart-4: oklch(0.75 0.15 85);
 	--chart-5: oklch(0.65 0.18 330);
 	--sidebar: oklch(0.13 0.005 270);
 	--sidebar-foreground: oklch(0.93 0.006 270);
 	--sidebar-primary: oklch(0.72 0.17 160);
 	--sidebar-primary-foreground: oklch(0.12 0.005 270);
-	--sidebar-accent: oklch(0.20 0.008 270);
-	--sidebar-accent-foreground: oklch(0.90 0.006 270);
+	--sidebar-accent: oklch(0.2 0.008 270);
+	--sidebar-accent-foreground: oklch(0.9 0.006 270);
 	--sidebar-border: oklch(0.26 0.006 270);
 	--sidebar-ring: oklch(0.72 0.17 160);
 	--card-hover-border: oklch(0.35 0.01 270);
-	--card-hover-shadow: oklch(0.30 0.005 270);
+	--card-hover-shadow: oklch(0.3 0.005 270);
 	--card-glow-border: oklch(0.32 0.008 270);
-	--card-glow-shadow: oklch(0.20 0.005 270);
+	--card-glow-shadow: oklch(0.2 0.005 270);
 	--glow-success: 0 0 24px -6px oklch(0.72 0.17 160 / 0.15);
 }
 
@@ -103,11 +103,11 @@
 	color-scheme: light;
 	--background: oklch(0.985 0 0);
 	--foreground: oklch(0.14 0.005 270);
-	--card: oklch(1.0 0 0);
+	--card: oklch(1 0 0);
 	--card-foreground: oklch(0.14 0.005 270);
-	--popover: oklch(1.0 0 0);
+	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.14 0.005 270);
-	--primary: oklch(0.50 0.18 160);
+	--primary: oklch(0.5 0.18 160);
 	--primary-foreground: oklch(0.99 0 0);
 	--secondary: oklch(0.95 0.002 270);
 	--secondary-foreground: oklch(0.22 0.005 270);
@@ -117,10 +117,10 @@
 	--accent-foreground: oklch(0.14 0.005 270);
 	--destructive: oklch(0.55 0.22 25);
 	--success: oklch(0.45 0.16 160);
-	--warning: oklch(0.60 0.16 85);
+	--warning: oklch(0.6 0.16 85);
 	--border: oklch(0.88 0.004 270);
 	--input: oklch(0.88 0.004 270);
-	--ring: oklch(0.50 0.18 160);
+	--ring: oklch(0.5 0.18 160);
 	--chart-1: oklch(0.45 0.16 160);
 	--chart-2: oklch(0.45 0.14 200);
 	--chart-3: oklch(0.48 0.11 250);
@@ -128,14 +128,14 @@
 	--chart-5: oklch(0.45 0.17 330);
 	--sidebar: oklch(0.97 0.002 270);
 	--sidebar-foreground: oklch(0.14 0.005 270);
-	--sidebar-primary: oklch(0.50 0.18 160);
+	--sidebar-primary: oklch(0.5 0.18 160);
 	--sidebar-primary-foreground: oklch(0.99 0 0);
 	--sidebar-accent: oklch(0.95 0.002 270);
 	--sidebar-accent-foreground: oklch(0.14 0.005 270);
 	--sidebar-border: oklch(0.88 0.004 270);
-	--sidebar-ring: oklch(0.50 0.18 160);
+	--sidebar-ring: oklch(0.5 0.18 160);
 	--card-hover-border: oklch(0.82 0.005 270);
-	--card-hover-shadow: oklch(0.90 0.002 270);
+	--card-hover-shadow: oklch(0.9 0.002 270);
 	--card-glow-border: oklch(0.85 0.004 270);
 	--card-glow-shadow: oklch(0.93 0.002 270);
 	--glow-success: 0 0 24px -6px oklch(0.45 0.16 160 / 0.12);
@@ -192,7 +192,9 @@ body:has(#root) {
 
 /* Card hover effect — subtle border glow */
 .card-hover {
-	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	transition:
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
 }
 .card-hover:hover {
 	border-color: var(--card-hover-border);
@@ -210,7 +212,9 @@ body:has(#root) {
 
 /* Glow card — elevated hover state for dashboard cards */
 [data-slot="card"] {
-	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	transition:
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
 }
 [data-slot="card"]:hover {
 	border-color: var(--card-glow-border);

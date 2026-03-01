@@ -15,13 +15,13 @@ Currently in **beta**.
 
 ## Tech stack
 
-| Layer | Tech |
-|-------|------|
-| Desktop | [Tauri v2](https://tauri.app) with NSPanel for Dynamic Island |
-| Frontend | React 18, TypeScript, TanStack Router, Tailwind CSS v4 |
-| UI | Radix primitives, Recharts, cmdk |
-| Backend | [Convex](https://convex.dev) (real-time database + auth) |
-| Auth | OAuth (Google) via `@convex-dev/auth` |
+| Layer    | Tech                                                          |
+| -------- | ------------------------------------------------------------- |
+| Desktop  | [Tauri v2](https://tauri.app) with NSPanel for Dynamic Island |
+| Frontend | React 18, TypeScript, TanStack Router, Tailwind CSS v4        |
+| UI       | Radix primitives, Recharts, cmdk                              |
+| Backend  | [Convex](https://convex.dev) (real-time database + auth)      |
+| Auth     | OAuth (Google) via `@convex-dev/auth`                         |
 
 ## Getting started
 

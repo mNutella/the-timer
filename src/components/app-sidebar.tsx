@@ -75,16 +75,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarHeader className="pt-8">
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton
-							asChild
-							size="lg"
-							className="data-[slot=sidebar-menu-button]:!p-1.5"
-						>
+						<SidebarMenuButton asChild size="lg" className="data-[slot=sidebar-menu-button]:!p-1.5">
 							<Link to="/">
 								<Timer className="!size-5" />
-								<span className="text-base font-semibold tracking-tight">
-									The Timer.
-								</span>
+								<span className="text-base font-semibold tracking-tight">The Timer.</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

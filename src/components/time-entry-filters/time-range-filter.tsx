@@ -1,25 +1,12 @@
-import {
-	endOfMonth,
-	endOfWeek,
-	startOfMonth,
-	startOfWeek,
-	subMonths,
-} from "date-fns";
-import {
-	BrushCleaning,
-	Calendar as CalendarIcon,
-	ChevronsUpDown,
-} from "lucide-react";
+import { endOfMonth, endOfWeek, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import { BrushCleaning, Calendar as CalendarIcon, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 const DATE_PRESETS: { label: string; getRange: () => DateRange }[] = [
@@ -64,9 +51,7 @@ export function TimeRangeFilter({
 	onChange: (value?: DateRange) => void;
 }) {
 	const [open, setOpen] = React.useState(false);
-	const [timeRange, setTimeRange] = React.useState<DateRange | undefined>(
-		value,
-	);
+	const [timeRange, setTimeRange] = React.useState<DateRange | undefined>(value);
 	const itemSelected = Boolean(timeRange?.from && timeRange?.to);
 
 	const handleClear = (e: React.PointerEvent<HTMLSpanElement>) => {
@@ -97,12 +82,8 @@ export function TimeRangeFilter({
 						{!timeRange?.from && !timeRange?.to ? (
 							<span>Filter by Period</span>
 						) : (
-							<div className="flex text-center gap-x-1">
-								<div>
-									{timeRange?.from?.toLocaleDateString() || (
-										<span>Filter by Period</span>
-									)}
-								</div>
+							<div className="flex gap-x-1 text-center">
+								<div>{timeRange?.from?.toLocaleDateString() || <span>Filter by Period</span>}</div>
 								<div>-</div>
 								<div>
 									{timeRange?.to?.toLocaleDateString() || (
@@ -117,7 +98,7 @@ export function TimeRangeFilter({
 							role="button"
 							tabIndex={0}
 							onPointerDown={handleClear}
-							className="ml-2 p-1.5 hover:bg-muted-foreground/10 rounded-sm group outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+							className="group ml-2 rounded-sm p-1.5 outline-none hover:bg-muted-foreground/10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						>
 							<BrushCleaning className="h-4 w-4 shrink-0 group-hover:text-primary-foreground" />
 						</span>

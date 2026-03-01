@@ -1,4 +1,5 @@
 import { expect, test, describe } from "vitest";
+
 import { api } from "./_generated/api";
 import {
 	authenticateAs,
@@ -46,9 +47,7 @@ describe("invoices", () => {
 		test("resolves clientName when client provided", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme Corp"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme Corp"));
 
 			const id = await asUser.mutation(api.invoices.create, {
 				clientId,
@@ -118,9 +117,7 @@ describe("invoices", () => {
 				subtotal_cents: 0,
 			});
 
-			await expect(
-				asUser2.mutation(api.invoices.update, { id, notes: "hack" }),
-			).rejects.toThrow();
+			await expect(asUser2.mutation(api.invoices.update, { id, notes: "hack" })).rejects.toThrow();
 		});
 	});
 
@@ -138,9 +135,7 @@ describe("invoices", () => {
 
 			await asUser.mutation(api.invoices.deleteOne, { id });
 
-			await expect(
-				asUser.query(api.invoices.getById, { id }),
-			).rejects.toThrow();
+			await expect(asUser.query(api.invoices.getById, { id })).rejects.toThrow();
 		});
 
 		test("throws for wrong userId", async () => {
@@ -159,9 +154,7 @@ describe("invoices", () => {
 				subtotal_cents: 0,
 			});
 
-			await expect(
-				asUser2.mutation(api.invoices.deleteOne, { id }),
-			).rejects.toThrow();
+			await expect(asUser2.mutation(api.invoices.deleteOne, { id })).rejects.toThrow();
 		});
 	});
 
@@ -175,12 +168,8 @@ describe("invoices", () => {
 				email: "u2@test.com",
 			});
 
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId1, { number: "INV-001" }),
-			);
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId2, { number: "INV-002" }),
-			);
+			await t.run(async (ctx) => seedInvoice(ctx, userId1, { number: "INV-001" }));
+			await t.run(async (ctx) => seedInvoice(ctx, userId2, { number: "INV-002" }));
 
 			const list1 = await asUser1.query(api.invoices.list, {});
 			const list2 = await asUser2.query(api.invoices.list, {});
@@ -194,9 +183,7 @@ describe("invoices", () => {
 		test("resolves client names", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientId = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Acme"),
-			);
+			const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 			await t.run(async (ctx) => seedInvoice(ctx, userId, { clientId }));
 
@@ -218,15 +205,9 @@ describe("invoices", () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
 
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { end_date: 1000 }),
-			);
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { end_date: 3000 }),
-			);
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { end_date: 2000 }),
-			);
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { end_date: 1000 }));
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { end_date: 3000 }));
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { end_date: 2000 }));
 
 			const result = await asUser.query(api.invoices.getLastEndDate, {});
 			expect(result).toBe(3000);
@@ -235,19 +216,11 @@ describe("invoices", () => {
 		test("filters by clientId", async () => {
 			const t = createTest();
 			const { userId, asUser } = await authenticateAs(t);
-			const clientA = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Client A"),
-			);
-			const clientB = await t.run(async (ctx) =>
-				seedClient(ctx, userId, "Client B"),
-			);
+			const clientA = await t.run(async (ctx) => seedClient(ctx, userId, "Client A"));
+			const clientB = await t.run(async (ctx) => seedClient(ctx, userId, "Client B"));
 
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { clientId: clientA, end_date: 3000 }),
-			);
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { clientId: clientB, end_date: 5000 }),
-			);
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { clientId: clientA, end_date: 3000 }));
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { clientId: clientB, end_date: 5000 }));
 
 			const result = await asUser.query(api.invoices.getLastEndDate, {
 				clientId: clientA,
@@ -327,9 +300,7 @@ describe("invoices", () => {
 			);
 
 			// Invoice covering that period
-			await t.run(async (ctx) =>
-				seedInvoice(ctx, userId, { end_date: 2000 }),
-			);
+			await t.run(async (ctx) => seedInvoice(ctx, userId, { end_date: 2000 }));
 
 			// Entry after the invoice
 			await t.run(async (ctx) =>
@@ -496,9 +467,7 @@ describe("invoices", () => {
 			});
 
 			expect(result.lineItems).toHaveLength(2);
-			const labels = result.lineItems.map(
-				(li: { label: string }) => li.label,
-			);
+			const labels = result.lineItems.map((li: { label: string }) => li.label);
 			expect(labels).toContain("Client A");
 			expect(labels).toContain("Client B");
 		});
@@ -555,9 +524,7 @@ describe("invoices", () => {
 			});
 
 			expect(result.lineItems).toHaveLength(2);
-			const labels = result.lineItems.map(
-				(li: { label: string }) => li.label,
-			);
+			const labels = result.lineItems.map((li: { label: string }) => li.label);
 			expect(labels).toContain("Project Alpha");
 			expect(labels).toContain("Project Beta");
 		});

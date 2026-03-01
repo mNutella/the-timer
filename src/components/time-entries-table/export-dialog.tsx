@@ -3,6 +3,7 @@ import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -145,9 +146,7 @@ export function ExportDialog({
 						<FileSpreadsheet className="size-5" />
 						Export Time Entries
 					</DialogTitle>
-					<DialogDescription>
-						Configure your export settings and download.
-					</DialogDescription>
+					<DialogDescription>Configure your export settings and download.</DialogDescription>
 				</DialogHeader>
 
 				<div className="grid gap-4 py-2">
@@ -196,10 +195,7 @@ export function ExportDialog({
 
 					<div className="space-y-2">
 						<span className="text-sm font-medium">Group By</span>
-						<Select
-							value={groupBy}
-							onValueChange={(v) => setGroupBy(v as ExportGroupBy)}
-						>
+						<Select value={groupBy} onValueChange={(v) => setGroupBy(v as ExportGroupBy)}>
 							<SelectTrigger className="w-full">
 								<SelectValue />
 							</SelectTrigger>
@@ -215,19 +211,13 @@ export function ExportDialog({
 
 					<div className="space-y-2">
 						<span className="text-sm font-medium text-muted-foreground">
-							{hasEntityFilters || hasCustomDateRange
-								? "Active Filters"
-								: "Date Range"}
+							{hasEntityFilters || hasCustomDateRange ? "Active Filters" : "Date Range"}
 						</span>
 						<div className="flex flex-wrap gap-1.5">
 							{searchValue.trim() && (
 								<Badge variant="secondary">Search: {searchValue.trim()}</Badge>
 							)}
-							{[
-								...filterByClients,
-								...filterByProjects,
-								...filterByCategories,
-							].map((entity) => (
+							{[...filterByClients, ...filterByProjects, ...filterByCategories].map((entity) => (
 								<Badge key={entity._id} variant="secondary">
 									{entity.name}
 								</Badge>
@@ -243,11 +233,7 @@ export function ExportDialog({
 				</div>
 
 				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						disabled={exporting}
-					>
+					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={exporting}>
 						Cancel
 					</Button>
 					<Button onClick={handleExport} disabled={exporting}>

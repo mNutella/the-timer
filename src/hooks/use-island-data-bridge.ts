@@ -1,12 +1,16 @@
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { useEffect, useRef } from "react";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
-import { optimisticCreateTimer, optimisticStopTimer, optimisticUpdateTimeEntry } from "@/lib/optimistic-updates";
+import {
+	optimisticCreateTimer,
+	optimisticStopTimer,
+	optimisticUpdateTimeEntry,
+} from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
-const isTauri =
-	typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 /**
  * Bridges Convex query data to the island overlay via Tauri events.
@@ -20,19 +24,20 @@ export function useIslandDataBridge() {
 	const { settings } = useSettings();
 	const enabled = isTauri && settings.enableIsland;
 
-	const runningTimer = useQuery(
-		api.time_entries.getRunningTimer,
-		enabled ? {} : "skip",
-	);
+	const runningTimer = useQuery(api.time_entries.getRunningTimer, enabled ? {} : "skip");
 	const recentProjects = useQuery(
 		api.time_entries.getRecentProjects,
 		enabled ? { limit: 4 } : "skip",
 	);
 
 	// Mutations for island action events (executed in main window for optimistic updates)
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(
+		optimisticCreateTimer,
+	);
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
-	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
+	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(
+		optimisticUpdateTimeEntry,
+	);
 
 	// Keep refs for the handshake callback (avoids stale closures)
 	const runningTimerRef = useRef(runningTimer);

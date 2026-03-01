@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +11,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+
 import { useUpdateTimeEntryDetails } from "./hooks";
 
 interface DetailsDialogProps {
@@ -46,7 +48,7 @@ export function DetailsDialog({
 					<Label htmlFor="notes">Notes</Label>
 					<textarea
 						id="notes"
-						className="border-input bg-background placeholder:text-muted-foreground flex min-h-[120px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+						className="flex min-h-[120px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 						placeholder="Add notes about this entry..."
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}

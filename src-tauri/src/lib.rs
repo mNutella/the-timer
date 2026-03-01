@@ -68,7 +68,9 @@ pub fn run() {
             }
             // Suppress unused variable warnings on mobile
             #[cfg(mobile)]
-            { let _ = (window, event); }
+            {
+                let _ = (window, event);
+            }
         })
         .invoke_handler({
             #[cfg(target_os = "macos")]

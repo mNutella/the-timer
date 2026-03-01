@@ -10,11 +10,7 @@ export function assertOwnership(
 	}
 }
 
-export function applyOrFilter<Q, T extends string>(
-	query: Q,
-	fieldName: T,
-	ids: string[],
-): Q {
+export function applyOrFilter<Q, T extends string>(query: Q, fieldName: T, ids: string[]): Q {
 	if (ids.length === 0) return query;
 	// biome-ignore lint/suspicious/noExplicitAny: Convex filter API requires dynamic field access
 	return (query as any).filter((q: any) => {

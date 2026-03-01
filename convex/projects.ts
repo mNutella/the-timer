@@ -32,9 +32,7 @@ export const list = query({
 	handler: async (ctx, { clientId, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		const lowerDate = dateRange ? getStartOfDay(dateRange.startDate) : 0;
-		const upperDate = dateRange
-			? getEndOfDay(dateRange.endDate)
-			: Number.MAX_SAFE_INTEGER;
+		const upperDate = dateRange ? getEndOfDay(dateRange.endDate) : Number.MAX_SAFE_INTEGER;
 
 		const projectsQuery = clientId
 			? ctx.table("projects", "by_user_and_client", (q) =>
@@ -43,21 +41,18 @@ export const list = query({
 			: ctx.table("projects", "userId", (q) => q.eq("userId", userId));
 
 		const projects = await projectsQuery.map(async (project) => {
-			const totalDuration =
-				await timeEntriesTotalDurationByProjectAndDateAggregate.sum(ctx, {
-					namespace: userId,
-					bounds: {
-						lower: { key: [project._id, lowerDate], inclusive: true },
-						upper: {
-							key: [project._id, upperDate],
-							inclusive: true,
-						},
+			const totalDuration = await timeEntriesTotalDurationByProjectAndDateAggregate.sum(ctx, {
+				namespace: userId,
+				bounds: {
+					lower: { key: [project._id, lowerDate], inclusive: true },
+					upper: {
+						key: [project._id, upperDate],
+						inclusive: true,
 					},
-				});
+				},
+			});
 
-			const client = project.clientId
-				? await ctx.table("clients").get(project.clientId)
-				: null;
+			const client = project.clientId ? await ctx.table("clients").get(project.clientId) : null;
 
 			return {
 				...project.doc(),
@@ -74,13 +69,7 @@ export const update = mutation({
 	args: {
 		id: v.id("projects"),
 		name: v.optional(v.string()),
-		status: v.optional(
-			v.union(
-				v.literal("active"),
-				v.literal("archived"),
-				v.literal("completed"),
-			),
-		),
+		status: v.optional(v.union(v.literal("active"), v.literal("archived"), v.literal("completed"))),
 		clientId: v.optional(v.id("clients")),
 		clearClientId: v.optional(v.boolean()),
 		hourly_rate_cents: v.optional(v.number()),
@@ -138,10 +127,7 @@ export const searchByName = query({
 			const projects = await ctx
 				.table("projects")
 				.search("name", (q) =>
-					q
-						.search("name", trimmedQuery)
-						.eq("userId", userId)
-						.eq("clientId", clientId),
+					q.search("name", trimmedQuery).eq("userId", userId).eq("clientId", clientId),
 				)
 				.paginate(paginationOpts);
 
@@ -150,9 +136,7 @@ export const searchByName = query({
 
 		const projects = await ctx
 			.table("projects")
-			.search("name", (q) =>
-				q.search("name", trimmedQuery).eq("userId", userId),
-			)
+			.search("name", (q) => q.search("name", trimmedQuery).eq("userId", userId))
 			.paginate(paginationOpts);
 
 		return projects;

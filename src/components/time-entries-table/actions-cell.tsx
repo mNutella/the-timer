@@ -10,6 +10,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { DetailsDialog } from "./details-dialog";
 import { useDeleteTimeEntry, useDuplicateTimeEntry } from "./hooks";
 
@@ -27,12 +28,12 @@ export function ActionsCell({
 	const [detailsOpen, setDetailsOpen] = useState(false);
 
 	return (
-		<div className="flex items-center justify-center w-full h-full">
+		<div className="flex h-full w-full items-center justify-center">
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
 						variant="ghost"
-						className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+						className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
 						size="icon"
 					>
 						<MoreVertical />

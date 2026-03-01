@@ -8,17 +8,13 @@ import {
 	Settings,
 	Tag,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
-import type { LucideIcon } from "lucide-react";
 
-import {
-	DockActionItem,
-	DockNavItem,
-	DockUserItem,
-} from "@/components/dock-item";
-import { Separator } from "@/components/ui/separator";
+import { DockActionItem, DockNavItem, DockUserItem } from "@/components/dock-item";
 import { StartTimerDialog } from "@/components/start-timer-dialog";
+import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +25,7 @@ function useDockMagnification() {
 	const rafRef = useRef<number>(0);
 	const isHoveringRef = useRef(false);
 	const prefersReducedMotion = useRef(
-		typeof window !== "undefined" &&
-			window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
 	);
 
 	const updateScales = useCallback(() => {
@@ -68,8 +63,7 @@ function useDockMagnification() {
 		cancelAnimationFrame(rafRef.current);
 		for (const el of itemRefs.current) {
 			if (!el) continue;
-			el.style.transition =
-				"transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
+			el.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
 			el.style.transform = "scale(1)";
 		}
 	}, []);
@@ -86,16 +80,13 @@ function DesktopDock({ onStartTimer }: { onStartTimer: () => void }) {
 		useDockMagnification();
 
 	return (
-		<nav
-			aria-label="Main navigation"
-			className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50"
-		>
+		<nav aria-label="Main navigation" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
 			<div
 				ref={containerRef}
 				onMouseMove={onMouseMove}
 				onMouseEnter={onMouseEnter}
 				onMouseLeave={onMouseLeave}
-				className="flex items-end gap-1 px-3 py-2 rounded-2xl border border-border/50 bg-background/70 backdrop-blur-xl shadow-lg"
+				className="flex items-end gap-1 rounded-2xl border border-border/50 bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl"
 			>
 				<DockActionItem
 					ref={(el) => {
@@ -177,7 +168,11 @@ function MobileNavLink({
 	icon: Icon,
 	label,
 	href,
-}: { icon: LucideIcon; label: string; href: string }) {
+}: {
+	icon: LucideIcon;
+	label: string;
+	href: string;
+}) {
 	return (
 		<Link
 			to={href}
@@ -205,10 +200,7 @@ function MobileNavButton({
 		<button
 			type="button"
 			onClick={onClick}
-			className={cn(
-				"flex flex-col items-center gap-0.5 text-muted-foreground",
-				className,
-			)}
+			className={cn("flex flex-col items-center gap-0.5 text-muted-foreground", className)}
 		>
 			<Icon className="size-5" />
 			<span className="text-[10px]">{label}</span>
@@ -220,7 +212,7 @@ function MobileDock({ onStartTimer }: { onStartTimer: () => void }) {
 	return (
 		<nav
 			aria-label="Main navigation"
-			className="fixed bottom-0 inset-x-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]"
+			className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg"
 		>
 			<div className="flex items-center justify-around py-2">
 				<MobileNavButton
@@ -229,31 +221,11 @@ function MobileDock({ onStartTimer }: { onStartTimer: () => void }) {
 					onClick={onStartTimer}
 					className="text-success"
 				/>
-				<MobileNavLink
-					icon={LayoutDashboard}
-					label="Dashboard"
-					href="/"
-				/>
-				<MobileNavLink
-					icon={BarChart3}
-					label="Analytics"
-					href="/analytics"
-				/>
-				<MobileNavLink
-					icon={Briefcase}
-					label="Clients"
-					href="/clients"
-				/>
-				<MobileNavLink
-					icon={Folder}
-					label="Projects"
-					href="/projects"
-				/>
-				<MobileNavLink
-					icon={Settings}
-					label="Settings"
-					href="/settings"
-				/>
+				<MobileNavLink icon={LayoutDashboard} label="Dashboard" href="/" />
+				<MobileNavLink icon={BarChart3} label="Analytics" href="/analytics" />
+				<MobileNavLink icon={Briefcase} label="Clients" href="/clients" />
+				<MobileNavLink icon={Folder} label="Projects" href="/projects" />
+				<MobileNavLink icon={Settings} label="Settings" href="/settings" />
 			</div>
 		</nav>
 	);

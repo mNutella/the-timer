@@ -33,9 +33,7 @@ pub fn build_tray_menu(
     if !recent_entries.is_empty() {
         builder = builder.separator();
 
-        let recent_header = MenuItemBuilder::new("Recent")
-            .enabled(false)
-            .build(app)?;
+        let recent_header = MenuItemBuilder::new("Recent").enabled(false).build(app)?;
         builder = builder.item(&recent_header);
 
         for (i, entry) in recent_entries.iter().take(MAX_RECENT).enumerate() {
@@ -59,10 +57,7 @@ pub fn build_tray_menu(
 }
 
 fn format_recent_label(entry: &RecentEntry) -> String {
-    let project = entry
-        .project_name
-        .as_deref()
-        .unwrap_or("Untitled Project");
+    let project = entry.project_name.as_deref().unwrap_or("Untitled Project");
     match entry.client_name.as_deref() {
         Some(client) if !client.is_empty() => format!("{project} ({client})"),
         _ => project.to_string(),

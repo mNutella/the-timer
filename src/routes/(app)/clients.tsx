@@ -1,20 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { Users } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
 import { Input } from "@/components/ui/input";
-import {
-	optimisticDeleteClient,
-	optimisticRenameClient,
-} from "@/lib/optimistic-updates";
+import { optimisticDeleteClient, optimisticRenameClient } from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
-import { toast } from "sonner";
-
 
 export const Route = createFileRoute("/(app)/clients")({
 	component: ClientsPage,
@@ -87,7 +84,9 @@ function ClientsPage() {
 	});
 	const createClient = useMutation(api.clients.create);
 	const updateClient = useMutation(api.clients.update).withOptimisticUpdate(optimisticRenameClient);
-	const deleteClient = useMutation(api.clients.deleteOne).withOptimisticUpdate(optimisticDeleteClient);
+	const deleteClient = useMutation(api.clients.deleteOne).withOptimisticUpdate(
+		optimisticDeleteClient,
+	);
 
 	return (
 		<EntityManagementTable
@@ -103,9 +102,7 @@ function ClientsPage() {
 				{
 					header: "Projects",
 					className: "w-32",
-					render: (client) => (
-						<span className="text-muted-foreground">{client.projectCount}</span>
-					),
+					render: (client) => <span className="text-muted-foreground">{client.projectCount}</span>,
 				},
 				{
 					header: "Rate",
@@ -130,12 +127,14 @@ function ClientsPage() {
 				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateClient({ id: id as Id<"clients">, name })
-					.catch(() => toast.error("Failed to update client"))
+				updateClient({ id: id as Id<"clients">, name }).catch(() =>
+					toast.error("Failed to update client"),
+				)
 			}
 			onDelete={(id) =>
-				deleteClient({ id: id as Id<"clients"> })
-					.catch(() => toast.error("Failed to delete client"))
+				deleteClient({ id: id as Id<"clients"> }).catch(() =>
+					toast.error("Failed to delete client"),
+				)
 			}
 		/>
 	);

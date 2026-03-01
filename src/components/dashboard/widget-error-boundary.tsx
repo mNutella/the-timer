@@ -1,5 +1,6 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -31,20 +32,11 @@ export class WidgetErrorBoundary extends Component<Props, State> {
 							<AlertTriangle className="size-4 text-destructive" />
 						</div>
 						<div>
-							<p className="text-sm font-medium">
-								{this.props.fallbackLabel ?? "Failed to load"}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								Something went wrong. Try refreshing.
-							</p>
+							<p className="text-sm font-medium">{this.props.fallbackLabel ?? "Failed to load"}</p>
+							<p className="text-xs text-muted-foreground">Something went wrong. Try refreshing.</p>
 						</div>
 					</div>
-					<Button
-						onClick={this.handleRetry}
-						variant="ghost"
-						size="sm"
-						className="gap-1.5"
-					>
+					<Button onClick={this.handleRetry} variant="ghost" size="sm" className="gap-1.5">
 						<RefreshCw className="size-3.5" />
 						Retry
 					</Button>

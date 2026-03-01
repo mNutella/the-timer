@@ -18,6 +18,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, ChevronsUpDown, Download } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import type { Category, Client, Project, TimeEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
 import { ActionsCell } from "./actions-cell";
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { CategoryCell } from "./category-cell";
@@ -44,13 +46,7 @@ import { StartEndTimeCell } from "./start-end-time-cell";
 import { StartStopCell } from "./start-stop-cell";
 import { TimeEntryCell } from "./time-entry-cell";
 
-function SortableHeader<T>({
-	column,
-	title,
-}: {
-	column: Column<T>;
-	title: string;
-}) {
+function SortableHeader<T>({ column, title }: { column: Column<T>; title: string }) {
 	const sorted = column.getIsSorted();
 	return (
 		<Button
@@ -83,8 +79,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 		header: ({ table }) => (
 			<Checkbox
 				checked={
-					table.getIsAllPageRowsSelected() ||
-					(table.getIsSomePageRowsSelected() && "indeterminate")
+					table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
 				}
 				onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
 				aria-label="Select all"
@@ -115,9 +110,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 	{
 		accessorKey: "client",
 		header: ({ column }) => <SortableHeader column={column} title="Client" />,
-		cell: ({ row }) => (
-			<ClientCell timeEntryId={row.original._id} client={row.original.client} />
-		),
+		cell: ({ row }) => <ClientCell timeEntryId={row.original._id} client={row.original.client} />,
 		sortingFn: (rowA, rowB) => {
 			const a = rowA.original.client?.name ?? "";
 			const b = rowB.original.client?.name ?? "";
@@ -144,10 +137,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 		accessorKey: "category",
 		header: ({ column }) => <SortableHeader column={column} title="Category" />,
 		cell: ({ row }) => (
-			<CategoryCell
-				timeEntryId={row.original._id}
-				category={row.original.category}
-			/>
+			<CategoryCell timeEntryId={row.original._id} category={row.original.category} />
 		),
 		sortingFn: (rowA, rowB) => {
 			const a = rowA.original.category?.name ?? "";
@@ -174,9 +164,7 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 	{
 		accessorKey: "start_end_time",
-		header: ({ column }) => (
-			<SortableHeader column={column} title="Start/End Time" />
-		),
+		header: ({ column }) => <SortableHeader column={column} title="Start/End Time" />,
 		cell: ({ row }) => (
 			<StartEndTimeCell
 				timeEntryId={row.original._id}
@@ -194,11 +182,8 @@ const columns: ColumnDef<TimeEntry>[] = [
 		id: "start_stop_timer",
 		enableSorting: false,
 		cell: ({ row }) => (
-			<div className="flex items-center justify-center w-full h-full">
-				<StartStopCell
-					timeEntryId={row.original._id}
-					inProgress={!row.original.end_time}
-				/>
+			<div className="flex h-full w-full items-center justify-center">
+				<StartStopCell timeEntryId={row.original._id} inProgress={!row.original.end_time} />
 			</div>
 		),
 	},
@@ -275,20 +260,12 @@ export default function TimeEntriesTable({
 	const loaderRef = React.useRef<HTMLTableCellElement>(null);
 	const [exportOpen, setExportOpen] = React.useState(false);
 	const [rowSelection, setRowSelection] = React.useState({});
-	const [columnVisibility, setColumnVisibility] =
-		React.useState<VisibilityState>({});
-	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-		[],
-	);
+	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 
 	React.useEffect(() => {
-		if (
-			status !== "CanLoadMore" ||
-			!loaderRef.current ||
-			!scrollAreaRef.current
-		)
-			return;
+		if (status !== "CanLoadMore" || !loaderRef.current || !scrollAreaRef.current) return;
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -347,8 +324,7 @@ export default function TimeEntriesTable({
 	// Build grid template so table fills width while keeping specific columns small
 	const headerGroups = table.getHeaderGroups();
 	const gridTemplateColumns = React.useMemo(() => {
-		if (!headerGroups.length)
-			return undefined as React.CSSProperties["gridTemplateColumns"];
+		if (!headerGroups.length) return undefined as React.CSSProperties["gridTemplateColumns"];
 		const headers = headerGroups[0].headers;
 		const parts = headers.map((h) => {
 			const colId = (h.column.columnDef.id ?? h.column.id) as string;
@@ -381,15 +357,14 @@ export default function TimeEntriesTable({
 		estimateSize: () => 72,
 		getScrollElement: () => scrollAreaRef.current,
 		measureElement:
-			typeof window !== "undefined" &&
-			navigator.userAgent.indexOf("Firefox") === -1
+			typeof window !== "undefined" && navigator.userAgent.indexOf("Firefox") === -1
 				? (element) => element?.getBoundingClientRect().height
 				: undefined,
 		overscan: 5,
 	});
 
 	return (
-		<div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+		<div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
 			<ExportDialog
 				open={exportOpen}
 				onOpenChange={setExportOpen}
@@ -399,9 +374,9 @@ export default function TimeEntriesTable({
 				filterByCategories={filterByCategories}
 				filterByTimeRange={filterByTimeRange}
 			/>
-			<div className="flex flex-col flex-1 min-h-0 pb-2">
-				<div className="rounded-lg border flex-1 min-h-0 overflow-hidden">
-					<div className="shrink-0 flex items-center gap-2 bg-card border-b border-border py-2 px-4">
+			<div className="flex min-h-0 flex-1 flex-col pb-2">
+				<div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
+					<div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-4 py-2">
 						<BulkActionsBar
 							selectedCount={table.getFilteredSelectedRowModel().rows.length}
 							totalCount={table.getFilteredRowModel().rows.length}
@@ -413,11 +388,7 @@ export default function TimeEntriesTable({
 							onClearSelection={() => table.resetRowSelection()}
 						/>
 						<div className="ml-auto flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setExportOpen(true)}
-							>
+							<Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>
 								<Download className="size-4" />
 								<span className="hidden lg:inline">Export</span>
 							</Button>
@@ -426,11 +397,11 @@ export default function TimeEntriesTable({
 					</div>
 					<div ref={scrollAreaRef} className="h-full overflow-y-auto">
 						<Table className="grid">
-							<TableHeader className="bg-muted sticky grid top-0 z-10">
+							<TableHeader className="sticky top-0 z-10 grid bg-muted">
 								{table.getHeaderGroups().map((headerGroup) => (
 									<TableRow
 										key={headerGroup.id}
-										className="w-full grid"
+										className="grid w-full"
 										style={{ gridTemplateColumns }}
 									>
 										{headerGroup.headers.map((header) => {
@@ -448,10 +419,7 @@ export default function TimeEntriesTable({
 												>
 													{header.isPlaceholder
 														? null
-														: flexRender(
-																header.column.columnDef.header,
-																header.getContext(),
-															)}
+														: flexRender(header.column.columnDef.header, header.getContext())}
 												</TableHead>
 											);
 										})}
@@ -490,7 +458,7 @@ export default function TimeEntriesTable({
 									<TableRow>
 										<TableCell
 											colSpan={columns.length}
-											className="h-24 text-center flex items-center justify-center"
+											className="flex h-24 items-center justify-center text-center"
 										>
 											No results.
 										</TableCell>
@@ -503,11 +471,7 @@ export default function TimeEntriesTable({
 											transform: `translateY(${rowVirtualizer.getTotalSize() - 1}px)`,
 										}}
 									>
-										<TableCell
-											ref={loaderRef}
-											className="h-4 w-full"
-											colSpan={columns.length}
-										/>
+										<TableCell ref={loaderRef} className="h-4 w-full" colSpan={columns.length} />
 									</TableRow>
 								)}
 							</TableBody>

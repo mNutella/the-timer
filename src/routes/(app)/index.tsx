@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+
 import { ActiveTimerWidget } from "@/components/dashboard/active-timer-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { QuickStart } from "@/components/dashboard/quick-start";

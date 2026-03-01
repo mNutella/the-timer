@@ -3,6 +3,7 @@
 import type { FunctionReference, OptionalRestArgs } from "convex/server";
 import { Check, PlusCircle } from "lucide-react";
 import * as React from "react";
+
 import {
 	Combobox,
 	ComboboxContent,
@@ -11,11 +12,7 @@ import {
 	ComboboxTrigger,
 } from "@/components/ui/combobox-infinity";
 import { useComboboxContext } from "@/components/ui/combobox-infinity/hooks";
-import {
-	CommandGroup,
-	CommandItem,
-	CommandSeparator,
-} from "@/components/ui/command";
+import { CommandGroup, CommandItem, CommandSeparator } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStablePaginatedQuery } from "@/hooks/useStablePaginatedQuery";
 import { cn } from "@/lib/utils";
@@ -43,10 +40,7 @@ type TriggerProps<T extends SelectableItem> = {
 	placeholder?: string;
 };
 
-type BaseSearchableComboboxProps<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
-> = {
+type BaseSearchableComboboxProps<T extends SelectableItem, Q extends PaginatedQuery> = {
 	id?: string;
 	className?: string;
 	apiQuery: Q;
@@ -57,10 +51,7 @@ type BaseSearchableComboboxProps<
 	comboboxTrigger?: React.ComponentType<TriggerProps<T>>;
 };
 
-type SearchableComboboxProps<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
-> =
+type SearchableComboboxProps<T extends SelectableItem, Q extends PaginatedQuery> =
 	| (BaseSearchableComboboxProps<T, Q> & {
 			type?: "single";
 			value?: T | null;
@@ -89,10 +80,9 @@ function DefaultComboboxTrigger<T extends SelectableItem>({
 	);
 }
 
-export function SearchableCombobox<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
->(props: SearchableComboboxProps<T, Q>) {
+export function SearchableCombobox<T extends SelectableItem, Q extends PaginatedQuery>(
+	props: SearchableComboboxProps<T, Q>,
+) {
 	const {
 		id,
 		value,
@@ -163,10 +153,7 @@ export function SearchableCombobox<
 	);
 }
 
-function SearchableComboboxContent<
-	T extends SelectableItem,
-	Q extends PaginatedQuery,
->({
+function SearchableComboboxContent<T extends SelectableItem, Q extends PaginatedQuery>({
 	apiQuery,
 	search,
 	setSearch,
@@ -217,12 +204,7 @@ function SearchableComboboxContent<
 	const scrollAreaRef = React.useRef<HTMLDivElement | null>(null);
 
 	React.useEffect(() => {
-		if (
-			status !== "CanLoadMore" ||
-			!loaderRef.current ||
-			!scrollAreaRef.current
-		)
-			return;
+		if (status !== "CanLoadMore" || !loaderRef.current || !scrollAreaRef.current) return;
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -256,21 +238,13 @@ function SearchableComboboxContent<
 
 	const hasSelectedItems = selectedItemsList.length > 0;
 	const hasUnselectedItems = unselectedItems.length > 0;
-	const hasNoItems =
-		!hasSelectedItems && !hasUnselectedItems && status !== "LoadingFirstPage";
+	const hasNoItems = !hasSelectedItems && !hasUnselectedItems && status !== "LoadingFirstPage";
 
 	const renderItem = (item: { _id: string; name: string }) => (
-		<CommandItem
-			key={item._id}
-			value={item._id}
-			onSelect={() => handleSelectItem(item as T)}
-		>
+		<CommandItem key={item._id} value={item._id} onSelect={() => handleSelectItem(item as T)}>
 			{item.name}
 			<Check
-				className={cn(
-					"ml-auto",
-					selectedItems?.has(item._id) ? "opacity-100" : "opacity-0",
-				)}
+				className={cn("ml-auto", selectedItems?.has(item._id) ? "opacity-100" : "opacity-0")}
 			/>
 		</CommandItem>
 	);
@@ -284,21 +258,13 @@ function SearchableComboboxContent<
 			/>
 			<ComboboxList>
 				<ScrollArea ref={scrollAreaRef} className="h-[200px]">
-					{hasSelectedItems && (
-						<CommandGroup>{selectedItemsList.map(renderItem)}</CommandGroup>
-					)}
+					{hasSelectedItems && <CommandGroup>{selectedItemsList.map(renderItem)}</CommandGroup>}
 					{hasSelectedItems && hasUnselectedItems && <CommandSeparator />}
-					{hasUnselectedItems && (
-						<CommandGroup>{unselectedItems.map(renderItem)}</CommandGroup>
-					)}
+					{hasUnselectedItems && <CommandGroup>{unselectedItems.map(renderItem)}</CommandGroup>}
 					{hasNoItems && (
-						<p className="py-6 text-center text-sm text-muted-foreground">
-							No item found.
-						</p>
+						<p className="py-6 text-center text-sm text-muted-foreground">No item found.</p>
 					)}
-					{status === "CanLoadMore" && (
-						<div ref={loaderRef} className="h-4 w-full" />
-					)}
+					{status === "CanLoadMore" && <div ref={loaderRef} className="h-4 w-full" />}
 				</ScrollArea>
 				{showCreateOption && (
 					<CommandGroup>

@@ -1,14 +1,11 @@
-import type { FunctionArgs, FunctionReference } from "convex/server";
 import { usePaginatedQuery } from "convex-helpers/react/cache";
+import type { FunctionArgs, FunctionReference } from "convex/server";
 import * as React from "react";
 
 type PaginatedQueryRef = FunctionReference<
 	"query",
 	"public",
-	{ paginationOpts: { numItems: number; cursor: string | null } } & Record<
-		string,
-		unknown
-	>,
+	{ paginationOpts: { numItems: number; cursor: string | null } } & Record<string, unknown>,
 	{
 		page: unknown[];
 		isDone: boolean;

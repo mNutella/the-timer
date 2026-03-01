@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { Play, Square, Timer } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { EditTimerDialog } from "@/components/edit-timer-dialog";
 import { StartTimerDialog } from "@/components/start-timer-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import { optimisticStopTimer } from "@/lib/optimistic-updates";
 import { cn } from "@/lib/utils";
@@ -24,8 +25,7 @@ export function ActiveTimerWidget() {
 	const handleStop = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (!runningTimer) return;
-		stopMutation({ id: runningTimer._id })
-			.catch(() => toast.error("Failed to stop timer"));
+		stopMutation({ id: runningTimer._id }).catch(() => toast.error("Failed to stop timer"));
 	};
 
 	if (runningTimer === undefined) {
@@ -50,9 +50,7 @@ export function ActiveTimerWidget() {
 						<TimerIcon />
 						<div>
 							<TimerLabel />
-							<p className="text-lg text-muted-foreground">
-								No active timer
-							</p>
+							<p className="text-lg text-muted-foreground">No active timer</p>
 						</div>
 					</div>
 					<Button onClick={() => setDialogOpen(true)} size="sm">
@@ -93,43 +91,25 @@ export function ActiveTimerWidget() {
 							<span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-success motion-safe:animate-pulse" />
 						</div>
 						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-success">
-								Recording
-							</p>
-							<p className="text-3xl font-semibold tabular-nums tracking-tight">
-								{elapsed}
-							</p>
+							<p className="text-xs font-medium tracking-wider text-success uppercase">Recording</p>
+							<p className="text-3xl font-semibold tracking-tight tabular-nums">{elapsed}</p>
 							<div className="mt-1 flex items-center gap-2">
-								<span className="text-sm text-muted-foreground">
-									{runningTimer.name}
-								</span>
-								{runningTimer.client && (
-									<Badge variant="outline">{runningTimer.client.name}</Badge>
-								)}
+								<span className="text-sm text-muted-foreground">{runningTimer.name}</span>
+								{runningTimer.client && <Badge variant="outline">{runningTimer.client.name}</Badge>}
 								{runningTimer.project && (
 									<Badge variant="secondary">{runningTimer.project.name}</Badge>
 								)}
-								{runningTimer.category && (
-									<Badge>{runningTimer.category.name}</Badge>
-								)}
+								{runningTimer.category && <Badge>{runningTimer.category.name}</Badge>}
 							</div>
 						</div>
 					</div>
-					<Button
-						onClick={handleStop}
-						variant="destructive"
-						size="sm"
-					>
+					<Button onClick={handleStop} variant="destructive" size="sm">
 						<Square className="mr-1 size-4" />
 						Stop
 					</Button>
 				</div>
 			</div>
-			<EditTimerDialog
-				open={editOpen}
-				onOpenChange={setEditOpen}
-				timer={runningTimer}
-			/>
+			<EditTimerDialog open={editOpen} onOpenChange={setEditOpen} timer={runningTimer} />
 		</>
 	);
 }
@@ -144,7 +124,7 @@ function TimerIcon() {
 
 function TimerLabel() {
 	return (
-		<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+		<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 			Active Timer
 		</p>
 	);

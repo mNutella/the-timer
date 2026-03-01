@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { ChevronDown, Columns3 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -10,6 +11,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
 import type { TimeEntry } from "../../lib/types";
 
 export function CustomizeTableMenu({
@@ -26,11 +28,7 @@ export function CustomizeTableMenu({
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button
-					variant="outline"
-					size="sm"
-					className={cn("w-fit h-9", className)}
-				>
+				<Button variant="outline" size="sm" className={cn("w-fit h-9", className)}>
 					<Columns3 />
 					<span className="hidden lg:inline">Customize</span>
 					<span className="lg:hidden">Columns</span>
@@ -40,10 +38,7 @@ export function CustomizeTableMenu({
 			<DropdownMenuContent align="end" className="w-56">
 				{table
 					.getAllColumns()
-					.filter(
-						(column) =>
-							typeof column.accessorFn !== "undefined" && column.getCanHide(),
-					)
+					.filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
 					.map((column) => {
 						return (
 							<DropdownMenuCheckboxItem
@@ -62,9 +57,7 @@ export function CustomizeTableMenu({
 				{hasHiddenColumns && (
 					<>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onClick={() => table.resetColumnVisibility()}
-						>
+						<DropdownMenuItem onClick={() => table.resetColumnVisibility()}>
 							Reset to default
 						</DropdownMenuItem>
 					</>

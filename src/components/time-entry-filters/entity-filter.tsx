@@ -1,9 +1,4 @@
-import {
-	FileSearch,
-	FlagTriangleRight,
-	type LucideProps,
-	UserSearch,
-} from "lucide-react";
+import { FileSearch, FlagTriangleRight, type LucideProps, UserSearch } from "lucide-react";
 
 import { api } from "@/../convex/_generated/api";
 import type { SelectableItem } from "@/components/searchable-combobox";
@@ -18,13 +13,7 @@ function createFilterTrigger(icon: React.ComponentType<LucideProps>) {
 		value?: T | T[];
 		placeholder?: string;
 	}) {
-		return (
-			<CustomSelectTrigger
-				icon={icon}
-				value={props.value}
-				placeholder={props.placeholder}
-			/>
-		);
+		return <CustomSelectTrigger icon={icon} value={props.value} placeholder={props.placeholder} />;
 	};
 }
 

@@ -1,5 +1,5 @@
-import { CalendarDays, Table2 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
+import { CalendarDays, Table2 } from "lucide-react";
 import { Suspense, lazy, useCallback, useState } from "react";
 
 import { AnalyticsSummaryStrip } from "@/components/analytics-summary-strip";
@@ -12,12 +12,7 @@ import {
 	TimerEntrySearch,
 } from "@/components/time-entry-filters";
 import { Separator } from "@/components/ui/separator";
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAnalyticsChartData } from "@/hooks/use-analytics-chart-data";
 import { useFilters } from "@/hooks/use-filters";
 
@@ -75,7 +70,7 @@ function Analytics() {
 	);
 
 	return (
-		<div className="flex flex-col h-dvh overflow-hidden">
+		<div className="flex h-dvh flex-col overflow-hidden">
 			<div className="shrink-0 pt-3 pb-2">
 				<div className="flex items-center justify-start gap-2">
 					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
@@ -99,19 +94,16 @@ function Analytics() {
 					</div>
 					<Separator orientation="vertical" className="mx-1 h-5" />
 					<div className="ml-auto">
-						<TimeRangeFilter
-							value={filterByTimeRange}
-							onChange={setFilterByTimeRange}
-						/>
+						<TimeRangeFilter value={filterByTimeRange} onChange={setFilterByTimeRange} />
 					</div>
 				</div>
 				<div
 					className="grid transition-[grid-template-rows] duration-300 ease-in-out"
 					style={{ gridTemplateRows: chartsExpanded ? "1fr" : "0fr" }}
 				>
-					<div className="overflow-hidden min-h-0">
+					<div className="min-h-0 overflow-hidden">
 						<Suspense fallback={null}>
-							<div className="grid grid-cols-4 gap-4 mt-4">
+							<div className="mt-4 grid grid-cols-4 gap-4">
 								<div className="col-span-3">
 									<TimeEntriesChartBarInteractive
 										chartData={chartData.chartData}
@@ -144,7 +136,7 @@ function Analytics() {
 					/>
 				</div>
 			</div>
-			<Tabs defaultValue="table" className="flex flex-col flex-1 min-h-0">
+			<Tabs defaultValue="table" className="flex min-h-0 flex-1 flex-col">
 				<div>
 					<TabsList>
 						<TabsTrigger value="table">
@@ -157,7 +149,7 @@ function Analytics() {
 						</TabsTrigger>
 					</TabsList>
 				</div>
-				<TabsContent value="table" className="flex flex-col flex-1 min-h-0">
+				<TabsContent value="table" className="flex min-h-0 flex-1 flex-col">
 					<TimeEntriesTable
 						searchValue={debouncedSearchValue}
 						filterByClients={filterByClients}
@@ -166,7 +158,7 @@ function Analytics() {
 						filterByTimeRange={filterByTimeRange}
 					/>
 				</TabsContent>
-				<TabsContent value="timeline" className="flex flex-col flex-1 min-h-0">
+				<TabsContent value="timeline" className="flex min-h-0 flex-1 flex-col">
 					<Suspense fallback={null}>
 						<TimelineView
 							searchValue={debouncedSearchValue}

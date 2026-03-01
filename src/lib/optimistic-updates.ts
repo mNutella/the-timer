@@ -1,6 +1,7 @@
 import type { OptimisticLocalStore } from "convex/browser";
-import type { Id } from "@/../convex/_generated/dataModel";
+
 import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
 
 // ─── Shared Helpers ─────────────────────────────────────────────
 
@@ -25,11 +26,7 @@ function findInCache(localStore: OptimisticLocalStore, listRef: any, searchRef: 
 }
 
 /** Mark a running entry as stopped in all searchTimeEntries pages. */
-function stopEntryInSearchPages(
-	localStore: OptimisticLocalStore,
-	entryId: string,
-	now: number,
-) {
+function stopEntryInSearchPages(localStore: OptimisticLocalStore, entryId: string, now: number) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.searchTimeEntries,
 	)) {
@@ -72,20 +69,13 @@ function updateTimeEntryInCaches(
 		api.time_entries.getRunningTimer,
 	)) {
 		if (value && value._id === timeEntryId) {
-			localStore.setQuery(
-				api.time_entries.getRunningTimer,
-				queryArgs,
-				{ ...value, ...patch },
-			);
+			localStore.setQuery(api.time_entries.getRunningTimer, queryArgs, { ...value, ...patch });
 		}
 	}
 }
 
 /** Remove time entries by ID set from searchTimeEntries pages + clear running timer if matched. */
-function deleteEntriesFromCaches(
-	localStore: OptimisticLocalStore,
-	idSet: Set<string>,
-) {
+function deleteEntriesFromCaches(localStore: OptimisticLocalStore, idSet: Set<string>) {
 	for (const { args: queryArgs, value } of localStore.getAllQueries(
 		api.time_entries.searchTimeEntries,
 	)) {
@@ -149,9 +139,7 @@ export function optimisticCreateTimer(
 
 	if (args.timeEntryId) {
 		// Check paginated search cache
-		for (const { value } of localStore.getAllQueries(
-			api.time_entries.searchTimeEntries,
-		)) {
+		for (const { value } of localStore.getAllQueries(api.time_entries.searchTimeEntries)) {
 			if (!value) continue;
 			const found = value.page.find((e) => e._id === args.timeEntryId);
 			if (found) {
@@ -161,9 +149,7 @@ export function optimisticCreateTimer(
 		}
 		// Also check running timer (source might be the currently running entry)
 		if (!source) {
-			for (const { value } of localStore.getAllQueries(
-				api.time_entries.getRunningTimer,
-			)) {
+			for (const { value } of localStore.getAllQueries(api.time_entries.getRunningTimer)) {
 				if (value && value._id === args.timeEntryId) {
 					source = value;
 					break;
@@ -196,13 +182,28 @@ export function optimisticCreateTimer(
 	let category: RunningTimer["category"] = source?.category ?? null;
 
 	if (!client && clientId) {
-		client = findInCache(localStore, api.clients.list, api.clients.searchByName, clientId) as RunningTimer["client"];
+		client = findInCache(
+			localStore,
+			api.clients.list,
+			api.clients.searchByName,
+			clientId,
+		) as RunningTimer["client"];
 	}
 	if (!project && projectId) {
-		project = findInCache(localStore, api.projects.list, api.projects.searchByName, projectId) as RunningTimer["project"];
+		project = findInCache(
+			localStore,
+			api.projects.list,
+			api.projects.searchByName,
+			projectId,
+		) as RunningTimer["project"];
 	}
 	if (!category && categoryId) {
-		category = findInCache(localStore, api.categories.list, api.categories.searchByName, categoryId) as RunningTimer["category"];
+		category = findInCache(
+			localStore,
+			api.categories.list,
+			api.categories.searchByName,
+			categoryId,
+		) as RunningTimer["category"];
 	}
 
 	// Fallback: resolve names from getRecentProjects cache (always active via bridge)
@@ -242,14 +243,8 @@ export function optimisticCreateTimer(
 	};
 
 	// Set optimistic running timer for all cached getRunningTimer queries
-	for (const { args: queryArgs } of localStore.getAllQueries(
-		api.time_entries.getRunningTimer,
-	)) {
-		localStore.setQuery(
-			api.time_entries.getRunningTimer,
-			queryArgs,
-			syntheticEntry,
-		);
+	for (const { args: queryArgs } of localStore.getAllQueries(api.time_entries.getRunningTimer)) {
+		localStore.setQuery(api.time_entries.getRunningTimer, queryArgs, syntheticEntry);
 	}
 
 	// Add synthetic entry to first page of each searchTimeEntries query variant.
@@ -276,16 +271,12 @@ export function optimisticRenameClient(
 	args: { id: Id<"clients">; name?: string; hourly_rate_cents?: number; clearHourlyRate?: boolean },
 ) {
 	if (!args.name) return;
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.clients.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.clients.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.clients.list,
 			queryArgs,
-			value.map((item) =>
-				item._id === args.id ? { ...item, name: args.name! } : item,
-			),
+			value.map((item) => (item._id === args.id ? { ...item, name: args.name! } : item)),
 		);
 	}
 }
@@ -294,9 +285,7 @@ export function optimisticDeleteClient(
 	localStore: OptimisticLocalStore,
 	args: { id: Id<"clients"> },
 ) {
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.clients.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.clients.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.clients.list,
@@ -320,9 +309,7 @@ export function optimisticUpdateProject(
 		clearHourlyRate?: boolean;
 	},
 ) {
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.projects.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.projects.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.projects.list,
@@ -337,7 +324,12 @@ export function optimisticUpdateProject(
 					updated.clientName = null;
 				} else if (args.clientId !== undefined) {
 					updated.clientId = args.clientId;
-					const client = findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId);
+					const client = findInCache(
+						localStore,
+						api.clients.list,
+						api.clients.searchByName,
+						args.clientId,
+					);
 					updated.clientName = client ? (client as unknown as { name: string }).name : null;
 				}
 				return updated;
@@ -350,9 +342,7 @@ export function optimisticDeleteProject(
 	localStore: OptimisticLocalStore,
 	args: { id: Id<"projects"> },
 ) {
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.projects.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.projects.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.projects.list,
@@ -368,16 +358,12 @@ export function optimisticRenameCategory(
 	localStore: OptimisticLocalStore,
 	args: { id: Id<"categories">; name: string },
 ) {
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.categories.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.categories.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.categories.list,
 			queryArgs,
-			value.map((item) =>
-				item._id === args.id ? { ...item, name: args.name } : item,
-			),
+			value.map((item) => (item._id === args.id ? { ...item, name: args.name } : item)),
 		);
 	}
 }
@@ -386,9 +372,7 @@ export function optimisticDeleteCategory(
 	localStore: OptimisticLocalStore,
 	args: { id: Id<"categories"> },
 ) {
-	for (const { args: queryArgs, value } of localStore.getAllQueries(
-		api.categories.list,
-	)) {
+	for (const { args: queryArgs, value } of localStore.getAllQueries(api.categories.list)) {
 		if (!value) continue;
 		localStore.setQuery(
 			api.categories.list,
@@ -435,7 +419,9 @@ export function optimisticUpdateTimeEntryClient(
 	if (args.newClientName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		clientId: args.clientId,
-		client: args.clientId ? findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) : null,
+		client: args.clientId
+			? findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId)
+			: null,
 	});
 }
 
@@ -450,7 +436,9 @@ export function optimisticUpdateTimeEntryProject(
 	if (args.newProjectName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		projectId: args.projectId,
-		project: args.projectId ? findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) : null,
+		project: args.projectId
+			? findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId)
+			: null,
 	});
 }
 
@@ -465,7 +453,9 @@ export function optimisticUpdateTimeEntryCategory(
 	if (args.newCategoryName) return;
 	updateTimeEntryInCaches(localStore, args.timeEntryId, {
 		categoryId: args.categoryId,
-		category: args.categoryId ? findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) : null,
+		category: args.categoryId
+			? findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId)
+			: null,
 	});
 }
 
@@ -486,15 +476,19 @@ export function optimisticBulkUpdateTimeEntries(
 	const patch: Record<string, unknown> = {};
 	if (args.clientId !== undefined) {
 		patch.clientId = args.clientId;
-		patch.client = findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) ?? null;
+		patch.client =
+			findInCache(localStore, api.clients.list, api.clients.searchByName, args.clientId) ?? null;
 	}
 	if (args.projectId !== undefined) {
 		patch.projectId = args.projectId;
-		patch.project = findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) ?? null;
+		patch.project =
+			findInCache(localStore, api.projects.list, api.projects.searchByName, args.projectId) ?? null;
 	}
 	if (args.categoryId !== undefined) {
 		patch.categoryId = args.categoryId;
-		patch.category = findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) ?? null;
+		patch.category =
+			findInCache(localStore, api.categories.list, api.categories.searchByName, args.categoryId) ??
+			null;
 	}
 
 	for (const { args: queryArgs, value } of localStore.getAllQueries(

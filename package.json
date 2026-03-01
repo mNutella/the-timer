@@ -1,10 +1,10 @@
 {
 	"name": "the-timer",
-	"private": true,
 	"version": "0.1.0-beta.1",
+	"private": true,
 	"description": "Precision time tracking for macOS",
-	"author": "mNutella",
 	"license": "MIT",
+	"author": "mNutella",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mNutella/the-timer"
@@ -16,7 +16,14 @@
 		"preview": "vite preview",
 		"tauri": "tauri",
 		"test": "vitest",
-		"test:run": "vitest run"
+		"test:run": "vitest run",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
+		"fmt": "oxfmt .",
+		"fmt:check": "oxfmt --check .",
+		"lint:convex": "eslint convex/",
+		"check": "pnpm run fmt:check && pnpm run lint && pnpm run lint:convex && tsc --noEmit",
+		"check:rust": "cd src-tauri && cargo clippy -- -D warnings && cargo fmt --check"
 	},
 	"dependencies": {
 		"@auth/core": "^0.37.4",
@@ -72,15 +79,20 @@
 		"zod": "^4.0.14"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.1.3",
+		"@convex-dev/eslint-plugin": "^1.1.1",
 		"@edge-runtime/vm": "^5.0.0",
 		"@tanstack/router-plugin": "^1.130.15",
 		"@tauri-apps/cli": "^2",
 		"@types/node": "^24.1.0",
 		"@types/react": "^18.3.1",
 		"@types/react-dom": "^18.3.1",
+		"@typescript-eslint/parser": "^8.56.1",
 		"@vitejs/plugin-react": "^4.3.4",
 		"convex-test": "^0.0.41",
+		"eslint": "^9.0.0",
+		"lefthook": "^2.1.2",
+		"oxfmt": "^0.35.0",
+		"oxlint": "^1.50.0",
 		"tw-animate-css": "^1.3.6",
 		"typescript": "~5.6.2",
 		"vite": "^6.0.3",

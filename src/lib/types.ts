@@ -1,4 +1,5 @@
 import type { UsePaginatedQueryReturnType } from "convex/react";
+
 import type { api } from "@/../convex/_generated/api";
 
 type TimeEntriesPaginatedResult = UsePaginatedQueryReturnType<

@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { SearchableCombobox, type SelectableItem } from "@/components/searchable-combobox";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,16 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SearchableCombobox, type SelectableItem } from "@/components/searchable-combobox";
+import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import {
 	optimisticUpdateTimeEntry,
 	optimisticUpdateTimeEntryClient,
 	optimisticUpdateTimeEntryProject,
 	optimisticUpdateTimeEntryCategory,
 } from "@/lib/optimistic-updates";
-import { useLiveElapsedTime } from "@/hooks/use-live-elapsed-time";
 import { parseDurationToMilliseconds } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface RunningTimer {
 	_id: Id<"time_entries">;
@@ -49,9 +50,7 @@ function toSelectableItem(
 
 export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogProps) {
 	const [name, setName] = useState(timer.name);
-	const [client, setClient] = useState<SelectableItem | undefined>(
-		toSelectableItem(timer.client),
-	);
+	const [client, setClient] = useState<SelectableItem | undefined>(toSelectableItem(timer.client));
 	const [project, setProject] = useState<SelectableItem | undefined>(
 		toSelectableItem(timer.project),
 	);
@@ -65,10 +64,18 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 
 	const elapsed = useLiveElapsedTime(timer.start_time ?? 0, !durationFocused && !durationEdited);
 
-	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(optimisticUpdateTimeEntry);
-	const updateClientMutation = useMutation(api.time_entries.updateClient).withOptimisticUpdate(optimisticUpdateTimeEntryClient);
-	const updateProjectMutation = useMutation(api.time_entries.updateProject).withOptimisticUpdate(optimisticUpdateTimeEntryProject);
-	const updateCategoryMutation = useMutation(api.time_entries.updateCategory).withOptimisticUpdate(optimisticUpdateTimeEntryCategory);
+	const updateMutation = useMutation(api.time_entries.update).withOptimisticUpdate(
+		optimisticUpdateTimeEntry,
+	);
+	const updateClientMutation = useMutation(api.time_entries.updateClient).withOptimisticUpdate(
+		optimisticUpdateTimeEntryClient,
+	);
+	const updateProjectMutation = useMutation(api.time_entries.updateProject).withOptimisticUpdate(
+		optimisticUpdateTimeEntryProject,
+	);
+	const updateCategoryMutation = useMutation(api.time_entries.updateCategory).withOptimisticUpdate(
+		optimisticUpdateTimeEntryCategory,
+	);
 	const createClient = useMutation(api.clients.create);
 	const createProject = useMutation(api.projects.create);
 	const createCategory = useMutation(api.categories.create);
@@ -82,7 +89,7 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 		setDurationFocused(false);
 		setDurationEdited(false);
 		setDurationStr("");
-	}, [open, timer._id, timer.name, timer.client?._id, timer.project?._id, timer.category?._id]);
+	}, [open, timer._id, timer.name, timer.client, timer.project, timer.category]);
 
 	const handleCreateClient = async (entityName: string) => {
 		try {
@@ -120,7 +127,8 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 		// Compute new start time from edited duration
 		const editedDurationMs = parseDurationToMilliseconds(durationStr);
 		const newStartTime = editedDurationMs > 0 ? Date.now() - editedDurationMs : null;
-		const startTimeChanged = newStartTime !== null && Math.abs(newStartTime - (timer.start_time ?? 0)) > 1000;
+		const startTimeChanged =
+			newStartTime !== null && Math.abs(newStartTime - (timer.start_time ?? 0)) > 1000;
 
 		if (trimmedName !== timer.name || startTimeChanged) {
 			updateMutation({
@@ -132,20 +140,23 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 
 		const newClientId = client?._id as Id<"clients"> | undefined;
 		if (newClientId !== timer.clientId) {
-			updateClientMutation({ timeEntryId: timer._id, clientId: newClientId })
-				.catch(() => toast.error("Failed to update client"));
+			updateClientMutation({ timeEntryId: timer._id, clientId: newClientId }).catch(() =>
+				toast.error("Failed to update client"),
+			);
 		}
 
 		const newProjectId = project?._id as Id<"projects"> | undefined;
 		if (newProjectId !== timer.projectId) {
-			updateProjectMutation({ timeEntryId: timer._id, projectId: newProjectId })
-				.catch(() => toast.error("Failed to update project"));
+			updateProjectMutation({ timeEntryId: timer._id, projectId: newProjectId }).catch(() =>
+				toast.error("Failed to update project"),
+			);
 		}
 
 		const newCategoryId = category?._id as Id<"categories"> | undefined;
 		if (newCategoryId !== timer.categoryId) {
-			updateCategoryMutation({ timeEntryId: timer._id, categoryId: newCategoryId })
-				.catch(() => toast.error("Failed to update category"));
+			updateCategoryMutation({ timeEntryId: timer._id, categoryId: newCategoryId }).catch(() =>
+				toast.error("Failed to update category"),
+			);
 		}
 
 		onOpenChange(false);
@@ -178,7 +189,7 @@ export function EditTimerDialog({ open, onOpenChange, timer }: EditTimerDialogPr
 								e.target.select();
 							}}
 							onBlur={() => setDurationFocused(false)}
-							className="tabular-nums text-success font-semibold"
+							className="font-semibold text-success tabular-nums"
 						/>
 					</div>
 					<div className="flex flex-col gap-2">

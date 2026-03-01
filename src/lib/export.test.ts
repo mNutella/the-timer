@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import {
 	entriesToJson,
 	generateDetailedRows,
@@ -9,9 +10,7 @@ import {
 } from "./export";
 
 // Shared test data factory
-function makeEntry(
-	overrides: Partial<Parameters<typeof Object.assign>[1]> = {},
-) {
+function makeEntry(overrides: Partial<Parameters<typeof Object.assign>[1]> = {}) {
 	return {
 		_id: "entry1",
 		name: "Task A",
@@ -137,12 +136,7 @@ describe("generateSummaryRows", () => {
 
 		const { headers, rows } = generateSummaryRows(entries, "client", NOW);
 
-		expect(headers).toEqual([
-			"Group",
-			"Total Duration",
-			"Total Hours",
-			"Entry Count",
-		]);
+		expect(headers).toEqual(["Group", "Total Duration", "Total Hours", "Entry Count"]);
 		expect(rows).toHaveLength(2);
 
 		// Alphabetical sort: Acme before Beta
@@ -153,9 +147,7 @@ describe("generateSummaryRows", () => {
 	});
 
 	it("uses '(No Client)' for entries without a client", () => {
-		const entries = [
-			makeEntry({ _id: "e1", client: null, duration: 1_000_000 }),
-		];
+		const entries = [makeEntry({ _id: "e1", client: null, duration: 1_000_000 })];
 
 		const { rows } = generateSummaryRows(entries, "client", NOW);
 
@@ -330,9 +322,7 @@ describe("generateFilename", () => {
 	it("includes groupBy suffix when not none", () => {
 		const filename = generateFilename("summary", "client", "json");
 
-		expect(filename).toMatch(
-			/^time-entries-summary-by-client-\d{4}-\d{2}-\d{2}\.json$/,
-		);
+		expect(filename).toMatch(/^time-entries-summary-by-client-\d{4}-\d{2}-\d{2}\.json$/);
 	});
 
 	it("omits groupBy suffix when groupBy is none", () => {

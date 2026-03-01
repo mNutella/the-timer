@@ -2,9 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
-export function getFilterDescription(
-	...filters: { name: string }[][]
-): string | undefined {
+export function getFilterDescription(...filters: { name: string }[][]): string | undefined {
 	const names = filters.flatMap((f) => f.map((item) => item.name));
 	return names.length > 0 ? names.join(" · ") : undefined;
 }

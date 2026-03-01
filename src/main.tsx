@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import { AppErrorBoundary } from "@/components/app-error-boundary";
 import { loadSettings } from "@/lib/settings";
 import { createRouter } from "@/router";
+
 import "./globals.css";
 
 const router = createRouter();

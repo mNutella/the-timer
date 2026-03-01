@@ -22,8 +22,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .expect("Failed to load tray icon");
 
     // Build tray icon
-    let initial_menu =
-        menu::build_tray_menu(app, &TimerState::default(), &[])?;
+    let initial_menu = menu::build_tray_menu(app, &TimerState::default(), &[])?;
     let tray = TrayIconBuilder::new()
         .icon(icon)
         .icon_as_template(true)
@@ -57,9 +56,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
 
                     // Rebuild menu with new state
                     let recents = recent_entries.lock().unwrap().clone();
-                    if let Ok(new_menu) =
-                        menu::build_tray_menu(&app_handle, &new_state, &recents)
-                    {
+                    if let Ok(new_menu) = menu::build_tray_menu(&app_handle, &new_state, &recents) {
                         let _ = tray.set_menu(Some(new_menu));
                     }
                 }
@@ -81,9 +78,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
 
                 // Rebuild menu with new recents
                 if let Some(tray) = app_handle.tray_by_id(&tray_id) {
-                    if let Ok(new_menu) =
-                        menu::build_tray_menu(&app_handle, &state, &entries)
-                    {
+                    if let Ok(new_menu) = menu::build_tray_menu(&app_handle, &state, &entries) {
                         let _ = tray.set_menu(Some(new_menu));
                     }
                 }

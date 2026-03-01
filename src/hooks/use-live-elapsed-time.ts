@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
+
 import { formatDuration } from "@/lib/utils";
 
-export function useLiveElapsedTime(
-	startTime: number,
-	isRunning: boolean,
-): string {
+export function useLiveElapsedTime(startTime: number, isRunning: boolean): string {
 	const [elapsed, setElapsed] = useState(
-		isRunning
-			? formatDuration(Math.max(0, Date.now() - startTime))
-			: "00:00:00",
+		isRunning ? formatDuration(Math.max(0, Date.now() - startTime)) : "00:00:00",
 	);
 
 	useEffect(() => {

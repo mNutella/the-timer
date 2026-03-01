@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+
 import type { Id } from "./_generated/dataModel";
 import { internalMutation } from "./functions";
 
@@ -65,9 +66,7 @@ export const importTogglData = internalMutation({
 		// Phase 3: Create time entries
 		for (const entry of entries) {
 			const clientId = clientMap.get(entry.project);
-			const projectKey = entry.tag
-				? `${entry.project}::${entry.tag}`
-				: undefined;
+			const projectKey = entry.tag ? `${entry.project}::${entry.tag}` : undefined;
 			const projectId = projectKey ? projectMap.get(projectKey) : undefined;
 
 			await ctx.table("time_entries").insert({

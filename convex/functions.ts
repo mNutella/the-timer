@@ -1,10 +1,7 @@
 import { entsTableFactory } from "convex-ents";
-import {
-	customCtx,
-	customMutation,
-	customQuery,
-} from "convex-helpers/server/customFunctions";
+import { customCtx, customMutation, customQuery } from "convex-helpers/server/customFunctions";
 import { Triggers } from "convex-helpers/server/triggers";
+
 import type { DataModel } from "./_generated/dataModel";
 import {
 	internalMutation as rawInternalMutation,
@@ -23,25 +20,13 @@ import { entDefinitions } from "./schema";
 const triggers = new Triggers<DataModel>();
 
 if (!process.env.VITEST) {
-	triggers.register(
-		"time_entries",
-		timeEntriesTotalDurationByDateAggregate.trigger(),
-	);
+	triggers.register("time_entries", timeEntriesTotalDurationByDateAggregate.trigger());
 
-	triggers.register(
-		"time_entries",
-		timeEntriesTotalDurationByClientAndDateAggregate.trigger(),
-	);
+	triggers.register("time_entries", timeEntriesTotalDurationByClientAndDateAggregate.trigger());
 
-	triggers.register(
-		"time_entries",
-		timeEntriesTotalDurationByProjectAndDateAggregate.trigger(),
-	);
+	triggers.register("time_entries", timeEntriesTotalDurationByProjectAndDateAggregate.trigger());
 
-	triggers.register(
-		"time_entries",
-		timeEntriesTotalDurationByCategoryAndDateAggregate.trigger(),
-	);
+	triggers.register("time_entries", timeEntriesTotalDurationByCategoryAndDateAggregate.trigger());
 }
 
 export const query = customQuery(

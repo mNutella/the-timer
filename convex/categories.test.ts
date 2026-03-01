@@ -1,11 +1,7 @@
 import { describe, expect, test } from "vitest";
+
 import { api } from "./_generated/api";
-import {
-	authenticateAs,
-	createTest,
-	seedCategory,
-	seedTimeEntry,
-} from "./setup.testing";
+import { authenticateAs, createTest, seedCategory, seedTimeEntry } from "./setup.testing";
 
 describe("categories", () => {
 	test("creates a category", async () => {
@@ -94,9 +90,7 @@ describe("categories", () => {
 	test("cascade deletion nullifies categoryId on time_entries", async () => {
 		const t = createTest();
 		const { userId, asUser } = await authenticateAs(t);
-		const categoryId = await t.run(async (ctx) =>
-			seedCategory(ctx, userId, "To Delete"),
-		);
+		const categoryId = await t.run(async (ctx) => seedCategory(ctx, userId, "To Delete"));
 		const entryId = await t.run(async (ctx) =>
 			seedTimeEntry(ctx, userId, { categoryId, name: "Linked Entry" }),
 		);

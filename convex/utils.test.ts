@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-	computeNextTiming,
-	getEndOfDay,
-	getStartOfDay,
-	updateIfDefined,
-} from "./utils";
+
+import { computeNextTiming, getEndOfDay, getStartOfDay, updateIfDefined } from "./utils";
 
 describe("computeNextTiming", () => {
 	it("computes end_time from startDate + duration", () => {

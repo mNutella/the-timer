@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: true
+  commands:
+    oxfmt:
+      glob: "*.{js,jsx,ts,tsx,json,css,md,html}"
+      run: pnpm oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    oxlint:
+      glob: "*.{js,jsx,ts,tsx}"
+      run: pnpm oxlint {staged_files}
+    convex-lint:
+      glob: "convex/**/*.ts"
+      exclude: "convex/_generated/**"
+      run: pnpm eslint {staged_files}
+    rust-fmt:
+      root: "src-tauri/"
+      glob: "*.rs"
+      run: cargo fmt --check
+    rust-clippy:
+      root: "src-tauri/"
+      glob: "*.rs"
+      run: cargo clippy -- -D warnings

@@ -2,6 +2,7 @@ import { useMutation } from "convex/react";
 import { Circle, Clock, Play, Square } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import { getEndOfDay, getStartOfDay } from "@/../convex/utils";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +61,7 @@ export function ActivityFeed({
 					<Clock className="size-4 text-muted-foreground" />
 					<p className="text-sm font-medium">Today's Activity</p>
 				</div>
-				<span className="text-xs tabular-nums text-muted-foreground">
+				<span className="text-xs text-muted-foreground tabular-nums">
 					{entries.length} {entries.length === 1 ? "entry" : "entries"}
 				</span>
 			</div>
@@ -82,7 +83,9 @@ export function ActivityFeed({
 }
 
 function ActivityRow({ entry }: { entry: TimeEntry }) {
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(
+		optimisticCreateTimer,
+	);
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
 
 	const isRunning = entry.end_time === undefined;
@@ -133,29 +136,25 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 			{/* Duration & time */}
 			<div className="flex shrink-0 items-center gap-2">
 				{isRunning ? (
-					<span className="flex items-center gap-1.5 text-sm font-medium tabular-nums text-success">
+					<span className="flex items-center gap-1.5 text-sm font-medium text-success tabular-nums">
 						<Circle className="size-2 fill-success text-success motion-safe:animate-pulse" />
 						{elapsed}
 					</span>
 				) : (
-					<span className="text-sm tabular-nums text-muted-foreground">
+					<span className="text-sm text-muted-foreground tabular-nums">
 						{formatDuration(entry.duration ?? 0)}
 					</span>
 				)}
-				<span className="hidden text-xs tabular-nums text-muted-foreground lg:inline">
-					{entry.start_time
-						? formatTimeForInput(new Date(entry.start_time))
-						: ""}
-					{entry.end_time
-						? ` – ${formatTimeForInput(new Date(entry.end_time))}`
-						: ""}
+				<span className="hidden text-xs text-muted-foreground tabular-nums lg:inline">
+					{entry.start_time ? formatTimeForInput(new Date(entry.start_time)) : ""}
+					{entry.end_time ? ` – ${formatTimeForInput(new Date(entry.end_time))}` : ""}
 				</span>
 				{isRunning ? (
 					<Button
 						onClick={handleStop}
 						variant="ghost"
 						size="icon"
-						className="size-7 opacity-0 group-hover:opacity-100 transition-opacity"
+						className="size-7 opacity-0 transition-opacity group-hover:opacity-100"
 					>
 						<Square className="size-3.5" />
 					</Button>
@@ -164,7 +163,7 @@ function ActivityRow({ entry }: { entry: TimeEntry }) {
 						onClick={handleResume}
 						variant="ghost"
 						size="icon"
-						className="size-7 opacity-0 group-hover:opacity-100 transition-opacity"
+						className="size-7 opacity-0 transition-opacity group-hover:opacity-100"
 					>
 						<Play className="size-3.5" />
 					</Button>

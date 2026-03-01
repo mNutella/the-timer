@@ -1,18 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+
 import { api } from "@/../convex/_generated/api";
 import { SearchableCombobox } from "@/components/searchable-combobox";
-import TimeEntriesStartEndCalendar from "@/components/timer-entries-start-end-calendar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverAnchor,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { formatDuration } from "@/lib/utils";
 import {
 	useUpdateTimeEntryName,
 	useUpdateTimeEntryClient,
@@ -21,6 +11,14 @@ import {
 	useUpdateStartEndTime,
 	useDeleteTimeEntry,
 } from "@/components/time-entries-table/hooks";
+import TimeEntriesStartEndCalendar from "@/components/timer-entries-start-end-calendar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { formatDuration } from "@/lib/utils";
+
 import type { ExportedEntry } from "./layout";
 
 interface EntryEditPopoverProps {
@@ -45,8 +43,7 @@ export default function EntryEditPopover({
 	const updateStartEnd = useUpdateStartEndTime(entry._id);
 	const deleteEntry = useDeleteTimeEntry(entry._id);
 
-	const duration =
-		entry.duration ?? (entry.end_time ?? Date.now()) - (entry.start_time ?? 0);
+	const duration = entry.duration ?? (entry.end_time ?? Date.now()) - (entry.start_time ?? 0);
 
 	const handleNameBlur = () => {
 		if (name !== entry.name) updateName(name);
@@ -66,7 +63,7 @@ export default function EntryEditPopover({
 				side="right"
 				align="start"
 				sideOffset={8}
-				className="w-72 p-3 space-y-3"
+				className="w-72 space-y-3 p-3"
 				onOpenAutoFocus={(e) => e.preventDefault()}
 			>
 				{/* Name */}
@@ -133,19 +130,14 @@ export default function EntryEditPopover({
 							startTime={entry.start_time}
 							endTime={entry.end_time}
 							onApplyClick={(range) => {
-								updateStartEnd(
-									range.from?.getTime() ?? 0,
-									range.to?.getTime() ?? 0,
-								);
+								updateStartEnd(range.from?.getTime() ?? 0, range.to?.getTime() ?? 0);
 							}}
 						/>
 					</div>
 				)}
 
 				{/* Duration */}
-				<div className="text-xs text-muted-foreground">
-					Duration: {formatDuration(duration)}
-				</div>
+				<div className="text-xs text-muted-foreground">Duration: {formatDuration(duration)}</div>
 
 				<Separator />
 
@@ -153,13 +145,13 @@ export default function EntryEditPopover({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+					className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
 					onClick={() => {
 						deleteEntry();
 						onOpenChange(false);
 					}}
 				>
-					<Trash2 className="size-3.5 mr-1.5" />
+					<Trash2 className="mr-1.5 size-3.5" />
 					Delete
 				</Button>
 			</PopoverContent>

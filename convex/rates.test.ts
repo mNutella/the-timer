@@ -1,4 +1,5 @@
 import { expect, test, describe } from "vitest";
+
 import { isBillable, resolveRate } from "./model/rates";
 
 describe("rates", () => {
@@ -26,19 +27,13 @@ describe("rates", () => {
 
 		test("explicit false overrides presence of clientId", () => {
 			// biome-ignore lint/suspicious/noExplicitAny: test fake ID
-			expect(isBillable({ billable: false, clientId: "fake-id" as any })).toBe(
-				false,
-			);
+			expect(isBillable({ billable: false, clientId: "fake-id" as any })).toBe(false);
 		});
 	});
 
 	describe("resolveRate", () => {
 		test("uses project rate when set", () => {
-			const result = resolveRate(
-				{ hourly_rate_cents: 15000 },
-				{ hourly_rate_cents: 10000 },
-				5000,
-			);
+			const result = resolveRate({ hourly_rate_cents: 15000 }, { hourly_rate_cents: 10000 }, 5000);
 			expect(result).toBe(15000);
 		});
 
@@ -58,10 +53,7 @@ describe("rates", () => {
 		});
 
 		test("project rate takes priority over client rate when both set", () => {
-			const result = resolveRate(
-				{ hourly_rate_cents: 20000 },
-				{ hourly_rate_cents: 10000 },
-			);
+			const result = resolveRate({ hourly_rate_cents: 20000 }, { hourly_rate_cents: 10000 });
 			expect(result).toBe(20000);
 		});
 	});

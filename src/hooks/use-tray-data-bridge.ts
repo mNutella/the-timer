@@ -1,12 +1,12 @@
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { useEffect, useRef } from "react";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { optimisticCreateTimer, optimisticStopTimer } from "@/lib/optimistic-updates";
 import { useSettings } from "@/lib/settings";
-const isTauri =
-	typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 /**
  * Bridges Convex query data to the system tray via Tauri events.
@@ -20,17 +20,16 @@ const isTauri =
 export function useTrayDataBridge() {
 	const { settings } = useSettings();
 
-	const runningTimer = useQuery(
-		api.time_entries.getRunningTimer,
-		isTauri ? {} : "skip",
-	);
+	const runningTimer = useQuery(api.time_entries.getRunningTimer, isTauri ? {} : "skip");
 	const recentProjects = useQuery(
 		api.time_entries.getRecentProjects,
 		isTauri ? { limit: 5 } : "skip",
 	);
 
 	const stopMutation = useMutation(api.time_entries.stop).withOptimisticUpdate(optimisticStopTimer);
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(
+		optimisticCreateTimer,
+	);
 
 	// Keep refs for event callbacks
 	const runningTimerRef = useRef(runningTimer);
@@ -118,9 +117,7 @@ export function useTrayDataBridge() {
 				await createRef.current({
 					name: entry.lastEntryName || "",
 					projectId: entry.projectId as Id<"projects"> | undefined,
-					clientId: entry.clientId
-						? (entry.clientId as Id<"clients">)
-						: undefined,
+					clientId: entry.clientId ? (entry.clientId as Id<"clients">) : undefined,
 				});
 			}).then(addListener);
 		});

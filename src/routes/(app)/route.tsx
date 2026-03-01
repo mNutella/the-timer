@@ -2,11 +2,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { RunningTimerBar } from "@/components/running-timer-bar";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useIslandDataBridge } from "@/hooks/use-island-data-bridge";
 import { useTrayDataBridge } from "@/hooks/use-tray-data-bridge";
 
@@ -26,7 +22,7 @@ function RouteComponent() {
 					<SidebarTrigger className="-ml-1" />
 				</header>
 				<RunningTimerBar />
-				<main className="@container/main flex min-h-0 flex-1 flex-col gap-2 w-full overflow-y-auto px-4 lg:px-6">
+				<main className="@container/main flex min-h-0 w-full flex-1 flex-col gap-2 overflow-y-auto px-4 lg:px-6">
 					<Outlet />
 				</main>
 			</SidebarInset>

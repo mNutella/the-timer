@@ -1,10 +1,4 @@
-import {
-	createContext,
-	type ReactNode,
-	useCallback,
-	useContext,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 
 export interface AppSettings {
 	enableIsland: boolean;
@@ -29,10 +23,7 @@ export function loadSettings(): AppSettings {
 
 interface SettingsContextValue {
 	settings: AppSettings;
-	updateSetting: <K extends keyof AppSettings>(
-		key: K,
-		value: AppSettings[K],
-	) => void;
+	updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -51,11 +42,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 
-	return (
-		<SettingsContext.Provider value={{ settings, updateSetting }}>
-			{children}
-		</SettingsContext.Provider>
-	);
+	const value = useMemo(() => ({ settings, updateSetting }), [settings, updateSetting]);
+
+	return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings() {

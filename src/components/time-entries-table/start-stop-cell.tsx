@@ -2,6 +2,7 @@ import { Pause, Play } from "lucide-react";
 
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+
 import { useStartStopTimeEntry } from "./hooks";
 
 export function StartStopCell({
@@ -17,7 +18,7 @@ export function StartStopCell({
 	return (
 		<Button
 			variant="ghost"
-			className="data-[state=open]:bg-muted text-muted-foreground flex h-10 w-10"
+			className="flex h-10 w-10 text-muted-foreground data-[state=open]:bg-muted"
 			size="icon"
 			onClick={inProgress ? stopTimer : startTimer}
 		>

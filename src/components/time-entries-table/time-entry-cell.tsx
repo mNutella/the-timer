@@ -4,11 +4,8 @@ import * as React from "react";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { CELL_INPUT_CLASS, SaveHint, useUpdateTimeEntryName } from "./hooks";
 
 export function TimeEntryCell({
@@ -38,7 +35,7 @@ export function TimeEntryCell({
 	const isDirty = isFocused && value !== timeEntryName;
 
 	return (
-		<div className="flex items-center gap-1.5 min-w-0 w-full">
+		<div className="flex w-full min-w-0 items-center gap-1.5">
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -80,7 +77,7 @@ export function TimeEntryCell({
 			{notes ? (
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<StickyNote className="size-3.5 text-muted-foreground/50 shrink-0 cursor-default" />
+						<StickyNote className="size-3.5 shrink-0 cursor-default text-muted-foreground/50" />
 					</TooltipTrigger>
 					<TooltipContent side="top" className="max-w-xs">
 						{notes}

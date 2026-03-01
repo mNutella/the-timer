@@ -9,16 +9,12 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				default:
-					"bg-primary text-primary-foreground hover:bg-primary/90 active:translate-y-px",
+				default: "bg-primary text-primary-foreground hover:bg-primary/90 active:translate-y-px",
 				destructive:
 					"bg-destructive/60 text-white hover:bg-destructive/90 focus-visible:ring-destructive/40",
-				outline:
-					"border bg-input/30 border-input hover:bg-input/50",
-				secondary:
-					"bg-secondary text-secondary-foreground hover:bg-secondary/80",
-				ghost:
-					"hover:bg-accent/50 hover:text-accent-foreground",
+				outline: "border bg-input/30 border-input hover:bg-input/50",
+				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+				ghost: "hover:bg-accent/50 hover:text-accent-foreground",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
@@ -37,8 +33,7 @@ const buttonVariants = cva(
 
 const Button = React.forwardRef<
 	React.ElementRef<"button">,
-	React.ComponentProps<"button"> &
-		VariantProps<typeof buttonVariants> & { asChild?: boolean }
+	React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }
 >(({ className, variant, size, asChild = false, ...props }, ref) => {
 	const Comp = asChild ? Slot : "button";
 

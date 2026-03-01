@@ -30,24 +30,21 @@ export const list = query({
 	handler: async (ctx, { dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		const lowerDate = dateRange ? getStartOfDay(dateRange.startDate) : 0;
-		const upperDate = dateRange
-			? getEndOfDay(dateRange.endDate)
-			: Number.MAX_SAFE_INTEGER;
+		const upperDate = dateRange ? getEndOfDay(dateRange.endDate) : Number.MAX_SAFE_INTEGER;
 
 		const clients = await ctx
 			.table("clients", "userId", (q) => q.eq("userId", userId))
 			.map(async (client) => {
-				const totalDuration =
-					await timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
-						namespace: userId,
-						bounds: {
-							lower: { key: [client._id, lowerDate], inclusive: true },
-							upper: {
-								key: [client._id, upperDate],
-								inclusive: true,
-							},
+				const totalDuration = await timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
+					namespace: userId,
+					bounds: {
+						lower: { key: [client._id, lowerDate], inclusive: true },
+						upper: {
+							key: [client._id, upperDate],
+							inclusive: true,
 						},
-					});
+					},
+				});
 
 				const projects = await client.edge("projects");
 
@@ -108,9 +105,7 @@ export const searchByName = query({
 
 		const clients = await ctx
 			.table("clients")
-			.search("name", (q) =>
-				q.search("name", trimmedQuery).eq("userId", userId),
-			)
+			.search("name", (q) => q.search("name", trimmedQuery).eq("userId", userId))
 			.paginate(paginationOpts);
 
 		return clients;

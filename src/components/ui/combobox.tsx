@@ -4,11 +4,7 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ComboBoxContextType<T> {
@@ -18,9 +14,7 @@ interface ComboBoxContextType<T> {
 	setSelectedItems: (items: T | null) => void;
 }
 
-const ComboBoxContext = React.createContext<
-	ComboBoxContextType<any> | undefined
->(undefined);
+const ComboBoxContext = React.createContext<ComboBoxContextType<any> | undefined>(undefined);
 
 export function useComboBox() {
 	const context = React.useContext(ComboBoxContext);
@@ -30,11 +24,7 @@ export function useComboBox() {
 	return context;
 }
 
-export function ComboBoxResponsive({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+export function ComboBoxResponsive({ children }: { children: React.ReactNode }) {
 	const [open, setOpen] = React.useState(false);
 	const isMobile = useIsMobile();
 	const [selectedItems, setSelectedItems] = React.useState<any | null>(null);

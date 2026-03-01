@@ -8,13 +8,8 @@ interface GroupingRule {
 	group_by: GroupByDimension;
 }
 
-export async function list(
-	ctx: QueryCtx,
-	{ userId }: { userId: Id<"users"> },
-) {
-	return ctx
-		.table("invoice_presets", "userId", (q) => q.eq("userId", userId))
-		.order("asc");
+export async function list(ctx: QueryCtx, { userId }: { userId: Id<"users"> }) {
+	return ctx.table("invoice_presets", "userId", (q) => q.eq("userId", userId)).order("asc");
 }
 
 export async function create(
@@ -73,10 +68,8 @@ export async function update(
 	if (name !== undefined) updates.name = name;
 	if (grouping_rules !== undefined) updates.grouping_rules = grouping_rules;
 	if (merge_entries !== undefined) updates.merge_entries = merge_entries;
-	if (include_date_range !== undefined)
-		updates.include_date_range = include_date_range;
-	if (include_duration !== undefined)
-		updates.include_duration = include_duration;
+	if (include_date_range !== undefined) updates.include_date_range = include_date_range;
+	if (include_duration !== undefined) updates.include_duration = include_duration;
 
 	await preset.patch(updates);
 }

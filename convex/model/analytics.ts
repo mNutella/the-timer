@@ -68,22 +68,19 @@ export async function getTotalHoursByClientAndDate(
 
 	let totalDuration = 0;
 	if (startDate !== undefined) {
-		totalDuration = await timeEntriesTotalDurationByClientAndDateAggregate.sum(
-			ctx,
-			{
-				namespace: userId,
-				bounds: {
-					lower: {
-						key: [clientId ?? "", getStartOfDay(startDate ?? 0)],
-						inclusive: true,
-					},
-					upper: {
-						key: [clientId ?? "\uffff", getEndOfDay(endDate ?? 0)],
-						inclusive: true,
-					},
+		totalDuration = await timeEntriesTotalDurationByClientAndDateAggregate.sum(ctx, {
+			namespace: userId,
+			bounds: {
+				lower: {
+					key: [clientId ?? "", getStartOfDay(startDate ?? 0)],
+					inclusive: true,
+				},
+				upper: {
+					key: [clientId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					inclusive: true,
 				},
 			},
-		);
+		});
 	}
 
 	return totalDuration;
@@ -107,22 +104,19 @@ export async function getTotalHoursByProjectAndDate(
 
 	let totalDuration = 0;
 	if (startDate !== undefined) {
-		totalDuration = await timeEntriesTotalDurationByProjectAndDateAggregate.sum(
-			ctx,
-			{
-				namespace: userId,
-				bounds: {
-					lower: {
-						key: [projectId ?? "", getStartOfDay(startDate ?? 0)],
-						inclusive: true,
-					},
-					upper: {
-						key: [projectId ?? "\uffff", getEndOfDay(endDate ?? 0)],
-						inclusive: true,
-					},
+		totalDuration = await timeEntriesTotalDurationByProjectAndDateAggregate.sum(ctx, {
+			namespace: userId,
+			bounds: {
+				lower: {
+					key: [projectId ?? "", getStartOfDay(startDate ?? 0)],
+					inclusive: true,
+				},
+				upper: {
+					key: [projectId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					inclusive: true,
 				},
 			},
-		);
+		});
 	}
 
 	return totalDuration;
@@ -146,20 +140,19 @@ export async function getTotalHoursByCategoryAndDate(
 
 	let totalDuration = 0;
 	if (startDate !== undefined) {
-		totalDuration =
-			await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
-				namespace: userId,
-				bounds: {
-					lower: {
-						key: [categoryId ?? "", getStartOfDay(startDate ?? 0)],
-						inclusive: true,
-					},
-					upper: {
-						key: [categoryId ?? "\uffff", getEndOfDay(endDate ?? 0)],
-						inclusive: true,
-					},
+		totalDuration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
+			namespace: userId,
+			bounds: {
+				lower: {
+					key: [categoryId ?? "", getStartOfDay(startDate ?? 0)],
+					inclusive: true,
 				},
-			});
+				upper: {
+					key: [categoryId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					inclusive: true,
+				},
+			},
+		});
 	}
 
 	return totalDuration;
@@ -315,9 +308,7 @@ export async function getDailyDurationBreakdownTimeSeries(
 	const projectConstraints = constraintFilters?.projectIds ?? [];
 	const categoryConstraints = constraintFilters?.categoryIds ?? [];
 	const hasCrossFilters =
-		clientConstraints.length > 0 ||
-		projectConstraints.length > 0 ||
-		categoryConstraints.length > 0;
+		clientConstraints.length > 0 || projectConstraints.length > 0 || categoryConstraints.length > 0;
 
 	if (!hasCrossFilters) {
 		// Fast path: use aggregates per entity per day
@@ -448,11 +439,7 @@ async function getDailyBreakdownFromEntries(
 				: ("by_user_category_start" as const);
 
 	const fieldName =
-		groupBy === "client"
-			? "clientId"
-			: groupBy === "project"
-				? "projectId"
-				: "categoryId";
+		groupBy === "client" ? "clientId" : groupBy === "project" ? "projectId" : "categoryId";
 
 	type EntryLike = {
 		start_time?: number;
@@ -502,8 +489,7 @@ async function getDailyBreakdownFromEntries(
 		// Apply constraint filters
 		if (clientSet.size > 0 && !clientSet.has(entry.clientId ?? "")) continue;
 		if (projectSet.size > 0 && !projectSet.has(entry.projectId ?? "")) continue;
-		if (categorySet.size > 0 && !categorySet.has(entry.categoryId ?? ""))
-			continue;
+		if (categorySet.size > 0 && !categorySet.has(entry.categoryId ?? "")) continue;
 
 		const entityId = (entry[fieldName] as string) ?? "";
 		if (!entityIdSet.has(entityId)) continue;
@@ -566,9 +552,7 @@ export async function getEntityBreakdown(
 	const projectConstraints = constraintFilters?.projectIds ?? [];
 	const categoryConstraints = constraintFilters?.categoryIds ?? [];
 	const hasCrossFilters =
-		clientConstraints.length > 0 ||
-		projectConstraints.length > 0 ||
-		categoryConstraints.length > 0;
+		clientConstraints.length > 0 || projectConstraints.length > 0 || categoryConstraints.length > 0;
 
 	// Resolve entity IDs and names
 	let ids: string[];
@@ -584,20 +568,14 @@ export async function getEntityBreakdown(
 				const entity = await ctx.table("projects").get(id as Id<"projects">);
 				entityNames.set(id, entity?.name ?? "Unknown");
 			} else {
-				const entity = await ctx
-					.table("categories")
-					.get(id as Id<"categories">);
+				const entity = await ctx.table("categories").get(id as Id<"categories">);
 				entityNames.set(id, entity?.name ?? "Unknown");
 			}
 		}
 	} else {
 		ids = [];
 		const edgeName =
-			groupBy === "client"
-				? "clients"
-				: groupBy === "project"
-					? "projects"
-					: "categories";
+			groupBy === "client" ? "clients" : groupBy === "project" ? "projects" : "categories";
 		const entities = await ctx.table("users").getX(userId).edge(edgeName);
 		for (const e of entities) {
 			ids.push(e._id);
@@ -722,11 +700,7 @@ async function getEntityBreakdownFromEntries(
 				: ("by_user_category_start" as const);
 
 	const fieldName =
-		groupBy === "client"
-			? "clientId"
-			: groupBy === "project"
-				? "projectId"
-				: "categoryId";
+		groupBy === "client" ? "clientId" : groupBy === "project" ? "projectId" : "categoryId";
 
 	type EntryLike = {
 		start_time?: number;
@@ -771,20 +745,15 @@ async function getEntityBreakdownFromEntries(
 		if (!entry.start_time || !entry.duration) continue;
 		if (clientSet.size > 0 && !clientSet.has(entry.clientId ?? "")) continue;
 		if (projectSet.size > 0 && !projectSet.has(entry.projectId ?? "")) continue;
-		if (categorySet.size > 0 && !categorySet.has(entry.categoryId ?? ""))
-			continue;
+		if (categorySet.size > 0 && !categorySet.has(entry.categoryId ?? "")) continue;
 
 		const entityId = (entry[fieldName] as string) ?? "";
 		if (!entityIdSet.has(entityId)) continue;
 
-		durationByEntity.set(
-			entityId,
-			(durationByEntity.get(entityId) ?? 0) + entry.duration,
-		);
+		durationByEntity.set(entityId, (durationByEntity.get(entityId) ?? 0) + entry.duration);
 	}
 
-	const results: Array<{ entityId: string; name: string; duration: number }> =
-		[];
+	const results: Array<{ entityId: string; name: string; duration: number }> = [];
 	for (const [entityId, duration] of durationByEntity) {
 		if (duration > 0) {
 			results.push({
@@ -818,8 +787,7 @@ export async function getCategoryBreakdown(
 	const clientIds = filters.clientIds ?? [];
 	const projectIds = filters.projectIds ?? [];
 	const categoryIds = filters.categoryIds ?? [];
-	const hasEntityFilter =
-		clientIds.length > 0 || projectIds.length > 0 || categoryIds.length > 0;
+	const hasEntityFilter = clientIds.length > 0 || projectIds.length > 0 || categoryIds.length > 0;
 
 	// When filtering by client/project/category, we can't use category aggregates
 	// directly — query time entries via index and sum by category
@@ -837,20 +805,19 @@ export async function getCategoryBreakdown(
 	}> = [];
 
 	for (const category of categories) {
-		const duration =
-			await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
-				namespace: userId,
-				bounds: {
-					lower: {
-						key: [category._id, getStartOfDay(startDate)],
-						inclusive: true,
-					},
-					upper: {
-						key: [category._id, getEndOfDay(endDate)],
-						inclusive: true,
-					},
+		const duration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
+			namespace: userId,
+			bounds: {
+				lower: {
+					key: [category._id, getStartOfDay(startDate)],
+					inclusive: true,
 				},
-			});
+				upper: {
+					key: [category._id, getEndOfDay(endDate)],
+					inclusive: true,
+				},
+			},
+		});
 
 		if (duration > 0) {
 			results.push({
@@ -861,14 +828,13 @@ export async function getCategoryBreakdown(
 		}
 	}
 
-	const uncategorizedDuration =
-		await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
-			namespace: userId,
-			bounds: {
-				lower: { key: ["", getStartOfDay(startDate)], inclusive: true },
-				upper: { key: ["", getEndOfDay(endDate)], inclusive: true },
-			},
-		});
+	const uncategorizedDuration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
+		namespace: userId,
+		bounds: {
+			lower: { key: ["", getStartOfDay(startDate)], inclusive: true },
+			upper: { key: ["", getEndOfDay(endDate)], inclusive: true },
+		},
+	});
 
 	if (uncategorizedDuration > 0) {
 		results.push({
@@ -915,43 +881,34 @@ async function getCategoryBreakdownFromEntries(
 
 	if (clientIds.length > 0) {
 		for (const clientId of clientIds) {
-			const entries = await ctx.table(
-				"time_entries",
-				"by_user_client_start",
-				(q) =>
-					q
-						.eq("userId", userId)
-						.eq("clientId", clientId as Id<"clients">)
-						.gte("start_time", dayStart)
-						.lte("start_time", dayEnd),
+			const entries = await ctx.table("time_entries", "by_user_client_start", (q) =>
+				q
+					.eq("userId", userId)
+					.eq("clientId", clientId as Id<"clients">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
 	} else if (projectIds.length > 0) {
 		for (const projectId of projectIds) {
-			const entries = await ctx.table(
-				"time_entries",
-				"by_user_project_start",
-				(q) =>
-					q
-						.eq("userId", userId)
-						.eq("projectId", projectId as Id<"projects">)
-						.gte("start_time", dayStart)
-						.lte("start_time", dayEnd),
+			const entries = await ctx.table("time_entries", "by_user_project_start", (q) =>
+				q
+					.eq("userId", userId)
+					.eq("projectId", projectId as Id<"projects">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
 	} else if (categoryIds.length > 0) {
 		for (const categoryId of categoryIds) {
-			const entries = await ctx.table(
-				"time_entries",
-				"by_user_category_start",
-				(q) =>
-					q
-						.eq("userId", userId)
-						.eq("categoryId", categoryId as Id<"categories">)
-						.gte("start_time", dayStart)
-						.lte("start_time", dayEnd),
+			const entries = await ctx.table("time_entries", "by_user_category_start", (q) =>
+				q
+					.eq("userId", userId)
+					.eq("categoryId", categoryId as Id<"categories">)
+					.gte("start_time", dayStart)
+					.lte("start_time", dayEnd),
 			);
 			allEntries.push(...entries);
 		}
@@ -972,10 +929,7 @@ async function getCategoryBreakdownFromEntries(
 		if (!entry.start_time || !entry.duration) continue;
 
 		const catId = entry.categoryId ?? "";
-		durationByCategory.set(
-			catId,
-			(durationByCategory.get(catId) ?? 0) + entry.duration,
-		);
+		durationByCategory.set(catId, (durationByCategory.get(catId) ?? 0) + entry.duration);
 	}
 
 	const results: Array<{

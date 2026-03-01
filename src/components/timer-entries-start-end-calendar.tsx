@@ -1,16 +1,13 @@
 import { Clock2Icon } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatTimeForInput } from "@/lib/utils";
 
 interface TimeEntriesStartEndCalendarProps {
@@ -46,7 +43,7 @@ function TimeInput({
 		<div className="flex w-full flex-col gap-3">
 			<Label htmlFor={id}>{label}</Label>
 			<div className="relative flex w-full items-center gap-2">
-				<Clock2Icon className="pointer-events-none absolute left-2.5 size-4 select-none text-muted-foreground" />
+				<Clock2Icon className="pointer-events-none absolute left-2.5 size-4 text-muted-foreground select-none" />
 				<Input
 					id={id}
 					type="time"
@@ -60,14 +57,10 @@ function TimeInput({
 	);
 }
 
-function formatCompactDateTime(
-	start: Date | undefined,
-	end: Date | undefined,
-): React.ReactNode {
+function formatCompactDateTime(start: Date | undefined, end: Date | undefined): React.ReactNode {
 	if (!start) return <span className="text-muted-foreground">Select Date</span>;
 
-	const fmtDate = (d: Date) =>
-		d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+	const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 	const fmtTime = (d: Date) =>
 		d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
@@ -82,8 +75,7 @@ function formatCompactDateTime(
 		const startParts = fmtTime(start).match(/^(.+?)(\s?[AP]M)$/i);
 		const endParts = fmtTime(end).match(/^(.+?)(\s?[AP]M)$/i);
 		if (startParts && endParts) {
-			const samePeriod =
-				startParts[2].trim() === endParts[2].trim();
+			const samePeriod = startParts[2].trim() === endParts[2].trim();
 			const startStr = samePeriod ? startParts[1] : fmtTime(start);
 			return `${fmtDate(start)} \u00b7 ${startStr} \u2013 ${fmtTime(end)}`;
 		}
@@ -143,7 +135,7 @@ export default function TimeEntriesStartEndCalendar({
 				<Button
 					variant="outline"
 					id="dates"
-					className="w-fit border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-input/30 box-content"
+					className="box-content w-fit border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-input/30"
 					onClick={() => setOpen((prev) => !prev)}
 				>
 					<div className="flex flex-col text-sm">

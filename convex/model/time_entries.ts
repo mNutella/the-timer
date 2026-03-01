@@ -1,13 +1,9 @@
-import type { PaginationOptions } from "convex/server";
 import { omit } from "convex-helpers";
+import type { PaginationOptions } from "convex/server";
+
 import type { Doc, Id } from "../_generated/dataModel";
 import type { Ent, EntQuery, MutationCtx, QueryCtx } from "../types";
-import {
-	computeNextTiming,
-	getEndOfDay,
-	getStartOfDay,
-	updateIfDefined,
-} from "../utils";
+import { computeNextTiming, getEndOfDay, getStartOfDay, updateIfDefined } from "../utils";
 import { applyOrFilter, assertOwnership } from "./helpers";
 
 interface SearchTimeEntriesParams {
@@ -163,10 +159,7 @@ export async function create(
 	return newTimeEntryId;
 }
 
-export async function stop(
-	ctx: MutationCtx,
-	{ id, userId }: StopTimeEntryParams,
-) {
+export async function stop(ctx: MutationCtx, { id, userId }: StopTimeEntryParams) {
 	const timeEntry = await ctx.table("time_entries").getX(id);
 	assertOwnership(timeEntry, userId, "Time entry");
 
@@ -241,10 +234,7 @@ export async function update(
 	await timeEntry.patch(updateTimeEntry);
 }
 
-export async function deleteOne(
-	ctx: MutationCtx,
-	{ id, userId }: DeleteTimeEntryParams,
-) {
+export async function deleteOne(ctx: MutationCtx, { id, userId }: DeleteTimeEntryParams) {
 	const time_entry = await ctx.table("time_entries").getX(id);
 
 	if (!time_entry) {
@@ -280,10 +270,7 @@ export async function updateClient(
 			.search("name", (q) => q.search("name", normalized).eq("userId", userId))
 			.first();
 
-		if (
-			existingClient &&
-			existingClient.name.toLowerCase() === normalized.toLowerCase()
-		) {
+		if (existingClient && existingClient.name.toLowerCase() === normalized.toLowerCase()) {
 			nextClientId = existingClient._id;
 		} else {
 			nextClientId = await ctx.table("clients").insert({
@@ -337,10 +324,7 @@ export async function updateProject(
 			.search("name", (q) => q.search("name", normalized).eq("userId", userId))
 			.first();
 
-		if (
-			existingProject &&
-			existingProject.name.toLowerCase() === normalized.toLowerCase()
-		) {
+		if (existingProject && existingProject.name.toLowerCase() === normalized.toLowerCase()) {
 			nextProjectId = existingProject._id;
 		} else {
 			nextProjectId = await ctx.table("projects").insert({
@@ -382,10 +366,7 @@ export async function updateCategory(
 			.search("name", (q) => q.search("name", normalized).eq("userId", userId))
 			.first();
 
-		if (
-			existingCategory &&
-			existingCategory.name.toLowerCase() === normalized.toLowerCase()
-		) {
+		if (existingCategory && existingCategory.name.toLowerCase() === normalized.toLowerCase()) {
 			nextCategoryId = existingCategory._id;
 		} else {
 			nextCategoryId = await ctx.table("categories").insert({
@@ -404,10 +385,7 @@ export async function updateCategory(
 	return timeEntry;
 }
 
-export async function getRunningTimer(
-	ctx: QueryCtx,
-	{ userId }: { userId: Id<"users"> },
-) {
+export async function getRunningTimer(ctx: QueryCtx, { userId }: { userId: Id<"users"> }) {
 	const entry = await ctx
 		.table("time_entries", "by_user_end_time", (q) =>
 			q.eq("userId", userId).eq("end_time", undefined),
@@ -424,9 +402,7 @@ export async function getRunningTimer(
 	return {
 		...omit(entry as Doc<"time_entries">, ["userId"]),
 		client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
-		project: project
-			? omit(project as Doc<"projects">, ["userId", "clientId"])
-			: null,
+		project: project ? omit(project as Doc<"projects">, ["userId", "clientId"]) : null,
 		category: category ? omit(category as Doc<"categories">, ["userId"]) : null,
 		tags: tags.map((tag) => omit(tag as Doc<"tags">, ["userId"])),
 	};
@@ -448,10 +424,7 @@ export async function getRecentProjects(
 		if (!entry.projectId) continue;
 		if (seen.has(entry.projectId)) continue;
 		seen.add(entry.projectId);
-		const [project, client] = await Promise.all([
-			entry.edge("project"),
-			entry.edge("client"),
-		]);
+		const [project, client] = await Promise.all([entry.edge("project"), entry.edge("client")]);
 		if (!project) continue;
 		results.push({
 			projectId: project._id,
@@ -564,9 +537,7 @@ function buildFilteredQuery(
 			)
 			.order("desc");
 	} else {
-		timeEntries = ctx
-			.table("time_entries", "userId", (q) => q.eq("userId", userId))
-			.order("desc");
+		timeEntries = ctx.table("time_entries", "userId", (q) => q.eq("userId", userId)).order("desc");
 	}
 
 	if (!timeEntries) return null;
@@ -587,15 +558,11 @@ function buildFilteredQuery(
 	}
 
 	if (startDate !== undefined) {
-		timeEntries = timeEntries.filter((q) =>
-			q.gte(q.field("start_time"), getStartOfDay(startDate)),
-		);
+		timeEntries = timeEntries.filter((q) => q.gte(q.field("start_time"), getStartOfDay(startDate)));
 	}
 
 	if (endDate !== undefined) {
-		timeEntries = timeEntries.filter((q) =>
-			q.lte(q.field("end_time"), getEndOfDay(endDate)),
-		);
+		timeEntries = timeEntries.filter((q) => q.lte(q.field("end_time"), getEndOfDay(endDate)));
 	}
 
 	return timeEntries;
@@ -632,12 +599,8 @@ export async function searchTimeEntries(
 			return {
 				...omit(timeEntry as Doc<"time_entries">, ["userId"]),
 				client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
-				project: project
-					? omit(project as Doc<"projects">, ["userId", "clientId"])
-					: null,
-				category: category
-					? omit(category as Doc<"categories">, ["userId"])
-					: null,
+				project: project ? omit(project as Doc<"projects">, ["userId", "clientId"]) : null,
+				category: category ? omit(category as Doc<"categories">, ["userId"]) : null,
 				tags: tags.map((tag) => omit(tag as Doc<"tags">, ["userId"])),
 			};
 		}),
@@ -671,12 +634,8 @@ export async function getAllTimeEntries(
 			return {
 				...omit(entry as Doc<"time_entries">, ["userId"]),
 				client: client ? omit(client as Doc<"clients">, ["userId"]) : null,
-				project: project
-					? omit(project as Doc<"projects">, ["userId", "clientId"])
-					: null,
-				category: category
-					? omit(category as Doc<"categories">, ["userId"])
-					: null,
+				project: project ? omit(project as Doc<"projects">, ["userId", "clientId"]) : null,
+				category: category ? omit(category as Doc<"categories">, ["userId"]) : null,
 			};
 		}),
 	);

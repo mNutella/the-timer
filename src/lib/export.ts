@@ -226,12 +226,7 @@ export function generateMergedRows(
 }
 
 function escapeCsvField(field: string): string {
-	if (
-		field.includes(",") ||
-		field.includes('"') ||
-		field.includes("\n") ||
-		field.includes("\r")
-	) {
+	if (field.includes(",") || field.includes('"') || field.includes("\n") || field.includes("\r")) {
 		return `"${field.replace(/"/g, '""')}"`;
 	}
 	return field;
@@ -263,11 +258,7 @@ function buildJsonEnvelope(
 	);
 }
 
-export function entriesToJson(
-	entries: ExportEntry[],
-	config: ExportConfig,
-	now: number,
-): string {
+export function entriesToJson(entries: ExportEntry[], config: ExportConfig, now: number): string {
 	if (config.mode === "summary") {
 		const { rows } = generateSummaryRows(entries, config.groupBy, now);
 		return buildJsonEnvelope(entries, config, {
@@ -283,56 +274,37 @@ export function entriesToJson(
 	if (config.mode === "merged") {
 		const { rows } = generateMergedRows(entries, config.groupBy, now);
 		return buildJsonEnvelope(entries, config, {
-			entries: rows.map(
-				([name, client, project, category, duration, hours, count]) => ({
-					name,
-					client: client || null,
-					project: project || null,
-					category: category || null,
-					totalDuration: duration,
-					totalHours: Number(hours),
-					entryCount: Number(count),
-				}),
-			),
+			entries: rows.map(([name, client, project, category, duration, hours, count]) => ({
+				name,
+				client: client || null,
+				project: project || null,
+				category: category || null,
+				totalDuration: duration,
+				totalHours: Number(hours),
+				entryCount: Number(count),
+			})),
 		});
 	}
 
 	const { rows } = generateDetailedRows(entries, config.groupBy, now);
 	return buildJsonEnvelope(entries, config, {
-		entries: rows.map(
-			([
-				name,
-				client,
-				project,
-				category,
-				date,
-				start,
-				end,
-				duration,
-				notes,
-			]) => ({
-				name,
-				client: client || null,
-				project: project || null,
-				category: category || null,
-				date,
-				startTime: start,
-				endTime: end || null,
-				duration,
-				notes: notes || null,
-			}),
-		),
+		entries: rows.map(([name, client, project, category, date, start, end, duration, notes]) => ({
+			name,
+			client: client || null,
+			project: project || null,
+			category: category || null,
+			date,
+			startTime: start,
+			endTime: end || null,
+			duration,
+			notes: notes || null,
+		})),
 	});
 }
 
-const isTauri =
-	typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-async function downloadFileTauri(
-	content: string,
-	filename: string,
-	format: ExportFormat,
-) {
+async function downloadFileTauri(content: string, filename: string, format: ExportFormat) {
 	const { save } = await import("@tauri-apps/plugin-dialog");
 	const { writeTextFile } = await import("@tauri-apps/plugin-fs");
 

@@ -1,4 +1,5 @@
 import type { FunctionReturnType } from "convex/server";
+
 import type { api } from "@/../convex/_generated/api";
 import {
 	getStackDimension,
@@ -8,9 +9,7 @@ import {
 import type { Category, Client, Project } from "@/lib/types";
 import { CHART_COLORS } from "@/lib/utils";
 
-export type ExportedEntry = FunctionReturnType<
-	typeof api.time_entries.exportTimeEntries
->[number];
+export type ExportedEntry = FunctionReturnType<typeof api.time_entries.exportTimeEntries>[number];
 
 export const HOUR_HEIGHT = 60; // px per hour
 export const MIN_BLOCK_HEIGHT = 14; // minimum clickable height
@@ -44,9 +43,7 @@ function assignColumns(
 	if (entries.length === 0) return [];
 
 	// Sort by start, then by end (longer first for ties)
-	const sorted = [...entries].sort(
-		(a, b) => a.start - b.start || b.end - a.end,
-	);
+	const sorted = [...entries].sort((a, b) => a.start - b.start || b.end - a.end);
 
 	// Each column tracks the end time of its last entry
 	const columns: number[] = [];
@@ -81,19 +78,10 @@ export function buildColorMap(
 	projectFilter: Project[],
 	categoryFilter: Category[],
 ): { dimension: StackDimension | null; colorMap: Map<string, string> } {
-	const dimension = getStackDimension(
-		clientFilter,
-		projectFilter,
-		categoryFilter,
-	);
+	const dimension = getStackDimension(clientFilter, projectFilter, categoryFilter);
 	const colorMap = new Map<string, string>();
 	if (dimension) {
-		const ids = getEntityIds(
-			dimension,
-			clientFilter,
-			projectFilter,
-			categoryFilter,
-		);
+		const ids = getEntityIds(dimension, clientFilter, projectFilter, categoryFilter);
 		for (let i = 0; i < ids.length; i++) {
 			colorMap.set(ids[i], CHART_COLORS[i % CHART_COLORS.length]);
 		}
@@ -166,9 +154,7 @@ export function positionEntries(
 }
 
 /** Group entries by date key (YYYY-MM-DD). */
-export function groupEntriesByDay(
-	entries: ExportedEntry[],
-): Map<string, ExportedEntry[]> {
+export function groupEntriesByDay(entries: ExportedEntry[]): Map<string, ExportedEntry[]> {
 	const map = new Map<string, ExportedEntry[]>();
 	for (const entry of entries) {
 		if (!entry.start_time) continue;

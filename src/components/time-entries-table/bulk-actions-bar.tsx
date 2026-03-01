@@ -1,6 +1,8 @@
 import { Trash2, X } from "lucide-react";
+
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+
 import { useBulkDeleteTimeEntries } from "./hooks";
 
 interface BulkActionsBarProps {
@@ -27,22 +29,12 @@ export function BulkActionsBar({
 	return (
 		<div className="flex items-center gap-2">
 			<span className="text-sm font-medium">{selectedCount} selected</span>
-			<Button
-				variant="ghost"
-				size="sm"
-				className="h-7 px-2"
-				onClick={onClearSelection}
-			>
+			<Button variant="ghost" size="sm" className="h-7 px-2" onClick={onClearSelection}>
 				<X className="h-3.5 w-3.5" />
 				Clear
 			</Button>
-			<Button
-				variant="destructive"
-				size="sm"
-				className="h-7"
-				onClick={handleBulkDelete}
-			>
-				<Trash2 className="h-3.5 w-3.5 mr-1" />
+			<Button variant="destructive" size="sm" className="h-7" onClick={handleBulkDelete}>
+				<Trash2 className="mr-1 h-3.5 w-3.5" />
 				Delete ({selectedCount})
 			</Button>
 		</div>

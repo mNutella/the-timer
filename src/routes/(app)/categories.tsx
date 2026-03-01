@@ -1,19 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { Tag } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
-import {
-	optimisticDeleteCategory,
-	optimisticRenameCategory,
-} from "@/lib/optimistic-updates";
+import { optimisticDeleteCategory, optimisticRenameCategory } from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
-import { toast } from "sonner";
-
 
 export const Route = createFileRoute("/(app)/categories")({
 	component: CategoriesPage,
@@ -33,8 +30,12 @@ function CategoriesPage() {
 				: undefined,
 	});
 	const createCategory = useMutation(api.categories.create);
-	const updateCategory = useMutation(api.categories.update).withOptimisticUpdate(optimisticRenameCategory);
-	const deleteCategory = useMutation(api.categories.deleteOne).withOptimisticUpdate(optimisticDeleteCategory);
+	const updateCategory = useMutation(api.categories.update).withOptimisticUpdate(
+		optimisticRenameCategory,
+	);
+	const deleteCategory = useMutation(api.categories.deleteOne).withOptimisticUpdate(
+		optimisticDeleteCategory,
+	);
 
 	return (
 		<EntityManagementTable
@@ -58,12 +59,14 @@ function CategoriesPage() {
 				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateCategory({ id: id as Id<"categories">, name })
-					.catch(() => toast.error("Failed to update category"))
+				updateCategory({ id: id as Id<"categories">, name }).catch(() =>
+					toast.error("Failed to update category"),
+				)
 			}
 			onDelete={(id) =>
-				deleteCategory({ id: id as Id<"categories"> })
-					.catch(() => toast.error("Failed to delete category"))
+				deleteCategory({ id: id as Id<"categories"> }).catch(() =>
+					toast.error("Failed to delete category"),
+				)
 			}
 		/>
 	);

@@ -1,6 +1,7 @@
 import { useQuery } from "convex-helpers/react/cache";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
+
 import { api } from "@/../convex/_generated/api";
 import {
 	getConstraintFilters,
@@ -55,12 +56,7 @@ export function useAnalyticsChartData(
 	const entityIds = useMemo(
 		() =>
 			stackDimension
-				? getEntityIds(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
+				? getEntityIds(stackDimension, clientFilter, projectFilter, categoryFilter)
 				: [],
 		[stackDimension, clientFilter, projectFilter, categoryFilter],
 	);
@@ -68,12 +64,7 @@ export function useAnalyticsChartData(
 	const constraintFilters = useMemo(
 		() =>
 			stackDimension
-				? getConstraintFilters(
-						stackDimension,
-						clientFilter,
-						projectFilter,
-						categoryFilter,
-					)
+				? getConstraintFilters(stackDimension, clientFilter, projectFilter, categoryFilter)
 				: undefined,
 		[stackDimension, clientFilter, projectFilter, categoryFilter],
 	);
@@ -123,10 +114,7 @@ export function useAnalyticsChartData(
 				date: d.date,
 				hours: Math.round((d.duration / 3_600_000) * 100) / 100,
 			}));
-			const total = data.reduce(
-				(acc, curr) => acc + (curr.hours as number),
-				0,
-			);
+			const total = data.reduce((acc, curr) => acc + (curr.hours as number), 0);
 			const daysWithData = data.filter((d) => d.hours > 0).length;
 
 			let busiest: { date: string; hours: number } | null = null;
@@ -175,8 +163,7 @@ export function useAnalyticsChartData(
 			const row: Record<string, unknown> = { date: day.date };
 			let dayTotal = 0;
 			for (let i = 0; i < day.breakdown.length; i++) {
-				const hours =
-					Math.round((day.breakdown[i].duration / 3_600_000) * 100) / 100;
+				const hours = Math.round((day.breakdown[i].duration / 3_600_000) * 100) / 100;
 				row[keys[i]] = hours;
 				total += hours;
 				dayTotal += hours;
@@ -185,9 +172,7 @@ export function useAnalyticsChartData(
 			return row;
 		});
 
-		const daysWithData = data.filter(
-			(d) => (d._totalHours as number) > 0,
-		).length;
+		const daysWithData = data.filter((d) => (d._totalHours as number) > 0).length;
 
 		let busiest: { date: string; hours: number } | null = null;
 		for (const d of data) {
@@ -205,11 +190,5 @@ export function useAnalyticsChartData(
 			avgDailyHours: daysWithData > 0 ? total / daysWithData : 0,
 			busiestDay: busiest && busiest.hours > 0 ? busiest : null,
 		};
-	}, [
-		stackDimension,
-		flatData,
-		breakdownData,
-		entityIds,
-		entityNameMap,
-	]);
+	}, [stackDimension, flatData, breakdownData, entityIds, entityNameMap]);
 }

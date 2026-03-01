@@ -149,20 +149,16 @@ export function EntityManagementTable<T extends EntityBase>({
 		setDeleteTarget(null);
 	};
 
-	const capitalize =
-		entityLabelSingular.charAt(0).toUpperCase() + entityLabelSingular.slice(1);
-	const capitalizeLabel =
-		entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1);
+	const capitalize = entityLabelSingular.charAt(0).toUpperCase() + entityLabelSingular.slice(1);
+	const capitalizeLabel = entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1);
 
 	return (
-		<div className="flex flex-col flex-1 min-h-0 gap-4 py-4 md:gap-6 md:py-6">
+		<div className="flex min-h-0 flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
 			<div className="shrink-0">
 				{/* Page Header */}
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="text-2xl font-semibold tracking-tight">
-							{capitalizeLabel}
-						</h1>
+						<h1 className="text-2xl font-semibold tracking-tight">{capitalizeLabel}</h1>
 						<p className="mt-1 text-sm text-muted-foreground">
 							Manage your {entityLabel} and track time across them.
 						</p>
@@ -175,29 +171,29 @@ export function EntityManagementTable<T extends EntityBase>({
 
 				{/* Summary Strip */}
 				<div className="mt-4 rounded-xl border border-border bg-card">
-					<div className="grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-2 @xl/main:divide-y-0 @xl/main:divide-x">
+					<div className="grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-2 @xl/main:divide-x @xl/main:divide-y-0">
 						{/* Entity Count */}
 						<div className="flex items-center gap-4 px-4 py-4 lg:px-6">
 							<div className="flex size-11 items-center justify-center rounded-xl bg-success/10">
 								<Icon className="size-5 text-success" />
 							</div>
 							<div>
-								<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 									Total {capitalizeLabel}
 								</p>
-								<p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
+								<p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
 									{data ? data.length : "--"}
 								</p>
 							</div>
 						</div>
 
 						{/* Total Hours */}
-						<div className="flex items-center gap-3 px-4 py-4 @xl/main:pl-6 lg:px-6">
+						<div className="flex items-center gap-3 px-4 py-4 lg:px-6 @xl/main:pl-6">
 							<div className="flex size-8 items-center justify-center rounded-lg bg-muted">
 								<Clock className="size-4 text-muted-foreground" />
 							</div>
 							<div>
-								<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+								<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 									Total Hours
 								</p>
 								<p className="mt-0.5 text-xl font-semibold tabular-nums">
@@ -209,50 +205,44 @@ export function EntityManagementTable<T extends EntityBase>({
 				</div>
 			</div>
 
-				{/* Card-wrapped Table */}
-				<Card className="mt-4 md:mt-6 flex flex-col flex-1 min-h-0 overflow-hidden">
-					<CardContent className="p-0 flex flex-col flex-1 min-h-0">
-						{/* Filter Bar */}
-						<div className="shrink-0 flex items-center gap-2 px-4 py-3 lg:px-6">
-							<div className="relative flex-1 max-w-sm">
-								<Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-								<Input
-									placeholder={`Search ${entityLabel}...`}
-									value={searchValue}
-									onChange={(e) => onSearchChange(e.target.value)}
-									className="h-9 pl-8"
-								/>
-							</div>
-							{extraFilters && (
-								<>
-									<Separator orientation="vertical" className="h-6" />
-									{extraFilters}
-								</>
-							)}
-							<Separator orientation="vertical" className="h-6" />
-							<TimeRangeFilter value={dateRange} onChange={onDateRangeChange} />
+			{/* Card-wrapped Table */}
+			<Card className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden md:mt-6">
+				<CardContent className="flex min-h-0 flex-1 flex-col p-0">
+					{/* Filter Bar */}
+					<div className="flex shrink-0 items-center gap-2 px-4 py-3 lg:px-6">
+						<div className="relative max-w-sm flex-1">
+							<Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+							<Input
+								placeholder={`Search ${entityLabel}...`}
+								value={searchValue}
+								onChange={(e) => onSearchChange(e.target.value)}
+								className="h-9 pl-8"
+							/>
 						</div>
+						{extraFilters && (
+							<>
+								<Separator orientation="vertical" className="h-6" />
+								{extraFilters}
+							</>
+						)}
+						<Separator orientation="vertical" className="h-6" />
+						<TimeRangeFilter value={dateRange} onChange={onDateRangeChange} />
+					</div>
 
-						<Separator className="shrink-0" />
+					<Separator className="shrink-0" />
 
-						<div className="flex-1 min-h-0 overflow-y-auto">
+					<div className="min-h-0 flex-1 overflow-y-auto">
 						{/* Empty state: no entities exist */}
 						{data?.length === 0 && (
 							<div className="flex flex-col items-center justify-center py-16 text-center">
 								<div className="flex size-12 items-center justify-center rounded-xl bg-muted">
 									<Inbox className="size-6 text-muted-foreground" />
 								</div>
-								<h3 className="mt-4 text-sm font-medium">
-									No {entityLabel} yet
-								</h3>
+								<h3 className="mt-4 text-sm font-medium">No {entityLabel} yet</h3>
 								<p className="mt-1 text-sm text-muted-foreground">
 									Create your first {entityLabelSingular} to start tracking.
 								</p>
-								<Button
-									className="mt-4"
-									size="sm"
-									onClick={() => setIsAddDialogOpen(true)}
-								>
+								<Button className="mt-4" size="sm" onClick={() => setIsAddDialogOpen(true)}>
 									<Plus className="size-4" />
 									Add {capitalize}
 								</Button>
@@ -275,7 +265,7 @@ export function EntityManagementTable<T extends EntityBase>({
 						{/* Table */}
 						{displayData && displayData.length > 0 && (
 							<Table>
-								<TableHeader className="bg-card sticky top-0 z-10">
+								<TableHeader className="sticky top-0 z-10 bg-card">
 									<TableRow>
 										<TableHead className="pl-4 lg:pl-6">Name</TableHead>
 										{extraColumns.map((col) => (
@@ -284,16 +274,11 @@ export function EntityManagementTable<T extends EntityBase>({
 											</TableHead>
 										))}
 										<TableHead className="w-36">Total Hours</TableHead>
-										<TableHead className="w-24 pr-4 text-right lg:pr-6">
-											Actions
-										</TableHead>
+										<TableHead className="w-24 pr-4 text-right lg:pr-6">Actions</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody
-									className={cn(
-										"transition-opacity duration-200",
-										isStale && "opacity-50",
-									)}
+									className={cn("transition-opacity duration-200", isStale && "opacity-50")}
 								>
 									{displayData.map((entity) => (
 										<TableRow key={entity._id}>
@@ -318,9 +303,7 @@ export function EntityManagementTable<T extends EntityBase>({
 												)}
 											</TableCell>
 											{extraColumns.map((col) => (
-												<TableCell key={col.header}>
-													{col.render(entity)}
-												</TableCell>
+												<TableCell key={col.header}>{col.render(entity)}</TableCell>
 											))}
 											<TableCell className="text-muted-foreground tabular-nums">
 												{formatDuration(entity.totalDuration)}
@@ -331,9 +314,7 @@ export function EntityManagementTable<T extends EntityBase>({
 														size="icon"
 														variant="ghost"
 														className="size-7"
-														onClick={() =>
-															handleStartEdit(entity._id, entity.name)
-														}
+														onClick={() => handleStartEdit(entity._id, entity.name)}
 													>
 														<Pencil className="size-3.5" />
 													</Button>
@@ -357,9 +338,9 @@ export function EntityManagementTable<T extends EntityBase>({
 								</TableBody>
 							</Table>
 						)}
-						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</CardContent>
+			</Card>
 
 			{/* Add Dialog */}
 			<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

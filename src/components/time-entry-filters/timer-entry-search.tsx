@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -14,11 +15,11 @@ export function TimerEntrySearch({
 			<Label htmlFor="time-entry-search" className="sr-only">
 				Search
 			</Label>
-			<div className="flex items-center gap-2 rounded-md border border-input bg-background px-4 h-9">
+			<div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-4">
 				<Search size={24} />
 				<Input
 					id="time-entry-search"
-					className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-fit rounded-none"
+					className="h-fit rounded-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
 					placeholder="Search time entries"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}

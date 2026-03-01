@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { api } from "./_generated/api";
 import {
 	authenticateAs,
@@ -12,9 +13,7 @@ describe("projects", () => {
 	test("creates a project", async () => {
 		const t = createTest();
 		const { userId, asUser } = await authenticateAs(t);
-		const clientId = await t.run(async (ctx) =>
-			seedClient(ctx, userId, "Acme"),
-		);
+		const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 
 		const projectId = await asUser.mutation(api.projects.create, {
 			name: "Website Redesign",
@@ -85,9 +84,7 @@ describe("projects", () => {
 	test("searchByName filters by clientId", async () => {
 		const t = createTest();
 		const { userId, asUser } = await authenticateAs(t);
-		const clientId = await t.run(async (ctx) =>
-			seedClient(ctx, userId, "Acme"),
-		);
+		const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "Acme"));
 		await t.run(async (ctx) => {
 			await seedProject(ctx, userId, { name: "Acme Web", clientId });
 			await seedProject(ctx, userId, { name: "Internal Tool" });
@@ -124,9 +121,7 @@ describe("projects", () => {
 	test("cascade deletion nullifies projectId on time_entries", async () => {
 		const t = createTest();
 		const { userId, asUser } = await authenticateAs(t);
-		const projectId = await t.run(async (ctx) =>
-			seedProject(ctx, userId, { name: "To Delete" }),
-		);
+		const projectId = await t.run(async (ctx) => seedProject(ctx, userId, { name: "To Delete" }));
 		const entryId = await t.run(async (ctx) =>
 			seedTimeEntry(ctx, userId, { projectId, name: "Linked Entry" }),
 		);

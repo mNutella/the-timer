@@ -208,11 +208,7 @@ export const getDailyDurations = query({
 
 export const getDailyDurationBreakdown = query({
 	args: {
-		groupBy: v.union(
-			v.literal("client"),
-			v.literal("project"),
-			v.literal("category"),
-		),
+		groupBy: v.union(v.literal("client"), v.literal("project"), v.literal("category")),
 		entityIds: v.array(v.string()),
 		constraintFilters: v.optional(
 			v.object({
@@ -226,10 +222,7 @@ export const getDailyDurationBreakdown = query({
 			endDate: v.number(),
 		}),
 	},
-	handler: async (
-		ctx,
-		{ groupBy, entityIds, constraintFilters, dateRange },
-	) => {
+	handler: async (ctx, { groupBy, entityIds, constraintFilters, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		if (entityIds.length === 0) return [];
 		return Analytics.getDailyDurationBreakdownTimeSeries(ctx, {
@@ -253,11 +246,7 @@ export const getDailyDurationBreakdown = query({
 
 export const getEntityBreakdown = query({
 	args: {
-		groupBy: v.union(
-			v.literal("client"),
-			v.literal("project"),
-			v.literal("category"),
-		),
+		groupBy: v.union(v.literal("client"), v.literal("project"), v.literal("category")),
 		entityIds: v.optional(v.array(v.string())),
 		constraintFilters: v.optional(
 			v.object({
@@ -271,10 +260,7 @@ export const getEntityBreakdown = query({
 			endDate: v.number(),
 		}),
 	},
-	handler: async (
-		ctx,
-		{ groupBy, entityIds, constraintFilters, dateRange },
-	) => {
+	handler: async (ctx, { groupBy, entityIds, constraintFilters, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		return Analytics.getEntityBreakdown(ctx, {
 			userId,
@@ -305,10 +291,7 @@ export const getCategoryBreakdown = query({
 			endDate: v.number(),
 		}),
 	},
-	handler: async (
-		ctx,
-		{ clientIds, projectIds, categoryIds, dateRange },
-	) => {
+	handler: async (ctx, { clientIds, projectIds, categoryIds, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		return Analytics.getCategoryBreakdown(ctx, {
 			userId,

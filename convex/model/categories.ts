@@ -17,11 +17,7 @@ export async function create(
 
 export async function update(
 	ctx: MutationCtx,
-	{
-		id,
-		userId,
-		name,
-	}: { id: Id<"categories">; userId: Id<"users">; name: string },
+	{ id, userId, name }: { id: Id<"categories">; userId: Id<"users">; name: string },
 ) {
 	const category = await ctx.table("categories").getX(id);
 	assertOwnership(category, userId, "Category");
@@ -37,10 +33,8 @@ export async function deleteOne(
 	assertOwnership(category, userId, "Category");
 
 	// Nullify categoryId on linked time entries
-	const timeEntries = await ctx.table(
-		"time_entries",
-		"by_user_and_category",
-		(q) => q.eq("userId", userId).eq("categoryId", id),
+	const timeEntries = await ctx.table("time_entries", "by_user_and_category", (q) =>
+		q.eq("userId", userId).eq("categoryId", id),
 	);
 
 	for (const entry of timeEntries) {

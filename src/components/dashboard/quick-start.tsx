@@ -1,24 +1,25 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { Play, Zap } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
+import { StartTimerDialog } from "@/components/start-timer-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StartTimerDialog } from "@/components/start-timer-dialog";
 import { optimisticCreateTimer } from "@/lib/optimistic-updates";
-import { toast } from "sonner";
 
 export function QuickStart() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const recentProjects = useQuery(api.time_entries.getRecentProjects, {
 		limit: 5,
 	});
-	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(optimisticCreateTimer);
+	const createMutation = useMutation(api.time_entries.create).withOptimisticUpdate(
+		optimisticCreateTimer,
+	);
 
-	const handleQuickStart = (
-		project: NonNullable<typeof recentProjects>[number],
-	) => {
+	const handleQuickStart = (project: NonNullable<typeof recentProjects>[number]) => {
 		createMutation({
 			name: project.lastEntryName,
 			projectId: project.projectId,
@@ -34,9 +35,7 @@ export function QuickStart() {
 					<Zap className="size-4 text-muted-foreground" />
 					<p className="text-sm font-medium">Quick Start</p>
 				</div>
-				<p className="mt-2 text-sm text-muted-foreground">
-					Loading recent projects...
-				</p>
+				<p className="mt-2 text-sm text-muted-foreground">Loading recent projects...</p>
 			</div>
 		);
 	}
@@ -51,9 +50,7 @@ export function QuickStart() {
 			<div className="mt-3">
 				{recentProjects.length === 0 ? (
 					<div className="flex flex-col gap-2">
-						<span className="text-sm text-muted-foreground">
-							No recent projects
-						</span>
+						<span className="text-sm text-muted-foreground">No recent projects</span>
 						<Button onClick={() => setDialogOpen(true)} variant="outline" size="sm">
 							<Play className="mr-1 size-4" />
 							Start Timer

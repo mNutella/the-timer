@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { useMutation } from "convex/react";
 import { FolderKanban } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { toast } from "sonner";
+
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -23,12 +25,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	optimisticDeleteProject,
-	optimisticUpdateProject,
-} from "@/lib/optimistic-updates";
+import { optimisticDeleteProject, optimisticUpdateProject } from "@/lib/optimistic-updates";
 import { withToast } from "@/lib/utils";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/(app)/projects")({
 	component: ProjectsPage,
@@ -37,10 +35,7 @@ export const Route = createFileRoute("/(app)/projects")({
 const STATUS_OPTIONS = ["active", "archived", "completed"] as const;
 type ProjectStatus = (typeof STATUS_OPTIONS)[number];
 
-const statusVariant: Record<
-	ProjectStatus,
-	"default" | "secondary" | "outline"
-> = {
+const statusVariant: Record<ProjectStatus, "default" | "secondary" | "outline"> = {
 	active: "default",
 	archived: "secondary",
 	completed: "outline",
@@ -50,12 +45,14 @@ function ProjectRateCell({
 	projectId,
 	currentRate,
 	clientRate,
-}: { projectId: Id<"projects">; currentRate?: number; clientRate?: number }) {
+}: {
+	projectId: Id<"projects">;
+	currentRate?: number;
+	clientRate?: number;
+}) {
 	const updateProject = useMutation(api.projects.update);
 	const [editing, setEditing] = useState(false);
-	const [value, setValue] = useState(
-		currentRate ? (currentRate / 100).toString() : "",
-	);
+	const [value, setValue] = useState(currentRate ? (currentRate / 100).toString() : "");
 
 	const effectiveRate = currentRate ?? clientRate;
 
@@ -73,8 +70,8 @@ function ProjectRateCell({
 					setEditing(false);
 					const parsed = Number.parseFloat(value);
 					if (value === "" || value === "0") {
-						updateProject({ id: projectId, clearHourlyRate: true }).catch(
-							() => toast.error("Failed to update rate"),
+						updateProject({ id: projectId, clearHourlyRate: true }).catch(() =>
+							toast.error("Failed to update rate"),
 						);
 						return;
 					}
@@ -105,11 +102,7 @@ function ProjectRateCell({
 			{effectiveRate ? (
 				<span>
 					${(effectiveRate / 100).toFixed(2)}/hr
-					{!currentRate && clientRate && (
-						<span className="ml-1 text-xs opacity-60">
-							(client)
-						</span>
-					)}
+					{!currentRate && clientRate && <span className="ml-1 text-xs opacity-60">(client)</span>}
 				</span>
 			) : (
 				"—"
@@ -124,10 +117,9 @@ function ProjectsPage() {
 	const [clientFilter, setClientFilter] = useState<string>("all");
 
 	const clients = useQuery(api.clients.list, {});
-	const clientMap = useMemo(() => new Map(clients?.map(c => [c._id, c]) ?? []), [clients]);
+	const clientMap = useMemo(() => new Map(clients?.map((c) => [c._id, c]) ?? []), [clients]);
 	const projects = useQuery(api.projects.list, {
-		clientId:
-			clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined,
+		clientId: clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined,
 		dateRange:
 			dateRange?.from && dateRange?.to
 				? {
@@ -137,21 +129,26 @@ function ProjectsPage() {
 				: undefined,
 	});
 	const createProject = useMutation(api.projects.create);
-	const updateProject = useMutation(api.projects.update).withOptimisticUpdate(optimisticUpdateProject);
-	const deleteProject = useMutation(api.projects.deleteOne).withOptimisticUpdate(optimisticDeleteProject);
+	const updateProject = useMutation(api.projects.update).withOptimisticUpdate(
+		optimisticUpdateProject,
+	);
+	const deleteProject = useMutation(api.projects.deleteOne).withOptimisticUpdate(
+		optimisticDeleteProject,
+	);
 
 	const handleStatusChange = (id: Id<"projects">, status: ProjectStatus) => {
-		updateProject({ id, status })
-			.catch(() => toast.error("Failed to update status"));
+		updateProject({ id, status }).catch(() => toast.error("Failed to update status"));
 	};
 
 	const handleClientChange = (id: Id<"projects">, value: string) => {
 		if (value === "none") {
-			updateProject({ id, clearClientId: true })
-				.catch(() => toast.error("Failed to update client"));
+			updateProject({ id, clearClientId: true }).catch(() =>
+				toast.error("Failed to update client"),
+			);
 		} else {
-			updateProject({ id, clientId: value as Id<"clients"> })
-				.catch(() => toast.error("Failed to update client"));
+			updateProject({ id, clientId: value as Id<"clients"> }).catch(() =>
+				toast.error("Failed to update client"),
+			);
 		}
 	};
 
@@ -187,10 +184,7 @@ function ProjectsPage() {
 					render: (project) => (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<button
-									type="button"
-									className="cursor-pointer text-sm hover:underline"
-								>
+								<button type="button" className="cursor-pointer text-sm hover:underline">
 									{project.clientName ? (
 										<span>{project.clientName}</span>
 									) : (
@@ -202,16 +196,9 @@ function ProjectsPage() {
 								{project.clientId && (
 									<>
 										<DropdownMenuItem
-											onClick={() =>
-												handleClientChange(
-													project._id as Id<"projects">,
-													"none",
-												)
-											}
+											onClick={() => handleClientChange(project._id as Id<"projects">, "none")}
 										>
-											<span className="text-muted-foreground">
-												Remove client
-											</span>
+											<span className="text-muted-foreground">Remove client</span>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 									</>
@@ -219,18 +206,11 @@ function ProjectsPage() {
 								{clients?.map((client) => (
 									<DropdownMenuItem
 										key={client._id}
-										onClick={() =>
-											handleClientChange(
-												project._id as Id<"projects">,
-												client._id,
-											)
-										}
+										onClick={() => handleClientChange(project._id as Id<"projects">, client._id)}
 									>
 										{client.name}
 										{client._id === project.clientId && (
-											<span className="ml-auto text-muted-foreground text-xs">
-												current
-											</span>
+											<span className="ml-auto text-xs text-muted-foreground">current</span>
 										)}
 									</DropdownMenuItem>
 								))}
@@ -245,18 +225,14 @@ function ProjectsPage() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button type="button" className="cursor-pointer">
-									<Badge variant={statusVariant[project.status]}>
-										{project.status}
-									</Badge>
+									<Badge variant={statusVariant[project.status]}>{project.status}</Badge>
 								</button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="start">
 								{STATUS_OPTIONS.map((status) => (
 									<DropdownMenuItem
 										key={status}
-										onClick={() =>
-											handleStatusChange(project._id as Id<"projects">, status)
-										}
+										onClick={() => handleStatusChange(project._id as Id<"projects">, status)}
 									>
 										<Badge variant={statusVariant[status]} className="mr-2">
 											{status}
@@ -271,9 +247,7 @@ function ProjectsPage() {
 					header: "Rate",
 					className: "w-36",
 					render: (project) => {
-						const clientObj = project.clientId
-							? clientMap.get(project.clientId) ?? null
-							: null;
+						const clientObj = project.clientId ? (clientMap.get(project.clientId) ?? null) : null;
 						return (
 							<ProjectRateCell
 								projectId={project._id as Id<"projects">}
@@ -296,12 +270,14 @@ function ProjectsPage() {
 				)({ name })
 			}
 			onUpdate={(id, name) =>
-				updateProject({ id: id as Id<"projects">, name })
-					.catch(() => toast.error("Failed to update project"))
+				updateProject({ id: id as Id<"projects">, name }).catch(() =>
+					toast.error("Failed to update project"),
+				)
 			}
 			onDelete={(id) =>
-				deleteProject({ id: id as Id<"projects"> })
-					.catch(() => toast.error("Failed to delete project"))
+				deleteProject({ id: id as Id<"projects"> }).catch(() =>
+					toast.error("Failed to delete project"),
+				)
 			}
 		/>
 	);

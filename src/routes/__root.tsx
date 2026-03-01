@@ -1,14 +1,11 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import {
-	Authenticated,
-	Unauthenticated,
-	AuthLoading,
-} from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import type { ConvexReactClient } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/sonner";
+
 import { LoginPage } from "@/components/login-page";
+import { Toaster } from "@/components/ui/sonner";
 import { useDeepLinkAuth } from "@/hooks/use-deep-link-auth";
 
 const RouterDevtools = import.meta.env.DEV
@@ -34,7 +31,7 @@ export const Route = createRootRouteWithContext<{
 
 function AppContent() {
 	return (
-		<div className="h-[100dvh] overflow-hidden z-10 bg-transparent">
+		<div className="z-10 h-[100dvh] overflow-hidden bg-transparent">
 			<Outlet />
 		</div>
 	);
@@ -50,9 +47,7 @@ function RootComponent() {
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			</AuthLoading>
-			<Unauthenticated>
-				{import.meta.env.DEV ? <AppContent /> : <LoginPage />}
-			</Unauthenticated>
+			<Unauthenticated>{import.meta.env.DEV ? <AppContent /> : <LoginPage />}</Unauthenticated>
 			<Authenticated>
 				<AppContent />
 			</Authenticated>

@@ -56,10 +56,8 @@ export async function deleteOne(
 	assertOwnership(client, userId, "Client");
 
 	// Nullify clientId on linked time entries
-	const timeEntries = await ctx.table(
-		"time_entries",
-		"by_user_and_client",
-		(q) => q.eq("userId", userId).eq("clientId", id),
+	const timeEntries = await ctx.table("time_entries", "by_user_and_client", (q) =>
+		q.eq("userId", userId).eq("clientId", id),
 	);
 
 	for (const entry of timeEntries) {

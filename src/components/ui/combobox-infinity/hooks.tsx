@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ComboboxState<T> {
@@ -12,16 +13,12 @@ interface ComboboxState<T> {
 	onPopoverOpenChange?: (open: boolean) => void;
 }
 
-const ComboboxContext = React.createContext<ComboboxState<any> | undefined>(
-	undefined,
-);
+const ComboboxContext = React.createContext<ComboboxState<any> | undefined>(undefined);
 
 export function useComboboxContext<T>() {
 	const context = React.useContext(ComboboxContext);
 	if (!context) {
-		throw new Error(
-			"useComboboxContext must be used within a ComboboxProvider",
-		);
+		throw new Error("useComboboxContext must be used within a ComboboxProvider");
 	}
 	return context as ComboboxState<T>;
 }
@@ -48,9 +45,5 @@ export function ComboboxProvider<T>({
 		onPopoverOpenChange,
 	};
 
-	return (
-		<ComboboxContext.Provider value={contextValue}>
-			{children}
-		</ComboboxContext.Provider>
-	);
+	return <ComboboxContext.Provider value={contextValue}>{children}</ComboboxContext.Provider>;
 }

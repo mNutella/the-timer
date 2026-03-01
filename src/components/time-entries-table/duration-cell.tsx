@@ -4,6 +4,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatDuration, parseDurationToMilliseconds } from "@/lib/utils";
+
 import { CELL_INPUT_CLASS, SaveHint, useUpdateDuration } from "./hooks";
 
 export function DurationCell({
@@ -34,11 +35,7 @@ export function DurationCell({
 
 	React.useEffect(() => {
 		if (isEditing) return;
-		if (
-			pendingDurationMsRef.current !== null &&
-			pendingDurationMsRef.current !== duration
-		)
-			return;
+		if (pendingDurationMsRef.current !== null && pendingDurationMsRef.current !== duration) return;
 
 		setValue(computeNowValue());
 

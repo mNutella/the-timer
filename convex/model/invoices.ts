@@ -1,4 +1,5 @@
 import { omit } from "convex-helpers";
+
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../types";
 import { getEndOfDay, getStartOfDay } from "../utils";
@@ -53,10 +54,7 @@ function formatDateRange(startMs: number, endMs: number): string {
 	return `${start.toLocaleDateString("en-US", opts)} - ${end.toLocaleDateString("en-US", opts)}`;
 }
 
-function getGroupValue(
-	entry: EntryWithRelations,
-	dimension: GroupByDimension,
-): string {
+function getGroupValue(entry: EntryWithRelations, dimension: GroupByDimension): string {
 	switch (dimension) {
 		case "client":
 			return entry.clientName ?? "No Client";
@@ -69,10 +67,7 @@ function getGroupValue(
 	}
 }
 
-function getGroupId(
-	entry: EntryWithRelations,
-	dimension: GroupByDimension,
-): string {
+function getGroupId(entry: EntryWithRelations, dimension: GroupByDimension): string {
 	switch (dimension) {
 		case "client":
 			return entry.clientId ?? "none";
@@ -157,13 +152,7 @@ function buildGroupTree(
 
 	const nodes: GroupNode[] = [];
 	for (const [gId, gEntries] of groups) {
-		const children = buildGroupTree(
-			gEntries,
-			rules,
-			rateResolver,
-			mergeEntries,
-			depth + 1,
-		);
+		const children = buildGroupTree(gEntries, rules, rateResolver, mergeEntries, depth + 1);
 		let duration_ms: number;
 		let amount_cents: number;
 		if (children.length === 0) {
@@ -325,15 +314,9 @@ export async function previewLineItems(
 			projectId: entry.projectId,
 			categoryId: entry.categoryId,
 			billable: entry.billable,
-			clientName: entry.clientId
-				? clientNameCache.get(entry.clientId)
-				: undefined,
-			projectName: entry.projectId
-				? projectNameCache.get(entry.projectId)
-				: undefined,
-			categoryName: entry.categoryId
-				? categoryNameCache.get(entry.categoryId)
-				: undefined,
+			clientName: entry.clientId ? clientNameCache.get(entry.clientId) : undefined,
+			projectName: entry.projectId ? projectNameCache.get(entry.projectId) : undefined,
+			categoryName: entry.categoryId ? categoryNameCache.get(entry.categoryId) : undefined,
 		});
 	}
 
@@ -341,12 +324,7 @@ export async function previewLineItems(
 		resolveRateFromCaches(entry, clientCache, projectCache, defaultRate);
 
 	// Build group tree
-	const groupTree = buildGroupTree(
-		billableEntries,
-		groupingRules,
-		rateResolver,
-		mergeEntries,
-	);
+	const groupTree = buildGroupTree(billableEntries, groupingRules, rateResolver, mergeEntries);
 
 	// Flatten to line items
 	const lineItems = flattenToLineItems(
@@ -358,14 +336,8 @@ export async function previewLineItems(
 		endDate,
 	);
 
-	const subtotal_cents = lineItems.reduce(
-		(sum, item) => sum + item.amount_cents,
-		0,
-	);
-	const total_duration_ms = lineItems.reduce(
-		(sum, item) => sum + item.duration_ms,
-		0,
-	);
+	const subtotal_cents = lineItems.reduce((sum, item) => sum + item.amount_cents, 0);
+	const total_duration_ms = lineItems.reduce((sum, item) => sum + item.duration_ms, 0);
 
 	return {
 		lineItems,
@@ -450,17 +422,12 @@ export async function deleteOne(
 	await invoice.delete();
 }
 
-export async function list(
-	ctx: QueryCtx,
-	{ userId }: { userId: Id<"users"> },
-) {
+export async function list(ctx: QueryCtx, { userId }: { userId: Id<"users"> }) {
 	const invoices = await ctx
 		.table("invoices", "userId", (q) => q.eq("userId", userId))
 		.order("desc")
 		.map(async (invoice) => {
-			const client = invoice.clientId
-				? await ctx.table("clients").get(invoice.clientId)
-				: null;
+			const client = invoice.clientId ? await ctx.table("clients").get(invoice.clientId) : null;
 			return {
 				...omit(invoice.doc(), ["userId"]),
 				clientName: client?.name ?? null,
@@ -475,9 +442,7 @@ export async function getById(
 ) {
 	const invoice = await ctx.table("invoices").getX(id);
 	assertOwnership(invoice, userId, "Invoice");
-	const client = invoice.clientId
-		? await ctx.table("clients").get(invoice.clientId)
-		: null;
+	const client = invoice.clientId ? await ctx.table("clients").get(invoice.clientId) : null;
 	return {
 		...omit(invoice.doc(), ["userId"]),
 		clientName: client?.name ?? null,
@@ -492,17 +457,12 @@ export async function getLastEndDate(
 		.table("invoices", "by_user_and_end_date", (q) => q.eq("userId", userId))
 		.order("desc");
 
-	const match = clientId
-		? invoices.find((inv) => inv.clientId === clientId)
-		: invoices[0];
+	const match = clientId ? invoices.find((inv) => inv.clientId === clientId) : invoices[0];
 
 	return match?.end_date ?? null;
 }
 
-export async function getUnbilledTotal(
-	ctx: QueryCtx,
-	{ userId }: { userId: Id<"users"> },
-) {
+export async function getUnbilledTotal(ctx: QueryCtx, { userId }: { userId: Id<"users"> }) {
 	// Find the latest invoice end date
 	const lastEndDate = await getLastEndDate(ctx, { userId });
 	const sinceDate = lastEndDate ? lastEndDate + 1 : 0;
@@ -519,10 +479,7 @@ export async function getUnbilledTotal(
 		return { amount_cents: 0, duration_ms: 0, entry_count: 0 };
 	}
 
-	const { clientCache, projectCache } = await buildRateCaches(
-		ctx,
-		billableEntries,
-	);
+	const { clientCache, projectCache } = await buildRateCaches(ctx, billableEntries);
 	const settings = await UserSettings.get(ctx, { userId });
 	const defaultRate = settings?.default_hourly_rate ?? 0;
 
@@ -530,12 +487,7 @@ export async function getUnbilledTotal(
 	let totalDuration = 0;
 	for (const entry of billableEntries) {
 		const dur = entry.duration ?? 0;
-		const rate = resolveRateFromCaches(
-			entry,
-			clientCache,
-			projectCache,
-			defaultRate,
-		);
+		const rate = resolveRateFromCaches(entry, clientCache, projectCache, defaultRate);
 		totalDuration += dur;
 		totalAmount += Math.round((dur / 3600000) * rate);
 	}

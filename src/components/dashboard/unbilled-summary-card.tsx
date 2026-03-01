@@ -1,5 +1,6 @@
 import { useQuery } from "convex-helpers/react/cache";
 import { DollarSign } from "lucide-react";
+
 import { api } from "@/../convex/_generated/api";
 import { formatDuration } from "@/lib/utils";
 
@@ -23,10 +24,10 @@ export function UnbilledSummaryCard() {
 					<DollarSign className="size-5 text-amber-500" />
 				</div>
 				<div className="flex-1">
-					<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+					<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 						Unbilled
 					</p>
-					<p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
+					<p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
 						{formatCents(unbilled.amount_cents)}
 					</p>
 				</div>
@@ -34,9 +35,7 @@ export function UnbilledSummaryCard() {
 					<p className="text-sm text-muted-foreground tabular-nums">
 						{formatDuration(unbilled.duration_ms)}
 					</p>
-					<p className="text-xs text-muted-foreground">
-						{unbilled.entry_count} entries
-					</p>
+					<p className="text-xs text-muted-foreground">{unbilled.entry_count} entries</p>
 				</div>
 			</div>
 		</div>

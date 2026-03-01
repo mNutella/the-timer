@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+
 import { api } from "./_generated/api";
 import {
 	authenticateAs,
@@ -119,9 +120,7 @@ describe("clients", () => {
 	test("cascade deletion nullifies clientId on time_entries and projects", async () => {
 		const t = createTest();
 		const { userId, asUser } = await authenticateAs(t);
-		const clientId = await t.run(async (ctx) =>
-			seedClient(ctx, userId, "To Delete"),
-		);
+		const clientId = await t.run(async (ctx) => seedClient(ctx, userId, "To Delete"));
 		const projectId = await t.run(async (ctx) =>
 			seedProject(ctx, userId, { clientId, name: "Linked Project" }),
 		);

@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+
 import type { Category, Client, Project } from "@/lib/types";
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
@@ -18,12 +19,10 @@ export function useFilters() {
 	const debouncedSearchValue = useDebouncedValue(searchValue, 300);
 	const [filterByClients, setFilterByClients] = React.useState<Client[]>([]);
 	const [filterByProjects, setFilterByProjects] = React.useState<Project[]>([]);
-	const [filterByCategories, setFilterByCategories] = React.useState<
-		Category[]
-	>([]);
-	const [filterByTimeRange, setFilterByTimeRange] = React.useState<
-		DateRange | undefined
-	>(undefined);
+	const [filterByCategories, setFilterByCategories] = React.useState<Category[]>([]);
+	const [filterByTimeRange, setFilterByTimeRange] = React.useState<DateRange | undefined>(
+		undefined,
+	);
 
 	return {
 		searchValue,

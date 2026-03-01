@@ -86,10 +86,7 @@ export function resolveRateFromCaches(
 /**
  * Fetches and caches client/project data for rate resolution.
  */
-export async function buildRateCaches(
-	ctx: QueryCtx,
-	entries: EntryForRate[],
-) {
+export async function buildRateCaches(ctx: QueryCtx, entries: EntryForRate[]) {
 	const clientCache = new Map<string, { hourly_rate_cents?: number } | null>();
 	const projectCache = new Map<string, { hourly_rate_cents?: number } | null>();
 

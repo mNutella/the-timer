@@ -1,4 +1,5 @@
 import { Calendar, ChevronDown, ChevronUp, Clock, TrendingUp } from "lucide-react";
+
 import type { AnalyticsChartData } from "@/hooks/use-analytics-chart-data";
 
 interface AnalyticsSummaryStripProps {
@@ -7,11 +8,7 @@ interface AnalyticsSummaryStripProps {
 	onToggle: () => void;
 }
 
-export function AnalyticsSummaryStrip({
-	data,
-	expanded,
-	onToggle,
-}: AnalyticsSummaryStripProps) {
+export function AnalyticsSummaryStrip({ data, expanded, onToggle }: AnalyticsSummaryStripProps) {
 	const { totalHours, avgDailyHours, busiestDay } = data;
 
 	const busiestLabel = busiestDay
@@ -27,17 +24,17 @@ export function AnalyticsSummaryStrip({
 	return (
 		<div className="rounded-xl border border-border bg-card px-4 lg:px-6">
 			<div className="flex items-center">
-				<div className="flex-1 grid grid-cols-1 divide-y divide-border @xl/main:grid-cols-[1.4fr_1fr_1fr] @xl/main:divide-y-0 @xl/main:divide-x">
+				<div className="grid flex-1 grid-cols-1 divide-y divide-border @xl/main:grid-cols-[1.4fr_1fr_1fr] @xl/main:divide-x @xl/main:divide-y-0">
 					{/* Featured: Total Hours */}
 					<div className="flex items-center gap-4 py-4 pr-6">
 						<div className="flex size-11 items-center justify-center rounded-xl bg-success/10">
 							<Clock className="size-5 text-success" />
 						</div>
 						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 								Total Hours
 							</p>
-							<p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
+							<p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
 								{totalHours > 0 ? `${totalHours.toFixed(1)}h` : "--"}
 							</p>
 						</div>
@@ -49,7 +46,7 @@ export function AnalyticsSummaryStrip({
 							<TrendingUp className="size-4 text-muted-foreground" />
 						</div>
 						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 								Avg Daily
 							</p>
 							<p className="mt-0.5 text-xl font-semibold tabular-nums">
@@ -64,12 +61,10 @@ export function AnalyticsSummaryStrip({
 							<Calendar className="size-4 text-muted-foreground" />
 						</div>
 						<div>
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+							<p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
 								Busiest Day
 							</p>
-							<p className="mt-0.5 text-xl font-semibold tabular-nums">
-								{busiestLabel}
-							</p>
+							<p className="mt-0.5 text-xl font-semibold tabular-nums">{busiestLabel}</p>
 						</div>
 					</div>
 				</div>
