@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -14,22 +15,22 @@ interface ComboBoxContextType<T> {
 	setSelectedItems: (items: T | null) => void;
 }
 
-const ComboBoxContext = React.createContext<ComboBoxContextType<any> | undefined>(undefined);
+const ComboBoxContext = createContext<ComboBoxContextType<any> | undefined>(undefined);
 
 export function useComboBox() {
-	const context = React.useContext(ComboBoxContext);
+	const context = useContext(ComboBoxContext);
 	if (!context) {
 		throw new Error("useComboBox must be used within a ComboBoxResponsive");
 	}
 	return context;
 }
 
-export function ComboBoxResponsive({ children }: { children: React.ReactNode }) {
-	const [open, setOpen] = React.useState(false);
+export function ComboBoxResponsive({ children }: { children: ReactNode }) {
+	const [open, setOpen] = useState(false);
 	const isMobile = useIsMobile();
-	const [selectedItems, setSelectedItems] = React.useState<any | null>(null);
+	const [selectedItems, setSelectedItems] = useState<any | null>(null);
 
-	const contextValue = React.useMemo(
+	const contextValue = useMemo(
 		() => ({
 			open,
 			setOpen,

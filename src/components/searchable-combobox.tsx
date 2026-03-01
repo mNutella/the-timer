@@ -2,7 +2,8 @@
 
 import type { FunctionReference, OptionalRestArgs } from "convex/server";
 import { Check, PlusCircle } from "lucide-react";
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentType } from "react";
 
 import {
 	Combobox,
@@ -48,7 +49,7 @@ type BaseSearchableComboboxProps<T extends SelectableItem, Q extends PaginatedQu
 	searchPlaceholder?: string;
 	queryArgs?: OptionalRestArgs<Q>[0];
 	onSelect?: (name: string) => void;
-	comboboxTrigger?: React.ComponentType<TriggerProps<T>>;
+	comboboxTrigger?: ComponentType<TriggerProps<T>>;
 };
 
 type SearchableComboboxProps<T extends SelectableItem, Q extends PaginatedQuery> =
@@ -95,11 +96,11 @@ export function SearchableCombobox<T extends SelectableItem, Q extends Paginated
 		comboboxTrigger,
 	} = props;
 
-	const [search, setSearch] = React.useState("");
+	const [search, setSearch] = useState("");
 	const Trigger = comboboxTrigger ?? DefaultComboboxTrigger;
 	const isMultiple = props.type === "multiple";
 
-	const selectedItemsMap = React.useMemo(() => {
+	const selectedItemsMap = useMemo(() => {
 		const items = !value ? [] : Array.isArray(value) ? value : [value];
 		return new Map(items.map((item) => [item._id, item]));
 	}, [value]);
@@ -200,10 +201,10 @@ function SearchableComboboxContent<T extends SelectableItem, Q extends Paginated
 		}
 	};
 
-	const loaderRef = React.useRef<HTMLDivElement | null>(null);
-	const scrollAreaRef = React.useRef<HTMLDivElement | null>(null);
+	const loaderRef = useRef<HTMLDivElement | null>(null);
+	const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (status !== "CanLoadMore" || !loaderRef.current || !scrollAreaRef.current) return;
 
 		const observer = new IntersectionObserver(
@@ -224,14 +225,14 @@ function SearchableComboboxContent<T extends SelectableItem, Q extends Paginated
 
 	const searchLower = search.trim().toLowerCase();
 
-	const selectedItemsList = React.useMemo(() => {
+	const selectedItemsList = useMemo(() => {
 		if (!selectedItems || selectedItems.size === 0) return [];
 		return Array.from(selectedItems.values()).filter(
 			(item) => !searchLower || item.name.toLowerCase().includes(searchLower),
 		);
 	}, [selectedItems, searchLower]);
 
-	const unselectedItems = React.useMemo(() => {
+	const unselectedItems = useMemo(() => {
 		if (!selectedItems || selectedItems.size === 0) return items;
 		return items.filter((item) => !selectedItems.has(item._id));
 	}, [items, selectedItems]);

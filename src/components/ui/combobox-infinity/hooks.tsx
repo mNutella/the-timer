@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -13,10 +14,10 @@ interface ComboboxState<T> {
 	onPopoverOpenChange?: (open: boolean) => void;
 }
 
-const ComboboxContext = React.createContext<ComboboxState<any> | undefined>(undefined);
+const ComboboxContext = createContext<ComboboxState<any> | undefined>(undefined);
 
 export function useComboboxContext<T>() {
-	const context = React.useContext(ComboboxContext);
+	const context = useContext(ComboboxContext);
 	if (!context) {
 		throw new Error("useComboboxContext must be used within a ComboboxProvider");
 	}
@@ -29,12 +30,12 @@ export function ComboboxProvider<T>({
 	onValueChange,
 	onPopoverOpenChange,
 }: {
-	children: React.ReactNode;
+	children: ReactNode;
 	selectedItems?: Map<string, T>;
 	onValueChange?: (newSelectedItem: T | undefined) => void;
 	onPopoverOpenChange?: (open: boolean) => void;
 }) {
-	const [isOpen, setIsOpen] = React.useState(false);
+	const [isOpen, setIsOpen] = useState(false);
 	const isMobile = useIsMobile();
 	const contextValue: ComboboxState<T> = {
 		isMobile,

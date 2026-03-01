@@ -1,6 +1,7 @@
 import { endOfMonth, endOfWeek, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { BrushCleaning, Calendar as CalendarIcon, ChevronsUpDown } from "lucide-react";
-import * as React from "react";
+import { useState } from "react";
+import type { PointerEvent } from "react";
 import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
@@ -50,11 +51,11 @@ export function TimeRangeFilter({
 	value?: DateRange;
 	onChange: (value?: DateRange) => void;
 }) {
-	const [open, setOpen] = React.useState(false);
-	const [timeRange, setTimeRange] = React.useState<DateRange | undefined>(value);
+	const [open, setOpen] = useState(false);
+	const [timeRange, setTimeRange] = useState<DateRange | undefined>(value);
 	const itemSelected = Boolean(timeRange?.from && timeRange?.to);
 
-	const handleClear = (e: React.PointerEvent<HTMLSpanElement>) => {
+	const handleClear = (e: PointerEvent<HTMLSpanElement>) => {
 		e.stopPropagation();
 		e.preventDefault();
 		setTimeRange(undefined);

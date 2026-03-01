@@ -1,6 +1,6 @@
 import { useConvex } from "convex/react";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
-import * as React from "react";
+import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
 
@@ -59,13 +59,13 @@ export function ExportDialog({
 	filterByTimeRange,
 }: ExportDialogProps) {
 	const convex = useConvex();
-	const [format, setFormat] = React.useState<ExportFormat>("csv");
-	const [mode, setMode] = React.useState<ExportMode>("detailed");
-	const [groupBy, setGroupBy] = React.useState<ExportGroupBy>("none");
-	const [exporting, setExporting] = React.useState(false);
+	const [format, setFormat] = useState<ExportFormat>("csv");
+	const [mode, setMode] = useState<ExportMode>("detailed");
+	const [groupBy, setGroupBy] = useState<ExportGroupBy>("none");
+	const [exporting, setExporting] = useState(false);
 
 	// Default to last 3 months when no date range filter is active
-	const effectiveDateRange = React.useMemo(() => {
+	const effectiveDateRange = useMemo(() => {
 		if (filterByTimeRange?.from) {
 			return {
 				startDate: filterByTimeRange.from.getTime(),

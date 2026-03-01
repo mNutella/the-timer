@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
@@ -18,22 +18,22 @@ export function DurationCell({
 	startTime: number;
 	inProgress: boolean;
 }) {
-	const computeNowValue = React.useCallback(() => {
+	const computeNowValue = useCallback(() => {
 		if (inProgress && startTime) {
 			return formatDuration(Math.max(0, Date.now() - startTime));
 		}
 		return formatDuration(duration || 0);
 	}, [inProgress, startTime, duration]);
 
-	const [value, setValue] = React.useState(computeNowValue());
-	const [isEditing, setIsEditing] = React.useState(false);
-	const intervalRef = React.useRef<number | null>(null);
-	const inputRef = React.useRef<HTMLInputElement>(null);
-	const isSubmittingRef = React.useRef(false);
-	const pendingDurationMsRef = React.useRef<number | null>(null);
+	const [value, setValue] = useState(computeNowValue());
+	const [isEditing, setIsEditing] = useState(false);
+	const intervalRef = useRef<number | null>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const isSubmittingRef = useRef(false);
+	const pendingDurationMsRef = useRef<number | null>(null);
 	const updateDuration = useUpdateDuration(timeEntryId);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (isEditing) return;
 		if (pendingDurationMsRef.current !== null && pendingDurationMsRef.current !== duration) return;
 
@@ -44,7 +44,7 @@ export function DurationCell({
 		}
 	}, [computeNowValue, isEditing, duration]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (!inProgress || isEditing) {
 			if (intervalRef.current) {
 				window.clearInterval(intervalRef.current);

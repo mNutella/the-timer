@@ -1,5 +1,5 @@
 import { StickyNote } from "lucide-react";
-import * as React from "react";
+import { useRef, useState } from "react";
 
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
@@ -17,12 +17,12 @@ export function TimeEntryCell({
 	timeEntryName: string;
 	notes?: string;
 }) {
-	const [value, setValue] = React.useState(timeEntryName);
-	const [isFocused, setIsFocused] = React.useState(false);
+	const [value, setValue] = useState(timeEntryName);
+	const [isFocused, setIsFocused] = useState(false);
 	const updateName = useUpdateTimeEntryName(timeEntryId);
-	const isSubmittingRef = React.useRef(false);
-	const inputRef = React.useRef<HTMLInputElement>(null);
-	const prevTimeEntryNameRef = React.useRef(timeEntryName);
+	const isSubmittingRef = useRef(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const prevTimeEntryNameRef = useRef(timeEntryName);
 
 	if (prevTimeEntryNameRef.current !== timeEntryName) {
 		prevTimeEntryNameRef.current = timeEntryName;

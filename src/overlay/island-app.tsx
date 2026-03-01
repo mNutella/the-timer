@@ -91,7 +91,7 @@ export function IslandApp({ hasNotch, notchWidth }: IslandAppProps) {
 		height: initDims.height,
 	});
 	// Ref breaks circular dep: scheduleCollapse → animateToState → guardResize → scheduleCollapse
-	const animateRef = useRef<(target: IslandState) => void>();
+	const animateRef = useRef<((target: IslandState) => void) | undefined>(undefined);
 
 	// Ref-based flag to prevent collapse while inline editing
 	const isEditingRef = useRef(false);

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, UserCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { forwardRef } from "react";
+import type { ComponentProps } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -15,57 +15,69 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-export const DockNavItem = forwardRef<
-	HTMLDivElement,
-	{ icon: LucideIcon; label: string; href: string }
->(({ icon: Icon, label, href }, ref) => (
-	<Tooltip>
-		<TooltipTrigger asChild>
-			<div ref={ref} className="origin-bottom will-change-transform">
-				<Link
-					to={href}
-					activeOptions={{ exact: href === "/" }}
-					className="group relative flex size-10 items-center justify-center rounded-xl transition-colors hover:bg-foreground/10"
-				>
-					<Icon className="size-4" />
-					<span className="absolute -bottom-1.5 left-1/2 size-1 -translate-x-1/2 scale-0 rounded-full bg-primary transition-transform group-[.active]:scale-100" />
-				</Link>
-			</div>
-		</TooltipTrigger>
-		<TooltipContent side="top" sideOffset={10}>
-			{label}
-		</TooltipContent>
-	</Tooltip>
-));
-DockNavItem.displayName = "DockNavItem";
+export function DockNavItem({
+	icon: Icon,
+	label,
+	href,
+	ref,
+}: { icon: LucideIcon; label: string; href: string } & Pick<ComponentProps<"div">, "ref">) {
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<div ref={ref} className="origin-bottom will-change-transform">
+					<Link
+						to={href}
+						activeOptions={{ exact: href === "/" }}
+						className="group relative flex size-10 items-center justify-center rounded-xl transition-colors hover:bg-foreground/10"
+					>
+						<Icon className="size-4" />
+						<span className="absolute -bottom-1.5 left-1/2 size-1 -translate-x-1/2 scale-0 rounded-full bg-primary transition-transform group-[.active]:scale-100" />
+					</Link>
+				</div>
+			</TooltipTrigger>
+			<TooltipContent side="top" sideOffset={10}>
+				{label}
+			</TooltipContent>
+		</Tooltip>
+	);
+}
 
-export const DockActionItem = forwardRef<
-	HTMLDivElement,
-	{ icon: LucideIcon; label: string; onClick: () => void; className?: string }
->(({ icon: Icon, label, onClick, className }, ref) => (
-	<Tooltip>
-		<TooltipTrigger asChild>
-			<div ref={ref} className="origin-bottom will-change-transform">
-				<button
-					type="button"
-					onClick={onClick}
-					className={cn(
-						"relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-foreground/10",
-						className,
-					)}
-				>
-					<Icon className="size-4" />
-				</button>
-			</div>
-		</TooltipTrigger>
-		<TooltipContent side="top" sideOffset={10}>
-			{label}
-		</TooltipContent>
-	</Tooltip>
-));
-DockActionItem.displayName = "DockActionItem";
+export function DockActionItem({
+	icon: Icon,
+	label,
+	onClick,
+	className,
+	ref,
+}: {
+	icon: LucideIcon;
+	label: string;
+	onClick: () => void;
+	className?: string;
+} & Pick<ComponentProps<"div">, "ref">) {
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<div ref={ref} className="origin-bottom will-change-transform">
+					<button
+						type="button"
+						onClick={onClick}
+						className={cn(
+							"relative flex items-center justify-center size-10 rounded-xl transition-colors hover:bg-foreground/10",
+							className,
+						)}
+					>
+						<Icon className="size-4" />
+					</button>
+				</div>
+			</TooltipTrigger>
+			<TooltipContent side="top" sideOffset={10}>
+				{label}
+			</TooltipContent>
+		</Tooltip>
+	);
+}
 
-export const DockUserItem = forwardRef<HTMLDivElement>(function DockUserItem(_, ref) {
+export function DockUserItem({ ref }: Pick<ComponentProps<"div">, "ref">) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -97,4 +109,4 @@ export const DockUserItem = forwardRef<HTMLDivElement>(function DockUserItem(_, 
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
-});
+}

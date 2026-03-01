@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import type { ComponentProps } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDuration, cn } from "@/lib/utils";
@@ -18,12 +18,10 @@ interface TimelineBlockProps {
 	isRunning: boolean;
 	onClick: () => void;
 	isSelected: boolean;
+	ref?: ComponentProps<"div">["ref"];
 }
 
-const TimelineBlock = forwardRef<HTMLDivElement, TimelineBlockProps>(function TimelineBlock(
-	{ positioned, isRunning, onClick, isSelected },
-	ref,
-) {
+function TimelineBlock({ positioned, isRunning, onClick, isSelected, ref }: TimelineBlockProps) {
 	const { entry, top, height, left, width, color } = positioned;
 	const name = entry.name || "Untitled";
 	const startTime = entry.start_time!;
@@ -97,6 +95,6 @@ const TimelineBlock = forwardRef<HTMLDivElement, TimelineBlockProps>(function Ti
 			</TooltipContent>
 		</Tooltip>
 	);
-});
+}
 
 export default TimelineBlock;

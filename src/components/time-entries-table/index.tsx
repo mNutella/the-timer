@@ -16,7 +16,8 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, ChevronsUpDown, Download } from "lucide-react";
-import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentProps, CSSProperties } from "react";
 import type { DateRange } from "react-day-picker";
 
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -200,15 +201,19 @@ const columns: ColumnDef<TimeEntry>[] = [
 	},
 ];
 
-const CustomRow = React.forwardRef<
-	HTMLTableRowElement,
-	{
-		row: Row<TimeEntry>;
-		className?: string;
-		style?: React.CSSProperties;
-		virtualRowIndex: number;
-	}
->(({ row, className, style, virtualRowIndex }, ref) => {
+function CustomRow({
+	row,
+	className,
+	style,
+	virtualRowIndex,
+	ref,
+}: {
+	row: Row<TimeEntry>;
+	className?: string;
+	style?: CSSProperties;
+	virtualRowIndex: number;
+	ref?: ComponentProps<"tr">["ref"];
+}) {
 	return (
 		<TableRow
 			ref={ref}
@@ -227,7 +232,7 @@ const CustomRow = React.forwardRef<
 			))}
 		</TableRow>
 	);
-});
+}
 
 interface TimeEntriesTableProps {
 	searchValue: string;
@@ -256,15 +261,15 @@ export default function TimeEntriesTable({
 		filterByCategories,
 		filterByTimeRange,
 	);
-	const scrollAreaRef = React.useRef<HTMLDivElement>(null);
-	const loaderRef = React.useRef<HTMLTableCellElement>(null);
-	const [exportOpen, setExportOpen] = React.useState(false);
-	const [rowSelection, setRowSelection] = React.useState({});
-	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-	const [sorting, setSorting] = React.useState<SortingState>([]);
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
+	const loaderRef = useRef<HTMLTableCellElement>(null);
+	const [exportOpen, setExportOpen] = useState(false);
+	const [rowSelection, setRowSelection] = useState({});
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [sorting, setSorting] = useState<SortingState>([]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (status !== "CanLoadMore" || !loaderRef.current || !scrollAreaRef.current) return;
 
 		const observer = new IntersectionObserver(
@@ -323,8 +328,8 @@ export default function TimeEntriesTable({
 
 	// Build grid template so table fills width while keeping specific columns small
 	const headerGroups = table.getHeaderGroups();
-	const gridTemplateColumns = React.useMemo(() => {
-		if (!headerGroups.length) return undefined as React.CSSProperties["gridTemplateColumns"];
+	const gridTemplateColumns = useMemo(() => {
+		if (!headerGroups.length) return undefined as CSSProperties["gridTemplateColumns"];
 		const headers = headerGroups[0].headers;
 		const parts = headers.map((h) => {
 			const colId = (h.column.columnDef.id ?? h.column.id) as string;

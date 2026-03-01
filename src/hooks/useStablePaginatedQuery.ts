@@ -1,6 +1,6 @@
 import { usePaginatedQuery } from "convex-helpers/react/cache";
 import type { FunctionArgs, FunctionReference } from "convex/server";
-import * as React from "react";
+import { useRef } from "react";
 
 type PaginatedQueryRef = FunctionReference<
 	"query",
@@ -28,7 +28,7 @@ export function useStablePaginatedQuery<
 		{ initialNumItems: options?.initialNumItems ?? 10 },
 	);
 
-	const dataRef = React.useRef<TItem[] | undefined>(undefined);
+	const dataRef = useRef<TItem[] | undefined>(undefined);
 
 	if (!isLoading && results && results !== dataRef.current) {
 		dataRef.current = results as TItem[];

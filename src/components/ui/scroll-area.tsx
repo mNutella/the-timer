@@ -1,47 +1,40 @@
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import * as React from "react";
+import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-const ScrollArea = React.forwardRef<
-	React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-	React.ComponentProps<typeof ScrollAreaPrimitive.Root>
->(
-	(
-		{
-			className,
-			children,
-			onScroll,
-			...props
-		}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>,
-		ref,
-	) => {
-		return (
-			<ScrollAreaPrimitive.Root
-				data-slot="scroll-area"
-				className={cn("relative", className)}
-				{...props}
+function ScrollArea({
+	className,
+	children,
+	onScroll,
+	ref,
+	...props
+}: ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+	return (
+		<ScrollAreaPrimitive.Root
+			data-slot="scroll-area"
+			className={cn("relative", className)}
+			{...props}
+		>
+			<ScrollAreaPrimitive.Viewport
+				ref={ref}
+				data-slot="scroll-area-viewport"
+				className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+				onScroll={onScroll}
 			>
-				<ScrollAreaPrimitive.Viewport
-					ref={ref}
-					data-slot="scroll-area-viewport"
-					className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
-					onScroll={onScroll}
-				>
-					{children}
-				</ScrollAreaPrimitive.Viewport>
-				<ScrollBar />
-				<ScrollAreaPrimitive.Corner />
-			</ScrollAreaPrimitive.Root>
-		);
-	},
-);
+				{children}
+			</ScrollAreaPrimitive.Viewport>
+			<ScrollBar />
+			<ScrollAreaPrimitive.Corner />
+		</ScrollAreaPrimitive.Root>
+	);
+}
 
 function ScrollBar({
 	className,
 	orientation = "vertical",
 	...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
+}: ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
 	return (
 		<ScrollAreaPrimitive.ScrollAreaScrollbar
 			data-slot="scroll-area-scrollbar"

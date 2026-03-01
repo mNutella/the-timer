@@ -1,11 +1,12 @@
-import * as React from "react";
+import type { ComponentProps } from "react";
 
 import { cn } from "@/lib/utils";
 
-const Table = React.forwardRef<
-	React.ElementRef<"table">,
-	React.ComponentProps<"table"> & { classNameScrollArea?: string }
->(({ className, classNameScrollArea, onScroll, ...props }, ref) => {
+function Table({
+	className,
+	ref,
+	...props
+}: ComponentProps<"table"> & { classNameScrollArea?: string }) {
 	return (
 		<div className="relative w-full">
 			<table
@@ -16,13 +17,13 @@ const Table = React.forwardRef<
 			/>
 		</div>
 	);
-});
+}
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+function TableHeader({ className, ...props }: ComponentProps<"thead">) {
 	return <thead data-slot="table-header" className={cn("[&_tr]:border-b", className)} {...props} />;
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+function TableBody({ className, ...props }: ComponentProps<"tbody">) {
 	return (
 		<tbody
 			data-slot="table-body"
@@ -32,7 +33,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 	);
 }
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
 	return (
 		<tfoot
 			data-slot="table-footer"
@@ -42,23 +43,21 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 	);
 }
 
-const TableRow = React.forwardRef<React.ElementRef<"tr">, React.ComponentProps<"tr">>(
-	({ className, ...props }, ref) => {
-		return (
-			<tr
-				ref={ref}
-				data-slot="table-row"
-				className={cn(
-					"hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
-);
+function TableRow({ className, ref, ...props }: ComponentProps<"tr">) {
+	return (
+		<tr
+			ref={ref}
+			data-slot="table-row"
+			className={cn(
+				"hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
+				className,
+			)}
+			{...props}
+		/>
+	);
+}
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+function TableHead({ className, ...props }: ComponentProps<"th">) {
 	return (
 		<th
 			data-slot="table-head"
@@ -71,23 +70,21 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 	);
 }
 
-const TableCell = React.forwardRef<React.ElementRef<"td">, React.ComponentProps<"td">>(
-	({ className, ...props }, ref) => {
-		return (
-			<td
-				ref={ref}
-				data-slot="table-cell"
-				className={cn(
-					"p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
-);
+function TableCell({ className, ref, ...props }: ComponentProps<"td">) {
+	return (
+		<td
+			ref={ref}
+			data-slot="table-cell"
+			className={cn(
+				"p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+				className,
+			)}
+			{...props}
+		/>
+	);
+}
 
-function TableCaption({ className, ...props }: React.ComponentProps<"caption">) {
+function TableCaption({ className, ...props }: ComponentProps<"caption">) {
 	return (
 		<caption
 			data-slot="table-caption"

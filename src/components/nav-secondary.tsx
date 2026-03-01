@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
-import type * as React from "react";
+import type { ComponentProps } from "react";
 
 import {
 	SidebarGroup,
@@ -19,7 +19,7 @@ export function NavSecondary({
 		url: string;
 		icon: LucideIcon;
 	}[];
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+} & ComponentProps<typeof SidebarGroup>) {
 	const { pathname } = useLocation();
 
 	return (
