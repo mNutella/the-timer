@@ -139,7 +139,7 @@ export function TimeEntriesChartRadialStacked({
 											{Number(value).toFixed(1)}h
 										</span>,
 										<span key="name" className="text-muted-foreground">
-											{chartConfig[name as string]?.label ?? name}
+											{chartConfig[name as string]?.label ?? String(name)}
 										</span>,
 									]}
 								/>

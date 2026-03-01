@@ -138,7 +138,7 @@ export function TimeEntriesChartBarInteractive({
 									className="w-[180px]"
 									description={filterDescription}
 									labelFormatter={(value) => {
-										return new Date(value).toLocaleDateString("en-US", {
+										return new Date(value as string | number).toLocaleDateString("en-US", {
 											month: "short",
 											day: "numeric",
 											year: "numeric",
@@ -149,7 +149,7 @@ export function TimeEntriesChartBarInteractive({
 											{Number(value).toFixed(1)}h
 										</span>,
 										<span key="name" className="text-muted-foreground">
-											{chartConfig[name as string]?.label ?? name}
+											{chartConfig[name as string]?.label ?? String(name)}
 										</span>,
 									]}
 								/>

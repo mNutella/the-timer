@@ -1,6 +1,6 @@
 import { createContext, useContext, useId, useMemo } from "react";
 import type { ComponentProps, ComponentType, CSSProperties, ReactNode } from "react";
-import { Legend, type LegendProps, ResponsiveContainer, Tooltip } from "recharts";
+import { Legend, ResponsiveContainer, Tooltip } from "recharts";
 
 import { cn } from "@/lib/utils";
 
@@ -95,6 +95,9 @@ ${colorConfig
 
 const ChartTooltip = Tooltip;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TooltipPayloadItem = Record<string, any>;
+
 function ChartTooltipContent({
 	active,
 	payload,
@@ -110,15 +113,27 @@ function ChartTooltipContent({
 	nameKey,
 	labelKey,
 	description,
-}: ComponentProps<typeof Tooltip> &
-	ComponentProps<"div"> & {
-		hideLabel?: boolean;
-		hideIndicator?: boolean;
-		indicator?: "line" | "dot" | "dashed";
-		nameKey?: string;
-		labelKey?: string;
-		description?: ReactNode;
-	}) {
+}: ComponentProps<"div"> & {
+	active?: boolean;
+	payload?: TooltipPayloadItem[];
+	label?: string;
+	labelFormatter?: (value: unknown, payload: TooltipPayloadItem[]) => ReactNode;
+	labelClassName?: string;
+	formatter?: (
+		value: unknown,
+		name: unknown,
+		item: TooltipPayloadItem,
+		index: number,
+		payload: unknown,
+	) => ReactNode;
+	color?: string;
+	hideLabel?: boolean;
+	hideIndicator?: boolean;
+	indicator?: "line" | "dot" | "dashed";
+	nameKey?: string;
+	labelKey?: string;
+	description?: ReactNode;
+}) {
 	const { config } = useChart();
 
 	const tooltipLabel = useMemo(() => {
@@ -236,17 +251,21 @@ function ChartTooltipContent({
 
 const ChartLegend = Legend;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LegendPayloadItem = Record<string, any>;
+
 function ChartLegendContent({
 	className,
 	hideIcon = false,
 	payload,
 	verticalAlign = "bottom",
 	nameKey,
-}: ComponentProps<"div"> &
-	Pick<LegendProps, "payload" | "verticalAlign"> & {
-		hideIcon?: boolean;
-		nameKey?: string;
-	}) {
+}: ComponentProps<"div"> & {
+	payload?: LegendPayloadItem[];
+	verticalAlign?: "top" | "bottom";
+	hideIcon?: boolean;
+	nameKey?: string;
+}) {
 	const { config } = useChart();
 
 	if (!payload?.length) {
