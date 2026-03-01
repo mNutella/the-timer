@@ -14,8 +14,10 @@ import { CHART_COLORS } from "@/lib/utils";
 
 function getDefaultDateRange(): { startDate: number; endDate: number } {
 	const end = new Date();
+	end.setHours(23, 59, 59, 999);
 	const start = new Date();
 	start.setMonth(start.getMonth() - 3);
+	start.setHours(0, 0, 0, 0);
 	return { startDate: start.getTime(), endDate: end.getTime() };
 }
 
