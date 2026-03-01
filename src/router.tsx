@@ -19,7 +19,6 @@ export function createRouter() {
 		routeTree,
 		defaultPreload: "intent",
 		context: { convexQueryClient },
-		defaultSsr: false,
 		Wrap: ({ children }) => (
 			<ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
 				<ConvexAuthProvider client={convexQueryClient}>
