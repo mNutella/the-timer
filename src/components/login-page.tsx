@@ -1,10 +1,11 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import authBg from "@/assets/auth.jpg";
 import { Button } from "@/components/ui/button";
+
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 export function LoginPage() {
 	const { signIn } = useAuthActions();
@@ -13,25 +14,35 @@ export function LoginPage() {
 	const handleGoogleSignIn = async () => {
 		if (isPending) return;
 		setIsPending(true);
-		const originalProduct = navigator.product;
-		Object.defineProperty(navigator, "product", {
-			value: "ReactNative",
-			configurable: true,
-		});
 
 		try {
-			const result = await signIn("google");
-			if (result.redirect) {
-				await openUrl(result.redirect.toString());
+			if (isTauri) {
+				// Tauri: trick Convex auth into returning a redirect URL instead of navigating
+				const originalProduct = navigator.product;
+				Object.defineProperty(navigator, "product", {
+					value: "ReactNative",
+					configurable: true,
+				});
+
+				try {
+					const result = await signIn("google");
+					if (result.redirect) {
+						const { openUrl } = await import("@tauri-apps/plugin-opener");
+						await openUrl(result.redirect.toString());
+					}
+				} finally {
+					Object.defineProperty(navigator, "product", {
+						value: originalProduct,
+						configurable: true,
+					});
+				}
+			} else {
+				// Web: Convex auth handles the redirect natively
+				await signIn("google");
 			}
 		} catch {
 			toast.error("Failed to start sign in");
 			setIsPending(false);
-		} finally {
-			Object.defineProperty(navigator, "product", {
-				value: originalProduct,
-				configurable: true,
-			});
 		}
 	};
 
@@ -97,7 +108,11 @@ export function LoginPage() {
 									fill="#EA4335"
 								/>
 							</svg>
-							{isPending ? "Opening browser..." : "Continue with Google"}
+							{isPending
+								? isTauri
+									? "Opening browser..."
+									: "Redirecting..."
+								: "Continue with Google"}
 						</Button>
 					</div>
 

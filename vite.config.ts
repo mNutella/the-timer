@@ -5,8 +5,8 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
+const isWebTarget = process.env.BUILD_TARGET === "web";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -27,10 +27,12 @@ export default defineConfig(async () => ({
 
 	build: {
 		rollupOptions: {
-			input: {
-				main: resolve(__dirname, "index.html"),
-				overlay: resolve(__dirname, "overlay.html"),
-			},
+			input: isWebTarget
+				? { main: resolve(__dirname, "index.html") }
+				: {
+						main: resolve(__dirname, "index.html"),
+						overlay: resolve(__dirname, "overlay.html"),
+					},
 		},
 	},
 
@@ -39,20 +41,24 @@ export default defineConfig(async () => ({
 	// 1. prevent vite from obscuring rust errors
 	clearScreen: false,
 	// 2. tauri expects a fixed port, fail if that port is not available
-	server: {
-		port: 1420,
-		strictPort: true,
-		host: host || false,
-		hmr: host
-			? {
-					protocol: "ws",
-					host,
-					port: 1421,
-				}
-			: undefined,
-		watch: {
-			// 3. tell vite to ignore watching `src-tauri`
-			ignored: ["**/src-tauri/**"],
-		},
-	},
+	...(isWebTarget
+		? {}
+		: {
+				server: {
+					port: 1420,
+					strictPort: true,
+					host: host || false,
+					hmr: host
+						? {
+								protocol: "ws",
+								host,
+								port: 1421,
+							}
+						: undefined,
+					watch: {
+						// 3. tell vite to ignore watching `src-tauri`
+						ignored: ["**/src-tauri/**"],
+					},
+				},
+			}),
 }));

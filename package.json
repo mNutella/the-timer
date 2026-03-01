@@ -13,6 +13,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
+		"build:web": "tsc && BUILD_TARGET=web vite build",
+		"dev:web": "BUILD_TARGET=web vite",
 		"preview": "vite preview",
 		"tauri": "tauri",
 		"test": "vitest",

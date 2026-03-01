@@ -1,6 +1,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { onOpenUrl, getCurrent } from "@tauri-apps/plugin-deep-link";
 import { useEffect } from "react";
+
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 const PENDING_CODE_KEY = "__pendingOAuthCode";
 // Track last processed code to avoid replaying stale URLs from getCurrent().
@@ -21,11 +22,15 @@ const LAST_CODE_KEY = "__lastOAuthCode";
  *
  * We do NOT inject code into the URL because the auth provider's built-in
  * handler can fire twice, and the second call wipes tokens from the first.
+ *
+ * On web this hook is a no-op — OAuth redirects are handled natively by the browser.
  */
 export function useDeepLinkAuth() {
 	const { signIn } = useAuthActions();
 
 	useEffect(() => {
+		if (!isTauri) return;
+
 		// After reload: process the pending OAuth code
 		const pendingCode = sessionStorage.getItem(PENDING_CODE_KEY);
 		if (pendingCode) {
@@ -56,18 +61,21 @@ export function useDeepLinkAuth() {
 		};
 
 		const checkCurrent = () => {
-			getCurrent()
-				.then((urls) => {
-					if (urls) processUrls(urls);
-				})
-				.catch(() => {});
+			import("@tauri-apps/plugin-deep-link").then(({ getCurrent }) => {
+				getCurrent()
+					.then((urls) => {
+						if (urls) processUrls(urls);
+					})
+					.catch(() => {});
+			});
 		};
 
 		// Cold-start: app was launched by the deep link
 		checkCurrent();
 
 		// Warm: app is already running when deep link fires
-		onOpenUrl(processUrls)
+		import("@tauri-apps/plugin-deep-link")
+			.then(({ onOpenUrl }) => onOpenUrl(processUrls))
 			.then((fn) => {
 				if (cleaned) {
 					fn();
