@@ -59,13 +59,13 @@ const appAnalyticsRoute = appAnalyticsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof appIndexRoute
   '/analytics': typeof appAnalyticsRoute
   '/categories': typeof appCategoriesRoute
   '/clients': typeof appClientsRoute
   '/invoices': typeof appInvoicesRoute
   '/projects': typeof appProjectsRoute
   '/settings': typeof appSettingsRoute
+  '/': typeof appIndexRoute
 }
 export interface FileRoutesByTo {
   '/analytics': typeof appAnalyticsRoute
@@ -90,13 +90,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/analytics'
     | '/categories'
     | '/clients'
     | '/invoices'
     | '/projects'
     | '/settings'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/analytics'
@@ -126,8 +126,8 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/(app)': {
       id: '/(app)'
-      path: '/'
-      fullPath: '/'
+      path: ''
+      fullPath: ''
       preLoaderRoute: typeof appRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
