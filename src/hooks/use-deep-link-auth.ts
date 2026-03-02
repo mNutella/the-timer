@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -27,20 +27,29 @@ const LAST_CODE_KEY = "__lastOAuthCode";
  */
 export function useDeepLinkAuth() {
 	const { signIn } = useAuthActions();
+	// Ref keeps signIn always-current without re-running the effect.
+	// signIn is NOT referentially stable (@convex-dev/auth recreates it when
+	// auth state changes), so using it directly in the dep array would tear
+	// down and re-register deep link listeners on every auth state transition.
+	const signInRef = useRef(signIn);
+	signInRef.current = signIn;
 
 	useEffect(() => {
 		if (!isTauri) return;
 
-		// After reload: process the pending OAuth code
+		// After reload: process the pending OAuth code.
+		// Do NOT return early — listeners must be set up for subsequent sign-ins
+		// within the same app session (sign-out → sign-in again).
 		const pendingCode = sessionStorage.getItem(PENDING_CODE_KEY);
 		if (pendingCode) {
 			sessionStorage.removeItem(PENDING_CODE_KEY);
-			void signIn("google", { code: pendingCode });
-			return;
+			void signInRef.current("google", { code: pendingCode });
 		}
 
 		let cleaned = false;
 		let unlisten: (() => void) | undefined;
+		let unlistenFocus: (() => void) | undefined;
+		let pollTimer: ReturnType<typeof setInterval> | undefined;
 
 		const processUrls = (urls: string[]) => {
 			const lastCode = sessionStorage.getItem(LAST_CODE_KEY);
@@ -85,19 +94,45 @@ export function useDeepLinkAuth() {
 			})
 			.catch(() => {});
 
-		// Fallback: when app gains focus after a deep link activation, the
-		// onOpenUrl event may not fire reliably (e.g. after webview reload or
-		// effect re-runs from auth state changes). Polling getCurrent() on
-		// focus is safe because LAST_CODE_KEY deduplicates stale URLs.
-		const onFocus = () => {
-			checkCurrent();
+		// Fallback 1: Tauri native window focus event.
+		// The webview focus event does not fire reliably when the native macOS
+		// window regains focus after a deep link activation.
+		import("@tauri-apps/api/window").then(({ getCurrentWindow }) => {
+			getCurrentWindow()
+				.onFocusChanged(({ payload: focused }) => {
+					if (focused) checkCurrent();
+				})
+				.then((fn) => {
+					if (cleaned) {
+						fn();
+						return;
+					}
+					unlistenFocus = fn;
+				});
+		});
+
+		// Fallback 2: webview focus + visibilitychange
+		const onFocus = () => checkCurrent();
+		const onVisible = () => {
+			if (document.visibilityState === "visible") checkCurrent();
 		};
 		window.addEventListener("focus", onFocus);
+		document.addEventListener("visibilitychange", onVisible);
+
+		// Fallback 3: Poll getCurrent() every 2s. onOpenUrl and focus events
+		// don't fire reliably on macOS after the system browser handles the
+		// OAuth redirect back to universaltimer://. getCurrent() always has
+		// the latest deep link URL and LAST_CODE_KEY prevents duplicates.
+		pollTimer = setInterval(checkCurrent, 2000);
 
 		return () => {
 			cleaned = true;
 			unlisten?.();
+			unlistenFocus?.();
+			clearInterval(pollTimer);
 			window.removeEventListener("focus", onFocus);
+			document.removeEventListener("visibilitychange", onVisible);
 		};
-	}, [signIn]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 }
