@@ -72,9 +72,11 @@ function Analytics() {
 	return (
 		<div className="flex h-dvh flex-col overflow-hidden">
 			<div className="shrink-0 pt-3 pb-2">
-				<div className="flex items-center justify-start gap-2">
-					<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
-					<Separator orientation="vertical" className="mx-1 h-5" />
+				<div className="flex flex-wrap items-center justify-start gap-2">
+					<div className="w-full @xl/main:w-auto">
+						<TimerEntrySearch value={searchValue} onChange={setSearchValue} />
+					</div>
+					<Separator orientation="vertical" className="mx-1 hidden h-5 @xl/main:block" />
 					<div className="flex items-center gap-1.5">
 						<ClientFilter
 							value={filterByClients}
@@ -92,7 +94,7 @@ function Analytics() {
 							placeholder="Filter by Category"
 						/>
 					</div>
-					<Separator orientation="vertical" className="mx-1 h-5" />
+					<Separator orientation="vertical" className="mx-1 hidden h-5 @xl/main:block" />
 					<div className="ml-auto">
 						<TimeRangeFilter value={filterByTimeRange} onChange={setFilterByTimeRange} />
 					</div>
@@ -103,8 +105,8 @@ function Analytics() {
 				>
 					<div className="min-h-0 overflow-hidden">
 						<Suspense fallback={null}>
-							<div className="mt-4 grid grid-cols-4 gap-4">
-								<div className="col-span-3">
+							<div className="mt-4 grid grid-cols-1 gap-4 @xl/main:grid-cols-4">
+								<div className="@xl/main:col-span-3">
 									<TimeEntriesChartBarInteractive
 										chartData={chartData.chartData}
 										chartConfig={chartData.chartConfig}
@@ -116,7 +118,7 @@ function Analytics() {
 										dateRange={filterByTimeRange}
 									/>
 								</div>
-								<div className="col-span-1">
+								<div className="@xl/main:col-span-1">
 									<TimeEntriesChartRadialStacked
 										clientFilter={filterByClients}
 										projectFilter={filterByProjects}
