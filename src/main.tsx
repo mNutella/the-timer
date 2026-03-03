@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
 import { AppErrorBoundary } from "@/components/app-error-boundary";
+import { log } from "@/lib/logger";
 import { loadSettings } from "@/lib/settings";
 import { createRouter } from "@/router";
 
@@ -25,6 +26,9 @@ if (!rootElement.innerHTML) {
 }
 
 if (isTauri) {
+	// Forward Rust-side logs to browser DevTools during development
+	log.attachConsole();
+
 	// Add drag region for Tauri window (no-op on web)
 	const dragRegion = document.createElement("div");
 	dragRegion.setAttribute("data-tauri-drag-region", "");
@@ -42,7 +46,9 @@ if (isTauri) {
 	const storedSettings = loadSettings();
 	if (storedSettings.enableIsland !== false) {
 		import("@tauri-apps/api/core").then(({ invoke }) => {
-			invoke("create_island").catch(console.error);
+			invoke("create_island").catch((err: unknown) => {
+				log.error("Failed to create island", { error: String(err) });
+			});
 		});
 	}
 }

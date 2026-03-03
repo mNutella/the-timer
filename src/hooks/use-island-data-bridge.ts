@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
+import { log } from "@/lib/logger";
 import {
 	optimisticCreateTimer,
 	optimisticStopTimer,
@@ -63,9 +64,11 @@ export function useIslandDataBridge() {
 				// create_island is idempotent (skips if panel exists), then show it
 				invoke("create_island")
 					.then(() => invoke("show_island"))
-					.catch(console.error);
+					.catch((err: unknown) => log.warn("Island show failed", { error: String(err) }));
 			} else {
-				invoke("hide_island").catch(console.error);
+				invoke("hide_island").catch((err: unknown) =>
+					log.warn("Island hide failed", { error: String(err) }),
+				);
 			}
 		});
 	}, [settings.enableIsland]);

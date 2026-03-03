@@ -15,6 +15,7 @@ import {
 	timeEntriesTotalDurationByDateAggregate,
 	timeEntriesTotalDurationByProjectAndDateAggregate,
 } from "./aggregates";
+import { clog } from "./logger";
 import { entDefinitions } from "./schema";
 
 const triggers = new Triggers<DataModel>();
@@ -29,12 +30,22 @@ if (!process.env.VITEST) {
 	triggers.register("time_entries", timeEntriesTotalDurationByCategoryAndDateAggregate.trigger());
 }
 
-export const query = customQuery(
-	rawQuery,
-	customCtx(async (ctx) => {
-		return { table: entsTableFactory(ctx, entDefinitions) };
-	}),
-);
+export const query = customQuery(rawQuery, {
+	args: {},
+	input: async (ctx) => {
+		const start = Date.now();
+		return {
+			ctx: { table: entsTableFactory(ctx, entDefinitions) },
+			args: {},
+			onSuccess: () => {
+				const durationMs = Date.now() - start;
+				if (durationMs > 500) {
+					clog.warn("query", "Slow query", { durationMs });
+				}
+			},
+		};
+	},
+});
 export const internalQuery = customQuery(
 	rawInternalQuery,
 	customCtx(async (ctx) => {
@@ -42,13 +53,23 @@ export const internalQuery = customQuery(
 	}),
 );
 
-export const mutation = customMutation(
-	rawMutation,
-	customCtx(async (ctx) => {
+export const mutation = customMutation(rawMutation, {
+	args: {},
+	input: async (ctx) => {
+		const start = Date.now();
 		const wrapped = triggers.wrapDB(ctx);
-		return { db: wrapped.db, table: entsTableFactory(wrapped, entDefinitions) };
-	}),
-);
+		return {
+			ctx: { db: wrapped.db, table: entsTableFactory(wrapped, entDefinitions) },
+			args: {},
+			onSuccess: () => {
+				const durationMs = Date.now() - start;
+				if (durationMs > 500) {
+					clog.warn("mutation", "Slow mutation", { durationMs });
+				}
+			},
+		};
+	},
+});
 
 export const internalMutation = customMutation(
 	rawInternalMutation,

@@ -2,6 +2,7 @@ import { omit } from "convex-helpers";
 import type { PaginationOptions } from "convex/server";
 
 import type { Doc, Id } from "../_generated/dataModel";
+import { clog } from "../logger";
 import type { Ent, EntQuery, MutationCtx, QueryCtx } from "../types";
 import { computeNextTiming, getEndOfDay, getStartOfDay, updateIfDefined } from "../utils";
 import { applyOrFilter, assertOwnership } from "./helpers";
@@ -137,6 +138,9 @@ export async function create(
 	const now = Date.now();
 
 	if (unfinishedTimeEntry) {
+		clog.info("time_entries.create", "Auto-stopping running timer", {
+			stoppedEntryId: unfinishedTimeEntry._id,
+		});
 		await unfinishedTimeEntry.patch({
 			end_time: now,
 			duration: now - (unfinishedTimeEntry?.start_time ?? 0),

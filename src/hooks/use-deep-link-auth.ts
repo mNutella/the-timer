@@ -1,6 +1,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useEffect, useRef } from "react";
 
+import { log } from "@/lib/logger";
+
 const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 const PENDING_CODE_KEY = "__pendingOAuthCode";
@@ -43,6 +45,7 @@ export function useDeepLinkAuth() {
 		const pendingCode = sessionStorage.getItem(PENDING_CODE_KEY);
 		if (pendingCode) {
 			sessionStorage.removeItem(PENDING_CODE_KEY);
+			log.info("OAuth: processing pending code from deep link");
 			void signInRef.current("google", { code: pendingCode });
 		}
 
@@ -58,6 +61,7 @@ export function useDeepLinkAuth() {
 					const url = new URL(urlString);
 					const code = url.searchParams.get("code");
 					if (code && code !== lastCode) {
+						log.info("OAuth: deep link received, storing code and reloading");
 						sessionStorage.setItem(LAST_CODE_KEY, code);
 						sessionStorage.setItem(PENDING_CODE_KEY, code);
 						window.location.reload();

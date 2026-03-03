@@ -2,6 +2,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { log } from "@/lib/logger";
 
 interface Props {
 	children: ReactNode;
@@ -16,6 +17,7 @@ export class AppErrorBoundary extends Component<Props, State> {
 	state: State = { hasError: false, error: null };
 
 	static getDerivedStateFromError(error: Error): State {
+		log.error("Unhandled React error", { error: error.message, stack: error.stack });
 		return { hasError: true, error };
 	}
 
