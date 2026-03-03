@@ -110,6 +110,21 @@ export default function TimelineView({
 	// Group entries by day
 	const entriesByDay = useMemo(() => groupEntriesByDay(entries ?? []), [entries]);
 
+	// Total hours per day
+	const totalHoursByDay = useMemo(() => {
+		const map = new Map<string, number>();
+		for (const [key, dayEntries] of entriesByDay) {
+			let totalMs = 0;
+			for (const entry of dayEntries) {
+				if (!entry.start_time) continue;
+				const end = entry.end_time ?? now;
+				totalMs += end - entry.start_time;
+			}
+			map.set(key, totalMs / 3_600_000);
+		}
+		return map;
+	}, [entriesByDay, now]);
+
 	// Position entries per day
 	const positionedByDay = useMemo(() => {
 		const map = new Map<string, ReturnType<typeof positionEntries>>();
@@ -184,6 +199,8 @@ export default function TimelineView({
 							const dayLabel = day.toLocaleDateString("en-US", {
 								weekday: "short",
 							});
+							const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+							const dayHours = totalHoursByDay.get(dayKey) ?? 0;
 							return (
 								<div
 									key={day.toISOString()}
@@ -198,6 +215,9 @@ export default function TimelineView({
 										className={`text-sm leading-tight font-semibold ${isToday_ ? "text-primary" : ""}`}
 									>
 										{day.getDate()}
+									</span>
+									<span className="text-[10px] text-muted-foreground tabular-nums">
+										{dayHours > 0 ? `${dayHours.toFixed(1)}h` : "--"}
 									</span>
 								</div>
 							);
