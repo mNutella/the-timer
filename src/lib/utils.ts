@@ -1,4 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
+import { endOfDay, startOfDay } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
@@ -44,6 +46,26 @@ export function parseDurationToMilliseconds(durationStr: string) {
 	}
 
 	return duration;
+}
+
+export function toDateRangeTimestamps(
+	range: DateRange | undefined,
+): { startDate: number; endDate: number } | undefined {
+	if (!range?.from || !range?.to) return undefined;
+	return {
+		startDate: startOfDay(range.from).getTime(),
+		endDate: endOfDay(range.to).getTime(),
+	};
+}
+
+export function getDefaultDateRange(): { startDate: number; endDate: number } {
+	const end = new Date();
+	const start = new Date();
+	start.setMonth(start.getMonth() - 3);
+	return {
+		startDate: startOfDay(start).getTime(),
+		endDate: endOfDay(end).getTime(),
+	};
 }
 
 export const CHART_COLORS = [

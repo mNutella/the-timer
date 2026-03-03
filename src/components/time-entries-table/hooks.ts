@@ -1,4 +1,5 @@
 import { useMutation } from "convex/react";
+import { endOfDay, startOfDay } from "date-fns";
 import { createElement } from "react";
 import type { DateRange } from "react-day-picker";
 import { toast } from "sonner";
@@ -172,8 +173,10 @@ export function useTimeEntries(
 				projectIds: filterByProjects.map((p) => p._id),
 				categoryIds: filterByCategories.map((c) => c._id),
 				dateRange: {
-					startDate: filterByTimeRange?.from?.getTime(),
-					endDate: filterByTimeRange?.to?.getTime(),
+					startDate: filterByTimeRange?.from
+						? startOfDay(filterByTimeRange.from).getTime()
+						: undefined,
+					endDate: filterByTimeRange?.to ? endOfDay(filterByTimeRange.to).getTime() : undefined,
 				},
 			},
 			include: { client: true, project: true, category: true, tags: true },

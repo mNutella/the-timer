@@ -5,7 +5,6 @@ import { mutation, query } from "./functions";
 import * as Analytics from "./model/analytics";
 import { getRequiredUserId } from "./model/auth";
 import * as TimeEntries from "./model/time_entries";
-import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
 	args: {
@@ -197,10 +196,7 @@ export const getDailyDurations = query({
 				clientIds: filters.clientIds,
 				projectIds: filters.projectIds,
 				categoryIds: filters.categoryIds,
-				dateRange: {
-					startDate: getStartOfDay(filters.dateRange.startDate),
-					endDate: getEndOfDay(filters.dateRange.endDate),
-				},
+				dateRange: filters.dateRange,
 			},
 		});
 	},
@@ -236,10 +232,7 @@ export const getDailyDurationBreakdown = query({
 						categoryIds: constraintFilters.categoryIds,
 					}
 				: undefined,
-			dateRange: {
-				startDate: getStartOfDay(dateRange.startDate),
-				endDate: getEndOfDay(dateRange.endDate),
-			},
+			dateRange,
 		});
 	},
 });
@@ -273,10 +266,7 @@ export const getEntityBreakdown = query({
 						categoryIds: constraintFilters.categoryIds,
 					}
 				: undefined,
-			dateRange: {
-				startDate: getStartOfDay(dateRange.startDate),
-				endDate: getEndOfDay(dateRange.endDate),
-			},
+			dateRange,
 		});
 	},
 });
@@ -299,10 +289,7 @@ export const getCategoryBreakdown = query({
 				clientIds,
 				projectIds,
 				categoryIds,
-				dateRange: {
-					startDate: getStartOfDay(dateRange.startDate),
-					endDate: getEndOfDay(dateRange.endDate),
-				},
+				dateRange,
 			},
 		});
 	},
@@ -325,15 +312,12 @@ export const getTotalDuration = query({
 	},
 	handler: async (ctx, { filters }) => {
 		const userId = await getRequiredUserId(ctx);
-		const { startDate, endDate } = filters?.dateRange ?? {};
-		const dateRange = {
-			startDate: getStartOfDay(startDate ?? 0),
-			endDate: getEndOfDay(endDate ?? 0),
-		};
+		if (!filters?.dateRange) return 0;
+		const dateRange = filters.dateRange;
 
-		const clientIds = filters?.clientIds ?? [];
-		const projectIds = filters?.projectIds ?? [];
-		const categoryIds = filters?.categoryIds ?? [];
+		const clientIds = filters.clientIds ?? [];
+		const projectIds = filters.projectIds ?? [];
+		const categoryIds = filters.categoryIds ?? [];
 
 		if (clientIds.length > 0) {
 			const totals = await Promise.all(

@@ -11,7 +11,7 @@ import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
 import { Input } from "@/components/ui/input";
 import { optimisticDeleteClient, optimisticRenameClient } from "@/lib/optimistic-updates";
-import { withToast } from "@/lib/utils";
+import { toDateRangeTimestamps, withToast } from "@/lib/utils";
 
 export const Route = createFileRoute("/(app)/clients")({
 	component: ClientsPage,
@@ -74,13 +74,7 @@ function ClientsPage() {
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
 	const clients = useQuery(api.clients.list, {
-		dateRange:
-			dateRange?.from && dateRange?.to
-				? {
-						startDate: dateRange.from.getTime(),
-						endDate: dateRange.to.getTime(),
-					}
-				: undefined,
+		dateRange: toDateRangeTimestamps(dateRange),
 	});
 	const createClient = useMutation(api.clients.create);
 	const updateClient = useMutation(api.clients.update).withOptimisticUpdate(optimisticRenameClient);

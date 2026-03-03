@@ -10,16 +10,7 @@ import {
 } from "@/components/time-entries-chart-bar";
 import type { ChartConfig } from "@/components/ui/chart";
 import type { Category, Client, Project } from "@/lib/types";
-import { CHART_COLORS } from "@/lib/utils";
-
-function getDefaultDateRange(): { startDate: number; endDate: number } {
-	const end = new Date();
-	end.setHours(23, 59, 59, 999);
-	const start = new Date();
-	start.setMonth(start.getMonth() - 3);
-	start.setHours(0, 0, 0, 0);
-	return { startDate: start.getTime(), endDate: end.getTime() };
-}
+import { CHART_COLORS, getDefaultDateRange, toDateRangeTimestamps } from "@/lib/utils";
 
 function slugify(name: string): string {
 	return name.replace(/\s+/g, "_").toLowerCase();
@@ -40,15 +31,10 @@ export function useAnalyticsChartData(
 	categoryFilter: Category[],
 	dateRange?: DateRange,
 ): AnalyticsChartData {
-	const range = useMemo(() => {
-		if (dateRange?.from && dateRange?.to) {
-			return {
-				startDate: dateRange.from.getTime(),
-				endDate: dateRange.to.getTime(),
-			};
-		}
-		return getDefaultDateRange();
-	}, [dateRange?.from, dateRange?.to]);
+	const range = useMemo(
+		() => toDateRangeTimestamps(dateRange) ?? getDefaultDateRange(),
+		[dateRange],
+	);
 
 	const stackDimension = useMemo(
 		() => getStackDimension(clientFilter, projectFilter, categoryFilter),

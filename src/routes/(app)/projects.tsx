@@ -26,7 +26,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { optimisticDeleteProject, optimisticUpdateProject } from "@/lib/optimistic-updates";
-import { withToast } from "@/lib/utils";
+import { toDateRangeTimestamps, withToast } from "@/lib/utils";
 
 export const Route = createFileRoute("/(app)/projects")({
 	component: ProjectsPage,
@@ -120,13 +120,7 @@ function ProjectsPage() {
 	const clientMap = useMemo(() => new Map(clients?.map((c) => [c._id, c]) ?? []), [clients]);
 	const projects = useQuery(api.projects.list, {
 		clientId: clientFilter !== "all" ? (clientFilter as Id<"clients">) : undefined,
-		dateRange:
-			dateRange?.from && dateRange?.to
-				? {
-						startDate: dateRange.from.getTime(),
-						endDate: dateRange.to.getTime(),
-					}
-				: undefined,
+		dateRange: toDateRangeTimestamps(dateRange),
 	});
 	const createProject = useMutation(api.projects.create);
 	const updateProject = useMutation(api.projects.update).withOptimisticUpdate(

@@ -5,7 +5,6 @@ import { timeEntriesTotalDurationByProjectAndDateAggregate } from "./aggregates"
 import { mutation, query } from "./functions";
 import { getRequiredUserId } from "./model/auth";
 import * as Projects from "./model/projects";
-import { getEndOfDay, getStartOfDay } from "./utils";
 
 export const create = mutation({
 	args: {
@@ -31,8 +30,8 @@ export const list = query({
 	},
 	handler: async (ctx, { clientId, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
-		const lowerDate = dateRange ? getStartOfDay(dateRange.startDate) : 0;
-		const upperDate = dateRange ? getEndOfDay(dateRange.endDate) : Number.MAX_SAFE_INTEGER;
+		const lowerDate = dateRange ? dateRange.startDate : 0;
+		const upperDate = dateRange ? dateRange.endDate : Number.MAX_SAFE_INTEGER;
 
 		const projectsQuery = clientId
 			? ctx.table("projects", "by_user_and_client", (q) =>

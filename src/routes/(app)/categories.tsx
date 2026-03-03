@@ -10,7 +10,7 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { EntityManagementTable } from "@/components/entity-management-table";
 import { optimisticDeleteCategory, optimisticRenameCategory } from "@/lib/optimistic-updates";
-import { withToast } from "@/lib/utils";
+import { toDateRangeTimestamps, withToast } from "@/lib/utils";
 
 export const Route = createFileRoute("/(app)/categories")({
 	component: CategoriesPage,
@@ -21,13 +21,7 @@ function CategoriesPage() {
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
 	const categories = useQuery(api.categories.list, {
-		dateRange:
-			dateRange?.from && dateRange?.to
-				? {
-						startDate: dateRange.from.getTime(),
-						endDate: dateRange.to.getTime(),
-					}
-				: undefined,
+		dateRange: toDateRangeTimestamps(dateRange),
 	});
 	const createCategory = useMutation(api.categories.create);
 	const updateCategory = useMutation(api.categories.update).withOptimisticUpdate(

@@ -4,7 +4,7 @@ import type { PaginationOptions } from "convex/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { clog } from "../logger";
 import type { Ent, EntQuery, MutationCtx, QueryCtx } from "../types";
-import { computeNextTiming, getEndOfDay, getStartOfDay, updateIfDefined } from "../utils";
+import { computeNextTiming, updateIfDefined } from "../utils";
 import { applyOrFilter, assertOwnership } from "./helpers";
 
 interface SearchTimeEntriesParams {
@@ -515,7 +515,7 @@ function buildFilteredQuery(
 			.table("time_entries", "by_user_start_time", (q) =>
 				q.eq("userId", userId).gte("start_time", startDate),
 			)
-			.order("asc");
+			.order("desc");
 	} else if (endDate !== undefined) {
 		timeEntries = ctx
 			.table("time_entries", "by_user_end_time", (q) =>
@@ -561,12 +561,17 @@ function buildFilteredQuery(
 		timeEntries = applyOrFilter(timeEntries, "categoryId", categoryIds);
 	}
 
-	if (startDate !== undefined) {
-		timeEntries = timeEntries.filter((q) => q.gte(q.field("start_time"), getStartOfDay(startDate)));
+	// Post-filter dates only when the index branch didn't already handle them.
+	// The startDate index handles gte(start_time); the endDate index handles lte(end_time).
+	const usedStartDateIndex = !hasName && startDate !== undefined;
+	const usedEndDateIndex = !hasName && startDate === undefined && endDate !== undefined;
+
+	if (startDate !== undefined && !usedStartDateIndex) {
+		timeEntries = timeEntries.filter((q) => q.gte(q.field("start_time"), startDate));
 	}
 
-	if (endDate !== undefined) {
-		timeEntries = timeEntries.filter((q) => q.lte(q.field("end_time"), getEndOfDay(endDate)));
+	if (endDate !== undefined && !usedEndDateIndex) {
+		timeEntries = timeEntries.filter((q) => q.lte(q.field("end_time"), endDate));
 	}
 
 	return timeEntries;

@@ -1,4 +1,5 @@
 import { useConvex } from "convex/react";
+import { endOfDay, startOfDay } from "date-fns";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -68,16 +69,16 @@ export function ExportDialog({
 	const effectiveDateRange = useMemo(() => {
 		if (filterByTimeRange?.from) {
 			return {
-				startDate: filterByTimeRange.from.getTime(),
-				endDate: filterByTimeRange.to?.getTime(),
+				startDate: startOfDay(filterByTimeRange.from).getTime(),
+				endDate: filterByTimeRange.to ? endOfDay(filterByTimeRange.to).getTime() : undefined,
 			};
 		}
 		const now = new Date();
 		const threeMonthsAgo = new Date(now);
 		threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 		return {
-			startDate: threeMonthsAgo.getTime(),
-			endDate: now.getTime(),
+			startDate: startOfDay(threeMonthsAgo).getTime(),
+			endDate: endOfDay(now).getTime(),
 		};
 	}, [filterByTimeRange]);
 
