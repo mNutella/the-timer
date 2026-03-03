@@ -13,6 +13,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
+		"convex:dev": "convex dev --env-file .env.development.local",
+		"convex:deploy": "convex deploy --env-file .env.production.local",
 		"build:web": "tsc && BUILD_TARGET=web vite build",
 		"dev:web": "BUILD_TARGET=web vite",
 		"preview": "vite preview",

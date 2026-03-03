@@ -89,7 +89,7 @@ function ComboboxContent({ children }: { children: React.ReactNode }) {
 	const content = <Command shouldFilter={false}>{children}</Command>;
 
 	return (
-		<Content className="w-[200px] p-0">
+		<Content className={isMobile ? "p-0" : "w-[200px] p-0"}>
 			{isMobile ? <div className="mt-4 border-t">{content}</div> : content}
 		</Content>
 	);

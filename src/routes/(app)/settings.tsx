@@ -3,7 +3,7 @@ import { useQuery } from "convex-helpers/react/cache";
 import { useMutation } from "convex/react";
 import { DollarSign, Laptop, Monitor, Moon, PanelTop, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { api } from "@/../convex/_generated/api";
@@ -24,15 +24,13 @@ function BillingSection() {
 	const userSettings = useQuery(api.user_settings.get, {});
 	const upsertSettings = useMutation(api.user_settings.upsert);
 	const [rateInput, setRateInput] = useState("");
-	const prevRateRef = useRef(userSettings?.default_hourly_rate);
 
 	// Sync rate from server
-	if (prevRateRef.current !== userSettings?.default_hourly_rate) {
-		prevRateRef.current = userSettings?.default_hourly_rate;
+	useEffect(() => {
 		if (userSettings?.default_hourly_rate !== undefined) {
 			setRateInput((userSettings.default_hourly_rate / 100).toString());
 		}
-	}
+	}, [userSettings?.default_hourly_rate]);
 
 	const handleRateBlur = () => {
 		const parsed = Number.parseFloat(rateInput);

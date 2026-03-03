@@ -17,6 +17,7 @@ import type * as http from "../http.js";
 import type * as import_toggl from "../import_toggl.js";
 import type * as invoice_presets from "../invoice_presets.js";
 import type * as invoices from "../invoices.js";
+import type * as logger from "../logger.js";
 import type * as model_analytics from "../model/analytics.js";
 import type * as model_auth from "../model/auth.js";
 import type * as model_categories from "../model/categories.js";
@@ -42,14 +43,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
   aggregates: typeof aggregates;
   auth: typeof auth;
@@ -60,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   import_toggl: typeof import_toggl;
   invoice_presets: typeof invoice_presets;
   invoices: typeof invoices;
+  logger: typeof logger;
   "model/analytics": typeof model_analytics;
   "model/auth": typeof model_auth;
   "model/categories": typeof model_categories;
@@ -79,14 +73,30 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   utils: typeof utils;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
@@ -219,17 +229,17 @@ export declare const components: {
         { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
         null
       >;
-      deleteIfExists: FunctionReference<
-        "mutation",
-        "internal",
-        { key: any; namespace?: any },
-        any
-      >;
       delete_: FunctionReference<
         "mutation",
         "internal",
         { key: any; namespace?: any },
         null
+      >;
+      deleteIfExists: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        any
       >;
       init: FunctionReference<
         "mutation",
@@ -405,17 +415,17 @@ export declare const components: {
         { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
         null
       >;
-      deleteIfExists: FunctionReference<
-        "mutation",
-        "internal",
-        { key: any; namespace?: any },
-        any
-      >;
       delete_: FunctionReference<
         "mutation",
         "internal",
         { key: any; namespace?: any },
         null
+      >;
+      deleteIfExists: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        any
       >;
       init: FunctionReference<
         "mutation",
@@ -591,17 +601,17 @@ export declare const components: {
         { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
         null
       >;
-      deleteIfExists: FunctionReference<
-        "mutation",
-        "internal",
-        { key: any; namespace?: any },
-        any
-      >;
       delete_: FunctionReference<
         "mutation",
         "internal",
         { key: any; namespace?: any },
         null
+      >;
+      deleteIfExists: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        any
       >;
       init: FunctionReference<
         "mutation",
@@ -777,17 +787,17 @@ export declare const components: {
         { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
         null
       >;
-      deleteIfExists: FunctionReference<
-        "mutation",
-        "internal",
-        { key: any; namespace?: any },
-        any
-      >;
       delete_: FunctionReference<
         "mutation",
         "internal",
         { key: any; namespace?: any },
         null
+      >;
+      deleteIfExists: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        any
       >;
       init: FunctionReference<
         "mutation",
