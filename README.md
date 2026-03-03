@@ -65,8 +65,8 @@ The app uses Google sign-in. Without this, authentication will silently fail.
 
 4. Set the credentials on your Convex deployment:
    ```bash
-   npx convex env set AUTH_GOOGLE_CLIENT_ID <your-client-id>
-   npx convex env set AUTH_GOOGLE_CLIENT_SECRET <your-client-secret>
+   npx convex env set AUTH_GOOGLE_ID <your-client-id>
+   npx convex env set AUTH_GOOGLE_SECRET <your-client-secret>
    ```
 
 ### 4. Run
@@ -108,13 +108,15 @@ pnpm test:run    # single run
 
 ## Environment variables
 
-| Variable                    | Where                               | Purpose                                                                                      |
-| --------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| `CONVEX_DEPLOYMENT`         | `.env.local` (auto-generated)       | Links local CLI to your Convex project                                                       |
-| `VITE_CONVEX_URL`           | `.env.local` (auto-generated)       | Convex URL used by the frontend                                                              |
-| `AUTH_GOOGLE_CLIENT_ID`     | Convex dashboard / `npx convex env` | Google OAuth client ID                                                                       |
-| `AUTH_GOOGLE_CLIENT_SECRET` | Convex dashboard / `npx convex env` | Google OAuth client secret                                                                   |
-| `DEV_BYPASS_AUTH`           | Convex dashboard (dev only)         | Set to `"true"` to skip auth checks — useful when OAuth redirects can't reach your local app |
+| Variable             | Where                               | Purpose                                                                                      |
+| -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `CONVEX_DEPLOYMENT`  | `.env.local` (auto-generated)       | Links local CLI to your Convex project                                                       |
+| `VITE_CONVEX_URL`    | `.env.local` (auto-generated)       | Convex URL used by the frontend                                                              |
+| `AUTH_GOOGLE_ID`     | Convex dashboard / `npx convex env` | Google OAuth client ID                                                                       |
+| `AUTH_GOOGLE_SECRET` | Convex dashboard / `npx convex env` | Google OAuth client secret                                                                   |
+| `JWKS`               | Convex dashboard (auto-generated)   | JWT verification keys — set automatically by `npx @convex-dev/auth`                          |
+| `JWT_PRIVATE_KEY`    | Convex dashboard (auto-generated)   | JWT signing key — set automatically by `npx @convex-dev/auth`                                |
+| `DEV_BYPASS_AUTH`    | Convex dashboard (dev only)         | Set to `"true"` to skip auth checks — useful when OAuth redirects can't reach your local app |
 
 ## Dev tips
 
@@ -140,8 +142,8 @@ npx convex dev          # interactive — user must log in and create a project
 Google OAuth credentials must be set as **Convex environment variables** (not in `.env.local`):
 
 ```bash
-npx convex env set AUTH_GOOGLE_CLIENT_ID <value>
-npx convex env set AUTH_GOOGLE_CLIENT_SECRET <value>
+npx convex env set AUTH_GOOGLE_ID <value>
+npx convex env set AUTH_GOOGLE_SECRET <value>
 ```
 
 The OAuth redirect URI follows this pattern (note `.convex.site`, not `.convex.cloud`):
@@ -156,7 +158,7 @@ The user must create these credentials at [Google Cloud Console > Credentials](h
 
 If `signIn` returns `{ signingIn: true }` but `isAuthenticated` stays `false`, the cause is almost always:
 
-1. Missing `AUTH_GOOGLE_CLIENT_ID` / `AUTH_GOOGLE_CLIENT_SECRET` on the Convex deployment, or
+1. Missing `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` on the Convex deployment, or
 2. Missing `convex/auth.config.ts` (must exist — configures JWT validation)
 
 ### Key architecture notes
