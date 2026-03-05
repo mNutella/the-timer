@@ -2,7 +2,6 @@ import { TableAggregate } from "@convex-dev/aggregate";
 
 import { components } from "./_generated/api";
 import type { DataModel, Id } from "./_generated/dataModel";
-import { getStartOfDay } from "./utils";
 
 export const timeEntriesTotalDurationByDateAggregate = new TableAggregate<{
 	Namespace: Id<"users">;
@@ -22,7 +21,7 @@ export const timeEntriesTotalDurationByClientAndDateAggregate = new TableAggrega
 	TableName: "time_entries";
 }>(components.time_entries_total_duration_by_client_and_date, {
 	namespace: (doc) => doc.userId,
-	sortKey: (doc) => [doc.clientId ?? "", getStartOfDay(doc.start_time ?? 0)],
+	sortKey: (doc) => [doc.clientId ?? "", doc.start_time ?? 0],
 	sumValue: (doc) => doc.duration ?? 0,
 });
 
@@ -33,7 +32,7 @@ export const timeEntriesTotalDurationByProjectAndDateAggregate = new TableAggreg
 	TableName: "time_entries";
 }>(components.time_entries_total_duration_by_project_and_date, {
 	namespace: (doc) => doc.userId,
-	sortKey: (doc) => [doc.projectId ?? "", getStartOfDay(doc.start_time ?? 0)],
+	sortKey: (doc) => [doc.projectId ?? "", doc.start_time ?? 0],
 	sumValue: (doc) => doc.duration ?? 0,
 });
 
@@ -44,6 +43,6 @@ export const timeEntriesTotalDurationByCategoryAndDateAggregate = new TableAggre
 	TableName: "time_entries";
 }>(components.time_entries_total_duration_by_category_and_date, {
 	namespace: (doc) => doc.userId,
-	sortKey: (doc) => [doc.categoryId ?? "", getStartOfDay(doc.start_time ?? 0)],
+	sortKey: (doc) => [doc.categoryId ?? "", doc.start_time ?? 0],
 	sumValue: (doc) => doc.duration ?? 0,
 });

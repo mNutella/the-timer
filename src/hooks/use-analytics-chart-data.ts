@@ -57,11 +57,14 @@ export function useAnalyticsChartData(
 		[stackDimension, clientFilter, projectFilter, categoryFilter],
 	);
 
+	const timezoneOffsetMs = -new Date().getTimezoneOffset() * 60000;
+
 	// Non-stacked: use existing getDailyDurations
 	const flatData = useQuery(
 		api.time_entries.getDailyDurations,
 		stackDimension === null
 			? {
+					timezoneOffsetMs,
 					filters: {
 						dateRange: range,
 					},
@@ -74,6 +77,7 @@ export function useAnalyticsChartData(
 		api.time_entries.getDailyDurationBreakdown,
 		stackDimension !== null
 			? {
+					timezoneOffsetMs,
 					groupBy: stackDimension,
 					entityIds,
 					constraintFilters,

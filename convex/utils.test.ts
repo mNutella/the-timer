@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { computeNextTiming, getEndOfDay, getStartOfDay, updateIfDefined } from "./utils";
+import {
+	advanceOneLocalDay,
+	computeNextTiming,
+	formatLocalDate,
+	getEndOfDay,
+	getLocalDayEnd,
+	getLocalDayStart,
+	getStartOfDay,
+	updateIfDefined,
+} from "./utils";
 
 describe("computeNextTiming", () => {
 	it("computes end_time from startDate + duration", () => {
@@ -99,5 +108,73 @@ describe("updateIfDefined", () => {
 		updateIfDefined(target, { a: undefined, b: "new" });
 
 		expect(target).toEqual({ a: 1, b: "new" });
+	});
+});
+
+describe("getLocalDayStart", () => {
+	// EST = UTC-5 → offsetMs = -5 * 60 * 60 * 1000 = -18000000
+	const EST_OFFSET = -5 * 3600000;
+	// IST = UTC+5:30 → offsetMs = 5.5 * 60 * 60 * 1000 = 19800000
+	const IST_OFFSET = 5.5 * 3600000;
+
+	it("returns UTC midnight for UTC offset", () => {
+		// 2026-02-20T14:30:00Z
+		const ts = Date.UTC(2026, 1, 20, 14, 30, 0);
+		const result = getLocalDayStart(ts, 0);
+		expect(result).toBe(Date.UTC(2026, 1, 20, 0, 0, 0));
+	});
+
+	it("returns correct day start for EST (UTC-5)", () => {
+		// 2026-02-20T03:00:00Z = 2026-02-19T22:00:00 EST
+		// Local day start is 2026-02-19T00:00:00 EST = 2026-02-19T05:00:00Z
+		const ts = Date.UTC(2026, 1, 20, 3, 0, 0);
+		const result = getLocalDayStart(ts, EST_OFFSET);
+		expect(result).toBe(Date.UTC(2026, 1, 19, 5, 0, 0));
+	});
+
+	it("returns correct day start for IST (UTC+5:30)", () => {
+		// 2026-02-20T20:00:00Z = 2026-02-21T01:30:00 IST
+		// Local day start is 2026-02-21T00:00:00 IST = 2026-02-20T18:30:00Z
+		const ts = Date.UTC(2026, 1, 20, 20, 0, 0);
+		const result = getLocalDayStart(ts, IST_OFFSET);
+		expect(result).toBe(Date.UTC(2026, 1, 20, 18, 30, 0));
+	});
+});
+
+describe("getLocalDayEnd", () => {
+	const EST_OFFSET = -5 * 3600000;
+
+	it("returns 23:59:59.999 in local time", () => {
+		const ts = Date.UTC(2026, 1, 20, 14, 30, 0);
+		const dayStart = getLocalDayStart(ts, EST_OFFSET);
+		const dayEnd = getLocalDayEnd(ts, EST_OFFSET);
+		// Day should span exactly 86399999ms
+		expect(dayEnd - dayStart).toBe(86_400_000 - 1);
+	});
+});
+
+describe("formatLocalDate", () => {
+	const EST_OFFSET = -5 * 3600000;
+
+	it("formats date in local timezone", () => {
+		// 2026-02-20T03:00:00Z = 2026-02-19T22:00:00 EST
+		const ts = Date.UTC(2026, 1, 20, 3, 0, 0);
+		expect(formatLocalDate(ts, EST_OFFSET)).toBe("2026-02-19");
+	});
+
+	it("formats date in UTC", () => {
+		const ts = Date.UTC(2026, 1, 20, 14, 30, 0);
+		expect(formatLocalDate(ts, 0)).toBe("2026-02-20");
+	});
+});
+
+describe("advanceOneLocalDay", () => {
+	const EST_OFFSET = -5 * 3600000;
+
+	it("advances by exactly one day", () => {
+		const ts = Date.UTC(2026, 1, 20, 14, 30, 0);
+		const dayStart = getLocalDayStart(ts, EST_OFFSET);
+		const nextDayStart = advanceOneLocalDay(dayStart, EST_OFFSET);
+		expect(nextDayStart - dayStart).toBe(86_400_000);
 	});
 });

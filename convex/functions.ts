@@ -21,13 +21,22 @@ import { entDefinitions } from "./schema";
 const triggers = new Triggers<DataModel>();
 
 if (!process.env.VITEST) {
-	triggers.register("time_entries", timeEntriesTotalDurationByDateAggregate.trigger());
+	triggers.register("time_entries", timeEntriesTotalDurationByDateAggregate.idempotentTrigger());
 
-	triggers.register("time_entries", timeEntriesTotalDurationByClientAndDateAggregate.trigger());
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByClientAndDateAggregate.idempotentTrigger(),
+	);
 
-	triggers.register("time_entries", timeEntriesTotalDurationByProjectAndDateAggregate.trigger());
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByProjectAndDateAggregate.idempotentTrigger(),
+	);
 
-	triggers.register("time_entries", timeEntriesTotalDurationByCategoryAndDateAggregate.trigger());
+	triggers.register(
+		"time_entries",
+		timeEntriesTotalDurationByCategoryAndDateAggregate.idempotentTrigger(),
+	);
 }
 
 export const query = customQuery(rawQuery, {

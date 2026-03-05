@@ -6,15 +6,7 @@ import {
 	timeEntriesTotalDurationByProjectAndDateAggregate,
 } from "../aggregates";
 import type { QueryCtx } from "../types";
-import { getEndOfDay, getStartOfDay } from "../utils";
-
-function formatDate(timestamp: number): string {
-	const d = new Date(timestamp);
-	const year = d.getFullYear();
-	const month = String(d.getMonth() + 1).padStart(2, "0");
-	const day = String(d.getDate()).padStart(2, "0");
-	return `${year}-${month}-${day}`;
-}
+import { advanceOneLocalDay, formatLocalDate, getLocalDayEnd, getLocalDayStart } from "../utils";
 
 export async function getTotalHoursByDate(
 	ctx: QueryCtx,
@@ -36,11 +28,11 @@ export async function getTotalHoursByDate(
 			namespace: userId,
 			bounds: {
 				lower: {
-					key: [getStartOfDay(startDate ?? 0)],
+					key: [startDate ?? 0],
 					inclusive: true,
 				},
 				upper: {
-					key: [getEndOfDay(endDate ?? 0)],
+					key: [endDate ?? 0],
 					inclusive: true,
 				},
 			},
@@ -72,11 +64,11 @@ export async function getTotalHoursByClientAndDate(
 			namespace: userId,
 			bounds: {
 				lower: {
-					key: [clientId ?? "", getStartOfDay(startDate ?? 0)],
+					key: [clientId ?? "", startDate ?? 0],
 					inclusive: true,
 				},
 				upper: {
-					key: [clientId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					key: [clientId ?? "\uffff", endDate ?? 0],
 					inclusive: true,
 				},
 			},
@@ -108,11 +100,11 @@ export async function getTotalHoursByProjectAndDate(
 			namespace: userId,
 			bounds: {
 				lower: {
-					key: [projectId ?? "", getStartOfDay(startDate ?? 0)],
+					key: [projectId ?? "", startDate ?? 0],
 					inclusive: true,
 				},
 				upper: {
-					key: [projectId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					key: [projectId ?? "\uffff", endDate ?? 0],
 					inclusive: true,
 				},
 			},
@@ -144,11 +136,11 @@ export async function getTotalHoursByCategoryAndDate(
 			namespace: userId,
 			bounds: {
 				lower: {
-					key: [categoryId ?? "", getStartOfDay(startDate ?? 0)],
+					key: [categoryId ?? "", startDate ?? 0],
 					inclusive: true,
 				},
 				upper: {
-					key: [categoryId ?? "\uffff", getEndOfDay(endDate ?? 0)],
+					key: [categoryId ?? "\uffff", endDate ?? 0],
 					inclusive: true,
 				},
 			},
@@ -232,6 +224,7 @@ export async function getDailyDurationTimeSeries(
 	{
 		userId,
 		filters,
+		timezoneOffsetMs,
 	}: {
 		userId: Id<"users">;
 		filters: {
@@ -240,17 +233,18 @@ export async function getDailyDurationTimeSeries(
 			categoryIds?: string[] | null;
 			dateRange: { startDate: number; endDate: number };
 		};
+		timezoneOffsetMs: number;
 	},
 ) {
 	const { startDate, endDate } = filters.dateRange;
 	const results: Array<{ date: string; duration: number }> = [];
 
-	const current = new Date(startDate);
-	const end = new Date(endDate);
+	let current = getLocalDayStart(startDate, timezoneOffsetMs);
+	const endBound = getLocalDayStart(endDate, timezoneOffsetMs);
 
-	while (current <= end) {
-		const dayStart = getStartOfDay(current.getTime());
-		const dayEnd = getEndOfDay(current.getTime());
+	while (current <= endBound) {
+		const dayStart = current;
+		const dayEnd = getLocalDayEnd(current, timezoneOffsetMs);
 
 		const duration = await sumDurationForDay(ctx, userId, dayStart, dayEnd, {
 			clientIds: filters.clientIds,
@@ -258,9 +252,9 @@ export async function getDailyDurationTimeSeries(
 			categoryIds: filters.categoryIds,
 		});
 
-		results.push({ date: formatDate(current.getTime()), duration });
+		results.push({ date: formatLocalDate(current, timezoneOffsetMs), duration });
 
-		current.setDate(current.getDate() + 1);
+		current = advanceOneLocalDay(current, timezoneOffsetMs);
 	}
 
 	return results;
@@ -274,6 +268,7 @@ export async function getDailyDurationBreakdownTimeSeries(
 		entityIds,
 		constraintFilters,
 		dateRange,
+		timezoneOffsetMs,
 	}: {
 		userId: Id<"users">;
 		groupBy: "client" | "project" | "category";
@@ -284,6 +279,7 @@ export async function getDailyDurationBreakdownTimeSeries(
 			categoryIds?: string[];
 		};
 		dateRange: { startDate: number; endDate: number };
+		timezoneOffsetMs: number;
 	},
 ) {
 	const { startDate, endDate } = dateRange;
@@ -319,6 +315,7 @@ export async function getDailyDurationBreakdownTimeSeries(
 			entityNames,
 			startDate,
 			endDate,
+			timezoneOffsetMs,
 		});
 	}
 
@@ -335,6 +332,7 @@ export async function getDailyDurationBreakdownTimeSeries(
 		},
 		startDate,
 		endDate,
+		timezoneOffsetMs,
 	});
 }
 
@@ -347,6 +345,7 @@ async function getDailyBreakdownFromAggregates(
 		entityNames,
 		startDate,
 		endDate,
+		timezoneOffsetMs,
 	}: {
 		userId: Id<"users">;
 		groupBy: "client" | "project" | "category";
@@ -354,6 +353,7 @@ async function getDailyBreakdownFromAggregates(
 		entityNames: Map<string, string>;
 		startDate: number;
 		endDate: number;
+		timezoneOffsetMs: number;
 	},
 ) {
 	const results: Array<{
@@ -368,12 +368,12 @@ async function getDailyBreakdownFromAggregates(
 				? timeEntriesTotalDurationByProjectAndDateAggregate
 				: timeEntriesTotalDurationByCategoryAndDateAggregate;
 
-	const current = new Date(startDate);
-	const end = new Date(endDate);
+	let current = getLocalDayStart(startDate, timezoneOffsetMs);
+	const endBound = getLocalDayStart(endDate, timezoneOffsetMs);
 
-	while (current <= end) {
-		const dayStart = getStartOfDay(current.getTime());
-		const dayEnd = getEndOfDay(current.getTime());
+	while (current <= endBound) {
+		const dayStart = current;
+		const dayEnd = getLocalDayEnd(current, timezoneOffsetMs);
 		const breakdown: Array<{
 			entityId: string;
 			name: string;
@@ -395,8 +395,8 @@ async function getDailyBreakdownFromAggregates(
 			});
 		}
 
-		results.push({ date: formatDate(current.getTime()), breakdown });
-		current.setDate(current.getDate() + 1);
+		results.push({ date: formatLocalDate(current, timezoneOffsetMs), breakdown });
+		current = advanceOneLocalDay(current, timezoneOffsetMs);
 	}
 
 	return results;
@@ -412,6 +412,7 @@ async function getDailyBreakdownFromEntries(
 		constraintFilters,
 		startDate,
 		endDate,
+		timezoneOffsetMs,
 	}: {
 		userId: Id<"users">;
 		groupBy: "client" | "project" | "category";
@@ -424,10 +425,9 @@ async function getDailyBreakdownFromEntries(
 		};
 		startDate: number;
 		endDate: number;
+		timezoneOffsetMs: number;
 	},
 ) {
-	const dayStart = getStartOfDay(startDate);
-	const dayEnd = getEndOfDay(endDate);
 	const entityIdSet = new Set(entityIds);
 
 	// Query entries using composite indexes with date bounds
@@ -456,21 +456,21 @@ async function getDailyBreakdownFromEntries(
 				return q
 					.eq("userId", userId)
 					.eq("clientId", entityId as Id<"clients">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd);
+					.gte("start_time", startDate)
+					.lte("start_time", endDate);
 			}
 			if (groupBy === "project") {
 				return q
 					.eq("userId", userId)
 					.eq("projectId", entityId as Id<"projects">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd);
+					.gte("start_time", startDate)
+					.lte("start_time", endDate);
 			}
 			return q
 				.eq("userId", userId)
 				.eq("categoryId", entityId as Id<"categories">)
-				.gte("start_time", dayStart)
-				.lte("start_time", dayEnd);
+				.gte("start_time", startDate)
+				.lte("start_time", endDate);
 		});
 		allEntries.push(...entries);
 	}
@@ -494,7 +494,7 @@ async function getDailyBreakdownFromEntries(
 		const entityId = (entry[fieldName] as string) ?? "";
 		if (!entityIdSet.has(entityId)) continue;
 
-		const date = formatDate(entry.start_time);
+		const date = formatLocalDate(entry.start_time, timezoneOffsetMs);
 		if (!dayEntityMap.has(date)) {
 			dayEntityMap.set(date, new Map());
 		}
@@ -508,11 +508,11 @@ async function getDailyBreakdownFromEntries(
 		breakdown: Array<{ entityId: string; name: string; duration: number }>;
 	}> = [];
 
-	const current = new Date(startDate);
-	const end = new Date(endDate);
+	let current = getLocalDayStart(startDate, timezoneOffsetMs);
+	const endBound = getLocalDayStart(endDate, timezoneOffsetMs);
 
-	while (current <= end) {
-		const date = formatDate(current.getTime());
+	while (current <= endBound) {
+		const date = formatLocalDate(current, timezoneOffsetMs);
 		const entityMap = dayEntityMap.get(date);
 		const breakdown = entityIds.map((entityId) => ({
 			entityId,
@@ -520,7 +520,7 @@ async function getDailyBreakdownFromEntries(
 			duration: entityMap?.get(entityId) ?? 0,
 		}));
 		results.push({ date, breakdown });
-		current.setDate(current.getDate() + 1);
+		current = advanceOneLocalDay(current, timezoneOffsetMs);
 	}
 
 	return results;
@@ -602,11 +602,11 @@ export async function getEntityBreakdown(
 				namespace: userId,
 				bounds: {
 					lower: {
-						key: [entityId, getStartOfDay(startDate)],
+						key: [entityId, startDate],
 						inclusive: true,
 					},
 					upper: {
-						key: [entityId, getEndOfDay(endDate)],
+						key: [entityId, endDate],
 						inclusive: true,
 					},
 				},
@@ -625,8 +625,8 @@ export async function getEntityBreakdown(
 			const unassignedDuration = await aggregate.sum(ctx, {
 				namespace: userId,
 				bounds: {
-					lower: { key: ["", getStartOfDay(startDate)], inclusive: true },
-					upper: { key: ["", getEndOfDay(endDate)], inclusive: true },
+					lower: { key: ["", startDate], inclusive: true },
+					upper: { key: ["", endDate], inclusive: true },
 				},
 			});
 			if (unassignedDuration > 0) {
@@ -688,8 +688,6 @@ async function getEntityBreakdownFromEntries(
 		endDate: number;
 	},
 ) {
-	const dayStart = getStartOfDay(startDate);
-	const dayEnd = getEndOfDay(endDate);
 	const entityIdSet = new Set(entityIds);
 
 	const indexName =
@@ -717,21 +715,21 @@ async function getEntityBreakdownFromEntries(
 				return q
 					.eq("userId", userId)
 					.eq("clientId", entityId as Id<"clients">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd);
+					.gte("start_time", startDate)
+					.lte("start_time", endDate);
 			}
 			if (groupBy === "project") {
 				return q
 					.eq("userId", userId)
 					.eq("projectId", entityId as Id<"projects">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd);
+					.gte("start_time", startDate)
+					.lte("start_time", endDate);
 			}
 			return q
 				.eq("userId", userId)
 				.eq("categoryId", entityId as Id<"categories">)
-				.gte("start_time", dayStart)
-				.lte("start_time", dayEnd);
+				.gte("start_time", startDate)
+				.lte("start_time", endDate);
 		});
 		allEntries.push(...entries);
 	}
@@ -809,11 +807,11 @@ export async function getCategoryBreakdown(
 			namespace: userId,
 			bounds: {
 				lower: {
-					key: [category._id, getStartOfDay(startDate)],
+					key: [category._id, startDate],
 					inclusive: true,
 				},
 				upper: {
-					key: [category._id, getEndOfDay(endDate)],
+					key: [category._id, endDate],
 					inclusive: true,
 				},
 			},
@@ -831,8 +829,8 @@ export async function getCategoryBreakdown(
 	const uncategorizedDuration = await timeEntriesTotalDurationByCategoryAndDateAggregate.sum(ctx, {
 		namespace: userId,
 		bounds: {
-			lower: { key: ["", getStartOfDay(startDate)], inclusive: true },
-			upper: { key: ["", getEndOfDay(endDate)], inclusive: true },
+			lower: { key: ["", startDate], inclusive: true },
+			upper: { key: ["", endDate], inclusive: true },
 		},
 	});
 
@@ -865,8 +863,6 @@ async function getCategoryBreakdownFromEntries(
 	},
 ) {
 	const { startDate, endDate } = filters.dateRange;
-	const dayStart = getStartOfDay(startDate);
-	const dayEnd = getEndOfDay(endDate);
 
 	const clientIds = filters.clientIds ?? [];
 	const projectIds = filters.projectIds ?? [];
@@ -885,8 +881,8 @@ async function getCategoryBreakdownFromEntries(
 				q
 					.eq("userId", userId)
 					.eq("clientId", clientId as Id<"clients">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd),
+					.gte("start_time", startDate)
+					.lte("start_time", endDate),
 			);
 			allEntries.push(...entries);
 		}
@@ -896,8 +892,8 @@ async function getCategoryBreakdownFromEntries(
 				q
 					.eq("userId", userId)
 					.eq("projectId", projectId as Id<"projects">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd),
+					.gte("start_time", startDate)
+					.lte("start_time", endDate),
 			);
 			allEntries.push(...entries);
 		}
@@ -907,8 +903,8 @@ async function getCategoryBreakdownFromEntries(
 				q
 					.eq("userId", userId)
 					.eq("categoryId", categoryId as Id<"categories">)
-					.gte("start_time", dayStart)
-					.lte("start_time", dayEnd),
+					.gte("start_time", startDate)
+					.lte("start_time", endDate),
 			);
 			allEntries.push(...entries);
 		}

@@ -175,6 +175,7 @@ export const searchTimeEntries = query({
 
 export const getDailyDurations = query({
 	args: {
+		timezoneOffsetMs: v.optional(v.number()),
 		filters: v.optional(
 			v.object({
 				clientIds: v.optional(v.array(v.id("clients"))),
@@ -187,7 +188,7 @@ export const getDailyDurations = query({
 			}),
 		),
 	},
-	handler: async (ctx, { filters }) => {
+	handler: async (ctx, { timezoneOffsetMs, filters }) => {
 		const userId = await getRequiredUserId(ctx);
 		if (!filters?.dateRange) return [];
 		return Analytics.getDailyDurationTimeSeries(ctx, {
@@ -198,12 +199,14 @@ export const getDailyDurations = query({
 				categoryIds: filters.categoryIds,
 				dateRange: filters.dateRange,
 			},
+			timezoneOffsetMs: timezoneOffsetMs ?? 0,
 		});
 	},
 });
 
 export const getDailyDurationBreakdown = query({
 	args: {
+		timezoneOffsetMs: v.optional(v.number()),
 		groupBy: v.union(v.literal("client"), v.literal("project"), v.literal("category")),
 		entityIds: v.array(v.string()),
 		constraintFilters: v.optional(
@@ -218,7 +221,7 @@ export const getDailyDurationBreakdown = query({
 			endDate: v.number(),
 		}),
 	},
-	handler: async (ctx, { groupBy, entityIds, constraintFilters, dateRange }) => {
+	handler: async (ctx, { timezoneOffsetMs, groupBy, entityIds, constraintFilters, dateRange }) => {
 		const userId = await getRequiredUserId(ctx);
 		if (entityIds.length === 0) return [];
 		return Analytics.getDailyDurationBreakdownTimeSeries(ctx, {
@@ -233,6 +236,7 @@ export const getDailyDurationBreakdown = query({
 					}
 				: undefined,
 			dateRange,
+			timezoneOffsetMs: timezoneOffsetMs ?? 0,
 		});
 	},
 });

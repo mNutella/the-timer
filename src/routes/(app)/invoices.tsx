@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex-helpers/react/cache";
 import { useMutation, useQuery as useRealtimeQuery } from "convex/react";
+import { endOfDay, startOfDay } from "date-fns";
 import {
 	ArrowLeft,
 	Calendar as CalendarIcon,
@@ -631,8 +632,8 @@ function InvoiceCreateView({ onBack }: { onBack: () => void }) {
 
 	// Use suggested start date if user hasn't picked one yet
 	const effectiveStartDate = startDate ?? defaultStart;
-	const effectiveStart = effectiveStartDate?.getTime();
-	const effectiveEnd = endDate?.getTime();
+	const effectiveStart = effectiveStartDate ? startOfDay(effectiveStartDate).getTime() : undefined;
+	const effectiveEnd = endDate ? endOfDay(endDate).getTime() : undefined;
 
 	// Grouping
 	const [groupingRules, setGroupingRules] = useState<GroupByDimension[]>(["client", "project"]);

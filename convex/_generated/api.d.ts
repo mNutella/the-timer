@@ -10,8 +10,10 @@
 
 import type * as aggregates from "../aggregates.js";
 import type * as auth from "../auth.js";
+import type * as backfill from "../backfill.js";
 import type * as categories from "../categories.js";
 import type * as clients from "../clients.js";
+import type * as diagnostics from "../diagnostics.js";
 import type * as functions from "../functions.js";
 import type * as http from "../http.js";
 import type * as import_toggl from "../import_toggl.js";
@@ -46,8 +48,10 @@ import type {
 declare const fullApi: ApiFromModules<{
   aggregates: typeof aggregates;
   auth: typeof auth;
+  backfill: typeof backfill;
   categories: typeof categories;
   clients: typeof clients;
+  diagnostics: typeof diagnostics;
   functions: typeof functions;
   http: typeof http;
   import_toggl: typeof import_toggl;
